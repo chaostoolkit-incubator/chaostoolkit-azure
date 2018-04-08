@@ -71,7 +71,7 @@ expects that you have a PFX certificate, converted as to the PEM format, that
 allows you to authenticate with the [Service Factory][sf] endpoint.
 
 [sf]: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-controlled-chaos
-
+[creds]: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-connect-to-secure-cluster
 
 Generally speaking, there are two ways of doing this:
 
