@@ -138,6 +138,21 @@ Here is a full example:
             "pem_path": "./cluster-client-cert.pem"
         }
     },
+    "steady-state-hypothesis": {
+        "title": "Services is healthy",
+        "probes": [
+            {
+                "type": "probe",
+                "name": "application-must-respond",
+                "tolerance": 200,
+                "provider": {
+                    "type": "http",
+                    "verify_tls": false,
+                    "url": "https://some-url-in-cluster/"
+                }
+            }
+        ]
+    },
     "method": [
         {
             "type": "action",
@@ -152,7 +167,14 @@ Here is a full example:
                         "TimeToRunInSeconds": 45
                     }
                 }
+            },
+            "pauses": {
+                "after": 30
             }
+        },
+        {
+            "type": "probe",
+            "ref": "application-must-respond"
         },
         {
             "type": "action",
@@ -162,6 +184,9 @@ Here is a full example:
                 "module": "chaosazure.factory.actions",
                 "func": "stop_chaos",
                 "secrets": ["azure"]
+            },
+            "pauses": {
+                "after": 5
             }
         },
         {
@@ -173,7 +198,7 @@ Here is a full example:
                 "func": "chaos_report",
                 "secrets": ["azure"],
                 "arguments": {
-                    "start_time_utc": "2 minutes ago",
+                    "start_time_utc": "1 minute ago",
                     "end_time_utc": "now"
                 }
             }
