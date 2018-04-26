@@ -14,9 +14,9 @@ from chaosazure.types import ChaosParameters
 __all__ = ["start_chaos", "stop_chaos"]
 
 
-def start_chaos(parameters: ChaosParameters, timeout: int=60,
-                configuration: Configuration=None,
-                secrets: Secrets=None) -> Dict[str, Any]:
+def start_chaos(parameters: ChaosParameters, timeout: int = 60,
+                configuration: Configuration = None,
+                secrets: Secrets = None) -> Dict[str, Any]:
     """
     Start Chaos in your cluster using the given `parameters`. This is a mapping
     of keys as declared in the Service Fabric API:
@@ -48,8 +48,8 @@ def start_chaos(parameters: ChaosParameters, timeout: int=60,
         return r.json()
 
 
-def stop_chaos(timeout: int=60, configuration: Configuration=None,
-               secrets: Secrets=None) -> Dict[str, Any]:
+def stop_chaos(timeout: int = 60, configuration: Configuration = None,
+               secrets: Secrets = None) -> Dict[str, Any]:
     """
     Stop Chaos in your cluster.
 

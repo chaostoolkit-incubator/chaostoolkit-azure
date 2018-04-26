@@ -15,9 +15,9 @@ from chaosazure.fabric import auth
 __all__ = ["chaos_report"]
 
 
-def chaos_report(timeout: int=60, start_time_utc: str=None,
-                 end_time_utc: str=None, configuration: Configuration=None,
-                 secrets: Secrets=None) -> Dict[str, Any]:
+def chaos_report(timeout: int = 60, start_time_utc: str = None,
+                 end_time_utc: str = None, configuration: Configuration = None,
+                 secrets: Secrets = None) -> Dict[str, Any]:
     """
     Get Chaos report using following the Service Fabric API:
 

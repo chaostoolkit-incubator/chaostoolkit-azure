@@ -2,4 +2,4 @@
 
 """Top-level package for chaostoolkit-azure."""
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
