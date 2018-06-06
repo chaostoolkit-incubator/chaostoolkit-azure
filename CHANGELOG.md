@@ -2,9 +2,17 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.1.2...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.1.3...HEAD
 
-## [0.1.2][] - 2017-05-14
+## [0.1.3][] - 2018-06-06
+
+[0.1.3]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.1.2...0.1.3
+
+### Changed
+
+-   Exporting fabric subpackage
+
+## [0.1.2][] - 2018-05-14
 
 [0.1.2]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.1.1...0.1.2
 
