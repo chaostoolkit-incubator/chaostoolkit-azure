@@ -72,6 +72,7 @@ allows you to authenticate with the [Service Factory][sf] endpoint.
 
 [sf]: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-controlled-chaos
 [creds]: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-connect-to-secure-cluster
+[requests]: http://docs.python-requests.org/en/master/
 
 Generally speaking, there are two ways of doing this:
 
