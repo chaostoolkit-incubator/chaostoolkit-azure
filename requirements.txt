@@ -2,3 +2,5 @@ chaostoolkit-lib>=0.15.0
 dateparser
 logzero
 requests
+azure-mgmt-resource==2.0.0
+azure-mgmt-compute~=2.0.0
