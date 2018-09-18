@@ -1,68 +1,57 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timezone
-import json
-from typing import Any, Dict
+from typing import Any, Dict, List
 
-import dateparser
-from logzero import logger
-import requests
-
-from chaoslib.exceptions import FailedActivity
+from azure.mgmt.resource import ResourceManagementClient
+from azure.mgmt.compute import ComputeManagementClient
 from chaoslib.types import Configuration, Secrets
 
-from chaosazure.fabric import auth
-
-__all__ = ["chaos_report"]
+__all__ = ["describe_instances", "count_instances"]
 
 
-def chaos_report(timeout: int = 60, start_time_utc: str = None,
-                 end_time_utc: str = None, configuration: Configuration = None,
-                 secrets: Secrets = None) -> Dict[str, Any]:
+def get_credentials():
+    subscription_id = os.environ['AZURE_SUBSCRIPTION_ID']
+    credentials = ServicePrincipalCredentials(
+        client_id=os.environ['AZURE_CLIENT_ID'],
+        secret=os.environ['AZURE_CLIENT_SECRET'],
+        tenant=os.environ['AZURE_TENANT_ID']
+    )
+    return credentials, subscription_id
+
+
+def collect_virtual_machines(compute_client, configuration, resource_client):
+    virtual_machines = list()
+    for resource_group in resource_client.resource_groups.list():
+        if resource_group.name in configuration.group:
+            for virtual_machine in compute_client.virtual_machines.list(resource_group.name):
+                virtual_machines.append(virtual_machine)
+    return virtual_machines
+
+
+def describe_instances(filters: List[Dict[str, Any]],
+                       configuration: Configuration = None,
+                       secrets: Secrets = None) -> Dict[str, Any]:
     """
-    Get Chaos report using following the Service Fabric API:
-
-    https://docs.microsoft.com/en-us/rest/api/servicefabric/sfclient-v60-model-chaosparameters
-
-    Please see the :func:`chaosazure.fabric.auth` help for more information
-    on authenticating with the service.
-    """  # noqa: E501
-    with auth(configuration, secrets) as info:
-        url = "{}/Tools/Chaos/$/Report".format(info["endpoint"])
-
-        qs = {"api-version": "6.0"}
-        if timeout is not None:
-            qs["timeout"] = timeout
-        if start_time_utc is not None:
-            qs["StartTimeUtc"] = datetime_to_ticks(start_time_utc)
-        if end_time_utc is not None:
-            qs["EndTimeUtc"] = datetime_to_ticks(end_time_utc)
-
-        r = requests.get(
-            url, headers={"Accept": "application/json"},
-            verify=info["verify"], params=qs)
-
-        if r.status_code != 200:
-            error = r.json()
-            raise FailedActivity(
-                "Service Fabric Chaos failed to get report: {}".format(
-                    json.dumps(error)))
-
-        logger.debug("chaos report fetched succesfully")
-
-        return r.json()
-
-
-def datetime_to_ticks(when: str) -> int:
+    Describe Azure virtual machines.
     """
-    Computes the number of ticks until the relative time given.
+    credentials, subscription_id = get_credentials()
+    resource_client = ResourceManagementClient(credentials, subscription_id)
+    compute_client = ComputeManagementClient(credentials, subscription_id)
 
-    ```python
-    >>> datetime_to_ticks("2 mns ago")
-    ```
+    virtual_machines = collect_virtual_machines(compute_client, configuration, resource_client)
+
+    return virtual_machines
+
+
+def count_instances(filters: List[Dict[str, Any]],
+                    configuration: Configuration = None,
+                    secrets: Secrets = None) -> int:
     """
-    dt = dateparser.parse(when, settings={'RETURN_AS_TIMEZONE_AWARE': True})
-    if not dt:
-        raise FailedActivity("failed parsing moment: {}".format(when))
+    Return count of Azure virtual machines.
+    """
+    credentials, subscription_id = get_credentials()
+    resource_client = ResourceManagementClient(credentials, subscription_id)
+    compute_client = ComputeManagementClient(credentials, subscription_id)
 
-    span = dt - datetime(1, 1, 1, tzinfo=timezone.utc)
-    return int(span.total_seconds() * 10**7)
+    virtual_machines = collect_virtual_machines(compute_client, configuration, resource_client)
+
+    return len(virtual_machines)
