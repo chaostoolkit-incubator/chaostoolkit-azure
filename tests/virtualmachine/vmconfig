@@ -1,0 +1,5 @@
+[azureauth]
+AZURE_TENANT_ID={tenantId}
+AZURE_CLIENT_ID={applicationId}
+AZURE_CLIENT_SECRET={clientKey}
+AZURE_SUBSCRIPTION_ID={subscriptionId}
