@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
-import configparser
 import contextlib
 import os.path
-import tempfile
 
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
-
-from chaosazure.types import ServiceFabricAuth
 
 __all__ = ["auth"]
 
 
 @contextlib.contextmanager
-def auth(configuration: Configuration, secrets: Secrets) -> ServiceFabricAuth:
+def auth(configuration: Configuration, secrets: Secrets):
     """
-    Attempt to load the Service Fabric authentication information from a local
+    Attempt to load the Azure authentication information from a local
     configuration file or the passed `configuration` mapping. The latter takes
     precedence over the local configuration file.
 
@@ -25,9 +21,10 @@ def auth(configuration: Configuration, secrets: Secrets) -> ServiceFabricAuth:
     Configuration mapping (in your experiment file):
     ```python
     {
-        "endpoint": "https://XYZ.westus.cloudapp.azure.com:19080",
-        "verify_tls": False,
-        "use_ca": False
+        "azure": {
+            "subscription_id": "AZURE_SUBSCRIPTION_ID",
+            "resource_groups": "resourceGroup1,resourceGroup2"
+        }
     }
     ```
 
@@ -35,65 +32,18 @@ def auth(configuration: Configuration, secrets: Secrets) -> ServiceFabricAuth:
     ```python
     {
         "azure": {
-            "security": "pem",
-            "pem_content": {
-                "type": "env",
-                "key": "AZURE_SERVICE_FABRIC_PEM"
-            }
+            "client_id": "AZURE_CLIENT_ID",
+            "client_secret": "AZURE_CLIENT_SECRET",
+            "tenant_id": "AZURE_TENANT_ID"
         }
     }
     ```
 
-    In that case, the PEM content will be read from the local environment
-    variable `AZURE_SERVICE_FABRIC_PEM` that you will have populated before
+    The client_id, tenant_id, client_secret and tenant_id content will be
+    read from the local environment variables `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
+    `AZURE_CLIENT_SECRET`, and `AZURE_TENANT_ID` that you will have populated before
     hand. The content will be saved by the extension into a temporary file
     before being used to authenticate.
-
-    You could also simply have that file ready instead:
-
-    Secrets mapping (in your experiment file):
-    ```python
-    {
-        "azure": {
-            "security": "pem",
-            "pem_path": "./party-cluster-XYZ-client-cert.pem"
-        }
-    }
-    ```
-
-    If you want to load the information from a local Service Fabric
-    config file, set the `config_path` key in the `configuration mapping.
-
-    Configuration mapping (in your experiment file):
-    ```python
-    {
-        "config_path": "~/.sfctl/config"
-    }
-    ```
-    The path will be expanded.
-
-    The authentification file should look like this:
-
-    ```ini
-    [servicefabric]
-    endpoint = https://XYZ.westus.cloudapp.azure.com:19080
-    no_verify = true
-    use_ca = false
-    security = pem
-    pem_path = ./party-cluster-XYZ-client-cert.pem
-    ```
-
-    No matter the input, the yielded dictionary looks like this:
-
-    ```python
-    {
-        "endpoint": "https://XYZ.westus.cloudapp.azure.com:19080",
-        "verify": False,
-        "security": {
-            "type": "pem",
-            "path": "./party-cluster-XYZ-client-cert.pem"
-        }
-    }
     ```
 
     Using this function goes as follows:
@@ -110,63 +60,31 @@ def auth(configuration: Configuration, secrets: Secrets) -> ServiceFabricAuth:
     c = configuration or {}
     s = secrets or {}
 
-    config_path = c.get("config_path")
-    endpoint = c.get("endpoint", s.get("endpoint"))
+    azure_config = c.get("azure")
+    azure_secrets = s.get("azure")
 
-    if config_path:
-        config_path = os.path.expanduser(config_path)
-        if not os.path.exists(config_path):
-            raise FailedActivity(
-                "Service Fabric configuration file not found at {}".format(
-                    config_path
-                ))
+    if not azure_config:
+        raise FailedActivity("Azure configuration not found")
 
-        with open(config_path) as f:
-            parser = configparser.ConfigParser()
-            parser.read_file(f)
+    if not azure_secrets:
+        raise FailedActivity("Azure secrets not found")
 
-            pem_path = parser.get("servicefabric", "pem_path")
-            if not pem_path:
-                raise FailedActivity("cannot find {}".format(pem_path))
+    subscription_id = os.environ['AZURE_SUBSCRIPTION_ID']
+    client_id = os.environ['AZURE_CLIENT_ID']
+    secret = os.environ['AZURE_CLIENT_SECRET']
+    tenant = os.environ['AZURE_TENANT_ID']
 
-            yield {
-                "endpoint": parser.get("servicefabric", "endpoint"),
-                "verify": not (
-                    parser.get("servicefabric", "no_verify") != "true"),
-                "security": {
-                    "type": parser.get("servicefabric", "security"),
-                    "path": pem_path
-                }
-            }
+    if not subscription_id or not client_id or not secret or not tenant:
+        raise FailedActivity("Client could not find Azure credentials")
 
-    elif endpoint:
-        verify_tls = c.get("verify_tls", s.get("verify_tls", True))
-        use_ca = c.get("use_ca", s.get("use_ca", True))
-        security_kind = s.get("security", c.get("security", "pem"))
-        pem_path = s.get("pem_path", c.get("pem_path", None))
-        pem_content = s.get("pem_content", c.get("pem_content", None))
-
-        info = {
-            "endpoint": endpoint,
-            "verify": verify_tls,
-            "security": {
-                "type": security_kind,
-                "path": pem_path
-            }
+    info = {
+        "subscription_id": subscription_id,
+        "resource_groups": azure_config.get("resource_groups"),
+        "security": {
+            "client_id": client_id,
+            "client_secret": secret,
+            "tenant_id": tenant
         }
+    }
 
-        if not pem_path or (not os.path.exists(pem_path) and pem_content):
-            # the file will be deleted when we leave the context block
-            with tempfile.NamedTemporaryFile(mode="w+",
-                                             encoding='utf-8') as pem_path:
-
-                pem_path.write(pem_content)
-                pem_path.seek(0)
-
-                info["security"]["pem_path"] = pem_path.name
-                yield info
-        else:
-            yield info
-    else:
-        raise FailedActivity(
-            "Service Fabric client needs to know how to authenticate")
+    yield info
