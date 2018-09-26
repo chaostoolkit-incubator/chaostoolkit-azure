@@ -83,7 +83,7 @@ def test_start_chaos_using_local_config_file():
 
         result = start_chaos(CHAOS_PARAMS, configuration={
             "config_path": os.path.join(
-                os.path.dirname(__file__), "vmconfig")
+                os.path.dirname(__file__), "sfconfig")
         })
 
         assert m.called
