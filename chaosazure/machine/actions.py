@@ -22,8 +22,8 @@ def delete_machine(timeout: int = 60, configuration: Configuration = None,
     # init azure clients
     #
     cred = credentials.create_from(secrets)
-    resource_client = ResourceManagementClient(cred, configuration['subscription_id'])
-    compute_client = ComputeManagementClient(cred, configuration['subscription_id'])
+    resource_client = ResourceManagementClient(cred, configuration['azure']['subscription_id'])
+    compute_client = ComputeManagementClient(cred, configuration['azure']['subscription_id'])
 
     #
     # get azure resources
@@ -34,7 +34,8 @@ def delete_machine(timeout: int = 60, configuration: Configuration = None,
     #
     # pick 'em up
     #
-    machine = pick_machine_randomly(resource_groups_list, machines_list_all, configuration)
+    rg = configuration['azure']['resource_groups'].split(',')
+    machine = pick_machine_randomly(resource_groups_list, machines_list_all, rg)
 
     #
     # chaos monkey now takes over
@@ -58,8 +59,8 @@ def poweroff_machine(timeout: int = 60, configuration: Configuration = None,
     # init azure clients
     #
     cred = credentials.create_from(secrets)
-    resource_client = ResourceManagementClient(cred, configuration['subscription_id'])
-    compute_client = ComputeManagementClient(cred, configuration['subscription_id'])
+    resource_client = ResourceManagementClient(cred, configuration['azure']['subscription_id'])
+    compute_client = ComputeManagementClient(cred, configuration['azure']['subscription_id'])
 
     #
     # get azure resources
@@ -70,7 +71,8 @@ def poweroff_machine(timeout: int = 60, configuration: Configuration = None,
     #
     # pick 'em up
     #
-    machine = pick_machine_randomly(resource_groups_list, machines_list_all, configuration)
+    rg = configuration['azure']['resource_groups'].split(',')
+    machine = pick_machine_randomly(resource_groups_list, machines_list_all, rg)
 
     #
     # chaos monkey now takes over
@@ -94,8 +96,8 @@ def restart_machine(timeout: int = 60, configuration: Configuration = None,
     # init azure clients
     #
     cred = credentials.create_from(secrets)
-    resource_client = ResourceManagementClient(cred, configuration['subscription_id'])
-    compute_client = ComputeManagementClient(cred, configuration['subscription_id'])
+    resource_client = ResourceManagementClient(cred, configuration['azure']['subscription_id'])
+    compute_client = ComputeManagementClient(cred, configuration['azure']['subscription_id'])
 
     #
     # get azure resources
@@ -106,7 +108,8 @@ def restart_machine(timeout: int = 60, configuration: Configuration = None,
     #
     # pick 'em up
     #
-    machine = pick_machine_randomly(resource_groups_list, machines_list_all, configuration)
+    rg = configuration['azure']['resource_groups'].split(',')
+    machine = pick_machine_randomly(resource_groups_list, machines_list_all, rg)
 
     #
     # chaos monkey now takes over

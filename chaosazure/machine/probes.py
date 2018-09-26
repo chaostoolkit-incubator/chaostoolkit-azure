@@ -18,8 +18,8 @@ def describe_machines(configuration: Configuration = None, secrets: Secrets = No
     # init azure clients
     #
     cred = credentials.create_from(secrets)
-    resource_client = ResourceManagementClient(cred, configuration['subscription_id'])
-    compute_client = ComputeManagementClient(cred, configuration['subscription_id'])
+    resource_client = ResourceManagementClient(cred, configuration['azure']['subscription_id'])
+    compute_client = ComputeManagementClient(cred, configuration['azure']['subscription_id'])
 
     #
     # get azure resources
@@ -30,7 +30,8 @@ def describe_machines(configuration: Configuration = None, secrets: Secrets = No
     #
     # pick 'em
     #
-    machines = pick_machines(resource_groups_list, machines_list_all, configuration)
+    rg = configuration['azure']['resource_groups'].split(',')
+    machines = pick_machines(resource_groups_list, machines_list_all, rg)
 
     return machines
 
@@ -44,8 +45,8 @@ def count_machines(configuration: Configuration = None,
     # init azure clients
     #
     cred = credentials.create_from(secrets)
-    resource_client = ResourceManagementClient(cred, configuration['subscription_id'])
-    compute_client = ComputeManagementClient(cred, configuration['subscription_id'])
+    resource_client = ResourceManagementClient(cred, configuration['azure']['subscription_id'])
+    compute_client = ComputeManagementClient(cred, configuration['azure']['subscription_id'])
 
     #
     # get azure resources
@@ -56,6 +57,7 @@ def count_machines(configuration: Configuration = None,
     #
     # pick 'em
     #
-    machines = pick_machines(resource_groups_list, machines_list_all, configuration)
+    rg = configuration['azure']['resource_groups'].split(',')
+    machines = pick_machines(resource_groups_list, machines_list_all, rg)
 
     return len(machines)

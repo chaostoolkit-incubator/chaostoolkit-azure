@@ -3,20 +3,19 @@ import random
 from logzero import logger
 
 
-def pick_machine_randomly(subscribed_resource_groups, subscribed_instances, configuration):
-    all_instances = pick_machines(subscribed_resource_groups, subscribed_instances, configuration)
+def pick_machine_randomly(subscribed_resource_groups, subscribed_instances, configured_resource_groups=None):
+    all_instances = pick_machines(subscribed_resource_groups, subscribed_instances, configured_resource_groups)
     return random.choice(all_instances)
 
 
-def pick_machines(subscribed_resource_groups, subscribed_instances, configuration=None):
+def pick_machines(subscribed_resource_groups, subscribed_instances, configured_resource_groups=None):
     picked_instances = []
 
-    if not configuration['resource_groups'] or configuration is None:
+    if not configured_resource_groups or configured_resource_groups is None:
         logger.info("Client will pick all subscribed machines")
         for instance in subscribed_instances:
             picked_instances.append(instance)
     else:
-        configured_resource_groups = configuration['resource_groups'].split(',')
         for resource_group in subscribed_resource_groups:
             if resource_group.name in configured_resource_groups:
                 for instance in subscribed_instances:

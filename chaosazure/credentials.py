@@ -8,8 +8,8 @@ def create_from(secrets) -> ServicePrincipalCredentials:
         raise Exception("Client can not create credentials from empty secrets")
 
     credentials = ServicePrincipalCredentials(
-        client_id=secrets['azure_client_id'],
-        secret=secrets['azure_client_secret'],
-        tenant=secrets['azure_tenant_id']
+        client_id=secrets['azure']['client_id'],
+        secret=secrets['azure']['client_secret'],
+        tenant=secrets['azure']['tenant_id']
     )
     return credentials
