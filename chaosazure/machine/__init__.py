@@ -4,12 +4,13 @@ import os.path
 
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
+from msrestazure.azure_active_directory import ServicePrincipalCredentials
 
 __all__ = ["auth"]
 
 
 @contextlib.contextmanager
-def auth(configuration: Configuration, secrets: Secrets):
+def auth(configuration: Configuration, secrets: Secrets) -> ServicePrincipalCredentials:
     """
     Attempt to load the Azure authentication information from a local
     configuration file or the passed `configuration` mapping. The latter takes
@@ -22,8 +23,8 @@ def auth(configuration: Configuration, secrets: Secrets):
     ```python
     {
         "azure": {
-            "subscription_id": "AZURE_SUBSCRIPTION_ID",
-            "resource_groups": "resourceGroup1,resourceGroup2"
+            "subscription_id": "your-azure-subscription-id",
+            "resource_groups": "resourceGroup1,resourceGroup2,..."
         }
     }
     ```
@@ -39,22 +40,19 @@ def auth(configuration: Configuration, secrets: Secrets):
     }
     ```
 
-    The client_id, tenant_id, client_secret and tenant_id content will be
-    read from the local environment variables `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
-    `AZURE_CLIENT_SECRET`, and `AZURE_TENANT_ID` that you will have populated before
-    hand. The content will be saved by the extension into a temporary file
-    before being used to authenticate.
+    The client_id, tenant_id, and client_secret content will be read
+    from the specified local environment variables, e.g. `AZURE_CLIENT_ID`,
+    `AZURE_TENANT_ID`, and `AZURE_CLIENT_SECRET` that you will have populated
+    before hand.
     ```
 
     Using this function goes as follows:
 
     ```python
-    with auth(configuration, secrets) as info:
-        url = "{}{}".format(
-            info["endpoint"], "/Tools/Chaos/$/Start?api-version=6.0")
-
-        r = requests.get(
-            url, cert=info["security"]["path"], verify=info["verify"])
+    with auth(configuration, secrets) as cred:
+        azure_subscription_id = configuration['azure']['subscription_id']
+        resource_client = ResourceManagementClient(cred, azure_subscription_id)
+        compute_client = ComputeManagementClient(cred, azure_subscription_id)
 
     """
     c = configuration or {}
@@ -69,22 +67,23 @@ def auth(configuration: Configuration, secrets: Secrets):
     if not azure_secrets:
         raise FailedActivity("Azure secrets not found")
 
-    subscription_id = os.environ['AZURE_SUBSCRIPTION_ID']
-    client_id = os.environ['AZURE_CLIENT_ID']
-    secret = os.environ['AZURE_CLIENT_SECRET']
-    tenant = os.environ['AZURE_TENANT_ID']
+    #
+    # fetch secrets from environment
+    #
+    client_id = os.getenv(azure_secrets.get('client_id'))
+    client_secret = os.getenv(azure_secrets.get('client_secret'))
+    tenant_id = os.getenv(azure_secrets.get('tenant_id'))
 
-    if not subscription_id or not client_id or not secret or not tenant:
+    if not client_id or not client_secret or not tenant_id:
         raise FailedActivity("Client could not find Azure credentials")
 
-    info = {
-        "subscription_id": subscription_id,
-        "resource_groups": azure_config.get("resource_groups"),
-        "security": {
-            "client_id": client_id,
-            "client_secret": secret,
-            "tenant_id": tenant
-        }
-    }
+    #
+    # build service principal credential object
+    #
+    credentials = ServicePrincipalCredentials(
+        client_id=client_id,
+        secret=client_secret,
+        tenant=tenant_id
+    )
 
-    yield info
+    yield credentials
