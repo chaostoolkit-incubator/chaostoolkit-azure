@@ -53,7 +53,7 @@ def auth(configuration: Configuration, secrets: Secrets) -> ServicePrincipalCred
         azure_subscription_id = configuration['azure']['subscription_id']
         resource_client = ResourceManagementClient(cred, azure_subscription_id)
         compute_client = ComputeManagementClient(cred, azure_subscription_id)
-
+    ```
     """
     c = configuration or {}
     s = secrets or {}
