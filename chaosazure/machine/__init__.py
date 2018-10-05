@@ -55,11 +55,8 @@ def auth(configuration: Configuration, secrets: Secrets) -> ServicePrincipalCred
         compute_client = ComputeManagementClient(cred, azure_subscription_id)
     ```
     """
-    c = configuration or {}
-    s = secrets or {}
-
-    azure_config = c.get("azure")
-    azure_secrets = s.get("azure")
+    azure_config = configuration or {}
+    azure_secrets = secrets or {}
 
     if not azure_config:
         raise FailedActivity("Azure configuration not found")
