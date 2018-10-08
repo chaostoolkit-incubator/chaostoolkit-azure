@@ -12,26 +12,15 @@ from chaosazure.machine.picker import pick_machine_randomly
 __all__ = ["delete_machine", "poweroff_machine", "restart_machine"]
 
 
-def delete_machine(timeout: int = 60, configuration: Configuration = None,
-                    secrets: Secrets = None) -> Dict[str, Any]:
+def delete_machine(configuration: Configuration = None, secrets: Secrets = None) -> Dict[str, Any]:
     """
     Delete machine randomly.
     """
-    logger.debug('Starting delete_machine: timeout=[{}], configuration=[{}]'.format(timeout, configuration))
+    logger.debug('Starting delete_machine: configuration=[{}]'.format(configuration))
 
-    with auth(configuration, secrets) as cred:
-        #
-        # init azure clients
-        #
-        azure_subscription_id = configuration['azure']['subscription_id']
-        resource_client = ResourceManagementClient(cred, azure_subscription_id)
-        compute_client = ComputeManagementClient(cred, azure_subscription_id)
+    with auth(secrets) as cred:
+        compute_client, machine = __pick_chaos_machine(configuration, cred)
 
-        machine = pick_chaos_candidate(resource_client, compute_client, configuration)
-
-        #
-        # chaos monkey now takes over
-        #
         resource_group_name = machine.id.split('/')[4].lower()
         logger.debug('Deletion chaos takes over for machine {}.{}'.format(resource_group_name, machine.name))
         async_restart = compute_client.virtual_machines.delete(resource_group_name, machine.name)
@@ -41,25 +30,14 @@ def delete_machine(timeout: int = 60, configuration: Configuration = None,
         return result
 
 
-def poweroff_machine(timeout: int = 60, configuration: Configuration = None,
-                    secrets: Secrets = None) -> Dict[str, Any]:
+def poweroff_machine(configuration: Configuration = None, secrets: Secrets = None) -> Dict[str, Any]:
     """
     Power off machine randomly.
     """
-    logger.debug('Starting poweroff_machine: timeout=[{}], configuration=[{}]'.format(timeout, configuration))
-    with auth(configuration, secrets) as cred:
-        #
-        # init azure clients
-        #
-        azure_subscription_id = configuration['azure']['subscription_id']
-        resource_client = ResourceManagementClient(cred, azure_subscription_id)
-        compute_client = ComputeManagementClient(cred, azure_subscription_id)
+    logger.debug('Starting poweroff_machine: configuration=[{}]'.format(configuration))
+    with auth(secrets) as cred:
+        compute_client, machine = __pick_chaos_machine(configuration, cred)
 
-        machine = pick_chaos_candidate(resource_client, compute_client, configuration)
-
-        #
-        # chaos monkey now takes over
-        #
         resource_group_name = machine.id.split('/')[4].lower()
         logger.debug('Powering off chaos takes over for machine {}.{}'.format(resource_group_name, machine.name))
         async_restart = compute_client.virtual_machines.power_off(resource_group_name, machine.name)
@@ -69,25 +47,14 @@ def poweroff_machine(timeout: int = 60, configuration: Configuration = None,
         return result
 
 
-def restart_machine(timeout: int = 60, configuration: Configuration = None,
-                    secrets: Secrets = None) -> Dict[str, Any]:
+def restart_machine(configuration: Configuration = None, secrets: Secrets = None) -> Dict[str, Any]:
     """
     Restart machine randomly.
     """
-    logger.debug('Starting restart_machine: timeout=[{}], configuration=[{}]'.format(timeout, configuration))
-    with auth(configuration, secrets) as cred:
-        #
-        # init azure clients
-        #
-        azure_subscription_id = configuration['azure']['subscription_id']
-        resource_client = ResourceManagementClient(cred, azure_subscription_id)
-        compute_client = ComputeManagementClient(cred, azure_subscription_id)
+    logger.debug('Starting restart_machine: configuration=[{}]'.format(configuration))
+    with auth(secrets) as cred:
+        compute_client, machine = __pick_chaos_machine(configuration, cred)
 
-        machine = pick_chaos_candidate(resource_client, compute_client, configuration)
-
-        #
-        # chaos monkey now takes over
-        #
         resource_group_name = machine.id.split('/')[4].lower()
         logger.debug('Restarting chaos takes over for machine {}.{}'.format(resource_group_name, machine.name))
         async_restart = compute_client.virtual_machines.restart(resource_group_name, machine.name)
@@ -97,16 +64,12 @@ def restart_machine(timeout: int = 60, configuration: Configuration = None,
         return result
 
 
-def pick_chaos_candidate(resource_client, compute_client, configuration):
-    #
-    # get azure resources
-    #
+def __pick_chaos_machine(configuration, cred):
+    azure_subscription_id = configuration['azure']['subscription_id']
+    resource_client = ResourceManagementClient(cred, azure_subscription_id)
+    compute_client = ComputeManagementClient(cred, azure_subscription_id)
     resource_groups_list = resource_client.resource_groups.list()
     machines_list_all = compute_client.virtual_machines.list_all()
-
-    #
-    # pick 'em up
-    #
-    rg = configuration['azure']['resource_groups'].split(',')
-    machine = pick_machine_randomly(resource_groups_list, machines_list_all, rg)
-    return machine
+    groups = configuration['azure']['resource_groups'].split(',')
+    machine = pick_machine_randomly(resource_groups_list, machines_list_all, groups)
+    return compute_client, machine

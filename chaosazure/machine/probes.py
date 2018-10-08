@@ -14,26 +14,8 @@ def describe_machines(configuration: Configuration = None, secrets: Secrets = No
     """
     Describe Azure machines.
     """
-    #
-    # init azure clients
-    #
-    with auth(configuration, secrets) as cred:
-        azure_subscription_id = configuration['azure']['subscription_id']
-        resource_client = ResourceManagementClient(cred, azure_subscription_id)
-        compute_client = ComputeManagementClient(cred, azure_subscription_id)
-
-        #
-        # get azure resources
-        #
-        resource_groups_list = resource_client.resource_groups.list()
-        machines_list_all = compute_client.virtual_machines.list_all()
-
-        #
-        # pick 'em
-        #
-        rg = configuration['azure']['resource_groups'].split(',')
-        machines = pick_machines(resource_groups_list, machines_list_all, rg)
-
+    with auth(secrets) as cred:
+        machines = pick_subscribed_machines(configuration, cred)
         return machines
 
 
@@ -41,24 +23,17 @@ def count_machines(configuration: Configuration = None, secrets: Secrets = None)
     """
     Return count of Azure machines.
     """
-    #
-    # init azure clients
-    #
-    with auth(configuration, secrets) as cred:
-        azure_subscription_id = configuration['azure']['subscription_id']
-        resource_client = ResourceManagementClient(cred, azure_subscription_id)
-        compute_client = ComputeManagementClient(cred, azure_subscription_id)
-
-        #
-        # get azure resources
-        #
-        resource_groups_list = resource_client.resource_groups.list()
-        machines_list_all = compute_client.virtual_machines.list_all()
-
-        #
-        # pick 'em
-        #
-        rg = configuration['azure']['resource_groups'].split(',')
-        machines = pick_machines(resource_groups_list, machines_list_all, rg)
-
+    with auth(secrets) as cred:
+        machines = pick_subscribed_machines(configuration, cred)
         return len(machines)
+
+
+def pick_subscribed_machines(configuration, cred):
+    azure_subscription_id = configuration['azure']['subscription_id']
+    resource_client = ResourceManagementClient(cred, azure_subscription_id)
+    compute_client = ComputeManagementClient(cred, azure_subscription_id)
+    resource_groups_list = resource_client.resource_groups.list()
+    machines_list_all = compute_client.virtual_machines.list_all()
+    rg = configuration['azure']['resource_groups'].split(',')
+    machines = pick_machines(resource_groups_list, machines_list_all, rg)
+    return machines

@@ -3,34 +3,24 @@ import contextlib
 import os.path
 
 from chaoslib.exceptions import FailedActivity
-from chaoslib.types import Configuration, Secrets
+from chaoslib.types import Secrets
 from msrestazure.azure_active_directory import ServicePrincipalCredentials
 
 __all__ = ["auth"]
 
 
 @contextlib.contextmanager
-def auth(configuration: Configuration, secrets: Secrets) -> ServicePrincipalCredentials:
+def auth(secrets: Secrets) -> ServicePrincipalCredentials:
     """
     Attempt to load the Azure authentication information from a local
     configuration file or the passed `configuration` mapping. The latter takes
     precedence over the local configuration file.
 
-    If you provide a configuration and secrets dictionary, the returned mapping
-    will be created from their content. For instance, you could have:
-
-    Configuration mapping (in your experiment file):
-    ```python
-    {
-        "azure": {
-            "subscription_id": "your-azure-subscription-id",
-            "resource_groups": "resourceGroup1,resourceGroup2,..."
-        }
-    }
-    ```
+    If you provide a secrets dictionary, the returned mapping will
+    be created from their content. For instance, you could have:
 
     Secrets mapping (in your experiment file):
-    ```python
+    ```json
     {
         "azure": {
             "client_id": "AZURE_CLIENT_ID",
@@ -49,21 +39,39 @@ def auth(configuration: Configuration, secrets: Secrets) -> ServicePrincipalCred
     Using this function goes as follows:
 
     ```python
-    with auth(configuration, secrets) as cred:
+    with auth(secrets) as cred:
         azure_subscription_id = configuration['azure']['subscription_id']
         resource_client = ResourceManagementClient(cred, azure_subscription_id)
         compute_client = ComputeManagementClient(cred, azure_subscription_id)
     ```
     """
-    azure_config = configuration or {}
     azure_secrets = secrets or {}
-
-    if not azure_config:
-        raise FailedActivity("Azure configuration not found")
 
     if not azure_secrets:
         raise FailedActivity("Azure secrets not found")
 
+    client_id, client_secret, tenant_id = __fetch_secrets(azure_secrets)
+    __check_secrets(client_id, client_secret, tenant_id)
+    credentials = __generate_service_principal_credentials(client_id, client_secret, tenant_id)
+
+    yield credentials
+
+
+def __generate_service_principal_credentials(client_id, client_secret, tenant_id):
+    credentials = ServicePrincipalCredentials(
+        client_id=client_id,
+        secret=client_secret,
+        tenant=tenant_id
+    )
+    return credentials
+
+
+def __check_secrets(client_id, client_secret, tenant_id):
+    if not client_id or not client_secret or not tenant_id:
+        raise FailedActivity("Client could not find Azure credentials")
+
+
+def __fetch_secrets(azure_secrets):
     #
     # fetch secrets from environment
     #
@@ -71,16 +79,13 @@ def auth(configuration: Configuration, secrets: Secrets) -> ServicePrincipalCred
     client_secret = os.getenv(azure_secrets.get('client_secret'))
     tenant_id = os.getenv(azure_secrets.get('tenant_id'))
 
-    if not client_id or not client_secret or not tenant_id:
-        raise FailedActivity("Client could not find Azure credentials")
-
     #
-    # build service principal credential object
+    # fetch secrets from file content itself when empty
     #
-    credentials = ServicePrincipalCredentials(
-        client_id=client_id,
-        secret=client_secret,
-        tenant=tenant_id
-    )
-
-    yield credentials
+    if not client_id:
+        client_id = azure_secrets.get('client_id')
+    if not client_secret:
+        client_secret = azure_secrets.get('client_secret')
+    if not tenant_id:
+        tenant_id = azure_secrets.get('tenant_id')
+    return client_id, client_secret, tenant_id
