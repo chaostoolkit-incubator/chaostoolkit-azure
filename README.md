@@ -131,7 +131,11 @@ Here is a full example:
     "configuration": {
         "endpoint": "https://XYZ.westus.cloudapp.azure.com:19080",
         "verify_tls": false,
-        "use_ca": false
+        "use_ca": false,
+        "azure": {
+            "subscription_id": "your-azure-subscription-id",
+            "resource_groups": "resourceGroup1,resourceGroup2,..."
+        }
     },
     "secrets": {
         "azure": {
