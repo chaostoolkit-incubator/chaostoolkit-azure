@@ -35,7 +35,8 @@ url = 'http://chaostoolkit.org'
 license = 'Apache License Version 2.0'
 packages = [
     'chaosazure',
-    'chaosazure.fabric'
+    'chaosazure.fabric',
+    'chaosazure.machine'
 ]
 
 needs_pytest = set(['pytest', 'test']).intersection(sys.argv)
