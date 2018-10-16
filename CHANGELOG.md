@@ -4,6 +4,8 @@
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.1.3...HEAD
 
+-   Exporting discovery ability
+
 ## [0.1.3][] - 2018-06-06
 
 [0.1.3]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.1.2...0.1.3
