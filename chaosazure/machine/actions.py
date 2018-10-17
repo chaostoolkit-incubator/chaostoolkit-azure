@@ -6,7 +6,7 @@ from azure.mgmt.resource import ResourceManagementClient
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
-from chaosazure.machine import auth
+from chaosazure import auth
 from chaosazure.machine.picker import pick_machine_randomly
 
 __all__ = ["delete_machine", "poweroff_machine", "restart_machine"]

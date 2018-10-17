@@ -8,7 +8,7 @@ import requests
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
 
-from chaosazure.fabric import auth
+from chaosazure import sf_auth
 from chaosazure.types import ChaosParameters
 
 __all__ = ["start_chaos", "stop_chaos"]
@@ -26,7 +26,7 @@ def start_chaos(parameters: ChaosParameters, timeout: int = 60,
     Please see the :func:`chaosazure.fabric.auth` help for more information
     on authenticating with the service.
     """  # noqa: E501
-    with auth(configuration, secrets) as info:
+    with sf_auth(configuration, secrets) as info:
         url = "{}/Tools/Chaos/$/Start".format(info["endpoint"])
 
         qs = {"api-version": "6.0"}
@@ -56,7 +56,7 @@ def stop_chaos(timeout: int = 60, configuration: Configuration = None,
     Please see the :func:`chaosazure.fabric.auth` help for more information
     on authenticating with the service.
     """
-    with auth(configuration, secrets) as info:
+    with sf_auth(configuration, secrets) as info:
         url = "{}/Tools/Chaos/$/Stop".format(info["endpoint"])
 
         qs = {"api-version": "6.0"}
