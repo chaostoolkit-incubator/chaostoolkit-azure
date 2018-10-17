@@ -6,6 +6,7 @@
 
 -   Update documentation
 -   Refactoring: Moving authentication functions one module up
+-   Update documentation
 -   Exporting discovery ability
 
 ## [0.1.3][] - 2018-06-06
