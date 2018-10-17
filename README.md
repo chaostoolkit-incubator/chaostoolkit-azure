@@ -66,19 +66,20 @@ Please explore the code to see existing probes and actions.
 
 ### Credentials
 
-This extension uses the [requests][] library under the hood. This library
-expects that you have a PFX certificate, converted as to the PEM format, that
-allows you to authenticate with the [Service Factory][sf] endpoint.
+This extension uses the [requests][] and [Azure SDK][sdk] libraries under the hood. The requests library
+expects that you have a PFX certificate, converted as to the PEM format, that allows you to 
+authenticate with the [Service Factory][sf] endpoint.
 
 [sf]: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-controlled-chaos
 [creds]: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-connect-to-secure-cluster
 [requests]: http://docs.python-requests.org/en/master/
+[sdk]: https://github.com/Azure/azure-sdk-for-python
 
 Generally speaking, there are two ways of doing this:
 
 * you have [created][creds] a configuration file where you will run the
   experiment from (so with a `~/.sfctl/config` file)
-* you explicitely pass the correct environment variables to the experiment
+* you explicitly pass the correct environment variables to the experiment
   definition as follows:
 
     Configuration section:
@@ -104,7 +105,6 @@ Generally speaking, there are two ways of doing this:
 
     The PEM can also be passed as an environment variable:
 
-
     ```json
     {
         "azure": {
@@ -118,6 +118,58 @@ Generally speaking, there are two ways of doing this:
     ```
 
     The environment variable name can be anything.
+    
+The Azure SDK library on the other hand expects that you have set up a service principal and provide 
+its credentials. With those credentials you are able to authenticate with the Azure infrastructure 
+and to spread Chaos on e.g. virtual machines.
+
+There are two ways of doing this:
+
+* you can either explicitly pass the environment variables to the experiment definition as follows (recommended):
+
+    Secrets section:
+
+    ```json
+    {
+        "azure": {
+            "client_id": "AZURE_CLIENT_ID",
+            "client_secret": "AZURE_CLIENT_SECRET",
+            "tenant_id": "AZURE_TENANT_ID"
+        }
+    }
+    ```
+    
+* or you pass the secrets directly into the experiment definition:
+
+    Secrets section:
+
+    ```json
+    {
+        "azure": {
+            "client_id": "your-super-secret-client-id",
+            "client_secret": "your-even-more-super-secret-client-secret",
+            "tenant_id": "your-tenant-id"
+        }
+    }
+    ```
+    
+    In both cases you must provide the Azure subscription id, so the Azure extension picks
+    the correct resources from the Azure infrastructure.
+    
+    Configuration section:
+
+    ```json
+    {
+        "azure": {
+            "subscription_id": "your-azure-subscription-id",
+            "resource_groups": "resourcegroup1,resourcegroup2"
+        }
+    }
+    ```
+    
+    You optionally can provide the resource groups where the Chaos shall be spread. If you have multiple
+    resource groups to pick from separate them with a comma. If you omit the resource groups one machine
+    will be randomly picked from your Azure subscription id.
 
 ### Putting it all together
 
