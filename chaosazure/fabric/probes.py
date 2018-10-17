@@ -10,7 +10,7 @@ import requests
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
 
-from chaosazure.fabric import auth
+from chaosazure import sf_auth
 
 __all__ = ["chaos_report"]
 
@@ -26,7 +26,7 @@ def chaos_report(timeout: int = 60, start_time_utc: str = None,
     Please see the :func:`chaosazure.fabric.auth` help for more information
     on authenticating with the service.
     """  # noqa: E501
-    with auth(configuration, secrets) as info:
+    with sf_auth(configuration, secrets) as info:
         url = "{}/Tools/Chaos/$/Report".format(info["endpoint"])
 
         qs = {"api-version": "6.0"}

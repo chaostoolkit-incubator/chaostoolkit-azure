@@ -4,7 +4,7 @@ from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resource import ResourceManagementClient
 from chaoslib.types import Configuration, Secrets
 
-from chaosazure.machine import auth
+from chaosazure import auth
 from chaosazure.machine.picker import pick_machines
 
 __all__ = ["describe_machines", "count_machines"]
