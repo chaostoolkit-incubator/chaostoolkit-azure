@@ -4,7 +4,9 @@
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.1.3...HEAD
 
+-   Update documentation
 -   Refactoring: Moving authentication functions one module up
+-   Manage Azure virtual machines with the machine subpackage
 -   Exporting discovery ability
 
 ## [0.1.3][] - 2018-06-06
