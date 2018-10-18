@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
-import json
 import os.path
 from urllib.parse import urlencode
 
-from chaoslib.exceptions import FailedActivity
-import pytest
-import requests
 import requests_mock
 
-from chaosazure.fabric.probes import chaos_report, datetime_to_ticks
+from chaosazure.fabric.probes import chaos_report
 
 SF_BASE_URL = "https://localhost:19080"
 
