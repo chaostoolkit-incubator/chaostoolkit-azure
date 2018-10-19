@@ -18,7 +18,7 @@ from msrestazure.azure_active_directory import ServicePrincipalCredentials
 from chaosazure.types import ServiceFabricAuth
 
 __all__ = ["sf_auth", "auth", "discover", "__version__"]
-__version__ = '0.1.3'
+__version__ = '0.2.0'
 
 
 @contextlib.contextmanager

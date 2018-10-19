@@ -2,7 +2,11 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.1.3...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.2.0...HEAD
+
+## [0.2.0][] - 2018-10-19
+
+[0.2.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.1.3...0.2.0
 
 -   Refactoring: Straighten dependencies in requirements.txt
 -   Update documentation
