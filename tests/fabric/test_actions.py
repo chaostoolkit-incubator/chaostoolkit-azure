@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-import json
 import os.path
 
-from chaoslib.exceptions import FailedActivity
 import pytest
-import requests
 import requests_mock
+from chaoslib.exceptions import FailedActivity
 
 from chaosazure.fabric.actions import start_chaos, stop_chaos
 
