@@ -2,6 +2,8 @@
 
 ## [Unreleased][]
 
+-   Introduce Azure CLI
+
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.2.0...HEAD
 
 ## [0.2.0][] - 2018-10-19
