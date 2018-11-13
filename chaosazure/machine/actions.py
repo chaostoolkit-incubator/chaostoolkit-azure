@@ -1,91 +1,81 @@
 # -*- coding: utf-8 -*-
-from typing import Any, Dict
+import random
 
-from azure.mgmt.compute import ComputeManagementClient
-from azure.mgmt.resource import ResourceManagementClient
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
-from chaosazure import auth
-from chaosazure.machine.picker import pick_machine_randomly
+from chaosazure.cli.runner import execute
+from chaosazure.machine.commands import restart_machine_command, \
+    poweroff_machine_command, delete_machine_command
+from chaosazure.machine.picker import pick_machines
 
 __all__ = ["delete_machine", "poweroff_machine", "restart_machine"]
 
 
 def delete_machine(configuration: Configuration = None,
-                   secrets: Secrets = None) -> Dict[str, Any]:
+                   secrets: Secrets = None, filter: str = None):
     """
-    Delete machine randomly.
+    Delete a virtual machines at random.
+
+    Parameters
+    ----------
+    filter : str
+        Filter the virtual machines. If the filter is omitted all machines in
+        the subscription will be selected as potential chaos candidates.
+        Filtering example:
+        'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
-    logger.debug(
-        'Starting delete_machine: configuration=[{}]'.format(configuration))
+    logger.debug("Start delete_machine: configuration='{}', filter='{}'"
+                 .format(configuration, filter))
 
-    with auth(secrets) as cred:
-        compute_client, machine = __pick_chaos_machine(configuration, cred)
+    machines = pick_machines(configuration, secrets, filter)
+    choice = random.choice(machines)
 
-        resource_group_name = machine.id.split('/')[4].lower()
-        logger.debug('Deletion chaos takes over for machine {}.{}'.format(
-            resource_group_name, machine.name))
-        async_restart = compute_client.virtual_machines.delete(
-            resource_group_name, machine.name)
-        result = async_restart.result()
-        logger.debug(
-            'Operation status for machine deletion: {}'.format(result.status))
-
-        return result
+    command = delete_machine_command(choice)
+    execute(configuration, secrets, command)
 
 
 def poweroff_machine(configuration: Configuration = None,
-                     secrets: Secrets = None) -> Dict[str, Any]:
+                     secrets: Secrets = None, filter: str = None):
     """
-    Power off machine randomly.
+    Power off a virtual machines at random.
+
+    Parameters
+    ----------
+    filter : str
+        Filter the virtual machines. If the filter is omitted all machines in
+        the subscription will be selected as potential chaos candidates.
+        Filtering example:
+        'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
-    logger.debug(
-        'Starting poweroff_machine: configuration=[{}]'.format(configuration))
-    with auth(secrets) as cred:
-        compute_client, machine = __pick_chaos_machine(configuration, cred)
+    logger.debug("Start poweroff_machine: configuration='{}', filter='{}'"
+                 .format(configuration, filter))
 
-        resource_group_name = machine.id.split('/')[4].lower()
-        logger.debug('Powering off chaos takes over for machine {}.{}'.format(
-            resource_group_name, machine.name))
-        async_restart = compute_client.virtual_machines.power_off(
-            resource_group_name, machine.name)
-        result = async_restart.result()
-        logger.debug(
-            'Operation status for machine power off: {}'.format(result.status))
+    machines = pick_machines(configuration, secrets, filter)
+    choice = random.choice(machines)
 
-        return result
+    command = poweroff_machine_command(choice)
+    execute(configuration, secrets, command)
 
 
 def restart_machine(configuration: Configuration = None,
-                    secrets: Secrets = None) -> Dict[str, Any]:
+                    secrets: Secrets = None, filter: str = None):
     """
-    Restart machine randomly.
+    Restart a virtual machines at random.
+
+    Parameters
+    ----------
+    filter : str
+        Filter the virtual machines. If the filter is omitted all machines in
+        the subscription will be selected as potential chaos candidates.
+        Filtering example:
+        'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
-    logger.debug(
-        'Starting restart_machine: configuration=[{}]'.format(configuration))
-    with auth(secrets) as cred:
-        compute_client, machine = __pick_chaos_machine(configuration, cred)
+    logger.debug("Start restart_machine: configuration='{}', filter='{}'"
+                 .format(configuration, filter))
 
-        resource_group_name = machine.id.split('/')[4].lower()
-        logger.debug('Restarting chaos takes over for machine {}.{}'.format(
-            resource_group_name, machine.name))
-        async_restart = compute_client.virtual_machines.restart(
-            resource_group_name, machine.name)
-        result = async_restart.result()
-        logger.debug(
-            'Operation status for machine restart: {}'.format(result.status))
+    machines = pick_machines(configuration, secrets, filter)
+    choice = random.choice(machines)
 
-        return result
-
-
-def __pick_chaos_machine(configuration, cred):
-    azure_subscription_id = configuration['azure']['subscription_id']
-    resource_client = ResourceManagementClient(cred, azure_subscription_id)
-    compute_client = ComputeManagementClient(cred, azure_subscription_id)
-    resource_groups_list = resource_client.resource_groups.list()
-    machines_list_all = compute_client.virtual_machines.list_all()
-    groups = configuration['azure']['resource_groups'].split(',')
-    machine = pick_machine_randomly(resource_groups_list, machines_list_all,
-                                    groups)
-    return compute_client, machine
+    command = restart_machine_command(choice)
+    execute(configuration, secrets, command)

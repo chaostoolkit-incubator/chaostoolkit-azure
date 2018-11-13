@@ -1,3 +1,5 @@
+import io
+import json
 import threading
 import time
 from typing import List
@@ -31,6 +33,20 @@ def execute(configuration: Configuration = None, secrets: Secrets = None,
 
 def execute_batch(configuration: Configuration = None, secrets: Secrets = None,
                   commands=[], file=None):
+    is_resource_graph_extension_installed = False
+    ext_list = __build_extension_list_command()
+    ext_list_stream = io.StringIO()
+    get_default_cli().invoke(ext_list, out_file=ext_list_stream)
+    ext_list_stream_response = json.loads(ext_list_stream.getvalue())
+    for elem in ext_list_stream_response:
+        if elem['name'] == 'resource-graph':
+            is_resource_graph_extension_installed = True
+    ext_list_stream.close()
+
+    if not is_resource_graph_extension_installed:
+        install_resource_graph = __build_install_resource_graph_command()
+        get_default_cli().invoke(install_resource_graph)
+
     with auth(secrets) as cred:
         principal_id = cred.id
         secret = cred.secret
@@ -72,3 +88,11 @@ def __build_set_subscription_command(azure_subscription_id):
 def __build_login_command(principal_id, secret, tenant_id):
     return ['login', '--service-principal', '-u', principal_id, '-p',
             secret, '--tenant', tenant_id]
+
+
+def __build_extension_list_command():
+    return ['extension', 'list']
+
+
+def __build_install_resource_graph_command():
+    return ['extension', 'add', '--name', 'resource-graph']

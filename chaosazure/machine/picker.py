@@ -1,30 +1,42 @@
-import random
+import io
+import json
 
-from logzero import logger
+from chaoslib import Configuration, Secrets
 
-
-def pick_machine_randomly(subscribed_resource_groups, subscribed_instances,
-                          configured_resource_groups=None):
-    machines = pick_machines(subscribed_resource_groups, subscribed_instances,
-                             configured_resource_groups)
-    return random.choice(machines)
+from chaosazure.machine.constants import RES_TYPE_VM
+from chaosazure.cli.runner import execute
+from chaosazure.cli.graph_query import filter_type_command
 
 
-def pick_machines(subscribed_resource_groups, subscribed_machines,
-                  configured_resource_groups=None):
+def pick_machines(configuration: Configuration, secrets: Secrets, filter: str):
+    command = filter_type_command(RES_TYPE_VM, filter)
+    result_json = __fetch_result(command, configuration, secrets)
+    machines = __parse_result(result_json)
+
+    return machines
+
+
+###############################################################################
+# Private helper functions
+###############################################################################
+def __fetch_result(command, configuration, secrets):
+
+    f = io.StringIO("")
+    execute(configuration, secrets, command, f)
+    result_json = json.loads(f.getvalue())
+    f.close()
+
+    return result_json
+
+
+def __parse_result(result_json):
+
     machines = []
-
-    if not configured_resource_groups or configured_resource_groups is None:
-        logger.info("Client will pick all subscribed machines")
-        for machine in subscribed_machines:
-            machines.append(machine)
-    else:
-        for resource_group in subscribed_resource_groups:
-            if resource_group.name in configured_resource_groups:
-                for machine in subscribed_machines:
-                    machine_id_lower = machine.id.lower()
-                    group_id_lower = resource_group.id.lower()
-                    if machine_id_lower.startswith(group_id_lower):
-                        machines.append(machine)
+    for elem in result_json:
+        m = {
+            'name': elem['name'],
+            'resourceGroup': elem['resourceGroup']
+        }
+        machines.append(m)
 
     return machines
