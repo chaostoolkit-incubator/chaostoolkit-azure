@@ -125,9 +125,7 @@ and to spread Chaos on e.g. virtual machines.
 
 There are two ways of doing this:
 
-* you can either explicitly pass the environment variables to the experiment definition as follows (recommended):
-
-    Secrets section:
+* you can either pass the name of the environment variables to the experiment definition as follows (recommended):
 
     ```json
     {
@@ -139,9 +137,7 @@ There are two ways of doing this:
     }
     ```
     
-* or you pass the secrets directly into the experiment definition:
-
-    Secrets section:
+* or you inject the secrets explicitly to the experiment definition:
 
     ```json
     {
@@ -153,23 +149,15 @@ There are two ways of doing this:
     }
     ```
     
-    In both cases you must provide the Azure subscription id, so the Azure extension picks
-    the correct resources from the Azure infrastructure.
-    
-    Configuration section:
+    Additionally you need to provide the Azure subscription id.
 
     ```json
     {
         "azure": {
-            "subscription_id": "your-azure-subscription-id",
-            "resource_groups": "resourcegroup1,resourcegroup2"
+            "subscription_id": "your-azure-subscription-id"
         }
     }
     ```
-    
-    You optionally can provide the resource groups where the Chaos shall be spread. If you have multiple
-    resource groups to pick from separate them with a comma. If you omit the resource groups one machine
-    will be randomly picked from your Azure subscription id.
 
 ### Putting it all together
 

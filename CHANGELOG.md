@@ -3,6 +3,8 @@
 ## [Unreleased][]
 
 -   Introduce Azure CLI
+-   Install Azure CLI resource-graph extension if it is not installed
+-   Enable filtering of Azure infrastructure resources, e.g. virtual machines
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.2.0...HEAD
 
