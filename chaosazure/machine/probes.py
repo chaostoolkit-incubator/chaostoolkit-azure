@@ -1,41 +1,45 @@
 # -*- coding: utf-8 -*-
-
-from azure.mgmt.compute import ComputeManagementClient
-from azure.mgmt.resource import ResourceManagementClient
 from chaoslib.types import Configuration, Secrets
+from logzero import logger
 
-from chaosazure import auth
 from chaosazure.machine.picker import pick_machines
 
 __all__ = ["describe_machines", "count_machines"]
 
 
 def describe_machines(configuration: Configuration = None,
-                      secrets: Secrets = None):
+                      secrets: Secrets = None, filter: str = None):
     """
-    Describe Azure machines.
+    Describe Azure virtual machines.
+
+    Parameters
+    ----------
+    filter : str
+        Filter the virtual machines. If the filter is omitted all machines in
+        the subscription will be selected for the probe.
+        Filtering example:
+        'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
-    with auth(secrets) as cred:
-        machines = pick_subscribed_machines(configuration, cred)
-        return machines
+    logger.debug("Start describe_machines: configuration='{}', filter='{}'"
+                 .format(configuration, filter))
+    machines = pick_machines(configuration, secrets, filter)
+    return machines
 
 
 def count_machines(configuration: Configuration = None,
-                   secrets: Secrets = None) -> int:
+                   secrets: Secrets = None, filter: str = None) -> int:
     """
-    Return count of Azure machines.
+    Return count of Azure virtual machines.
+
+    Parameters
+    ----------
+    filter : str
+        Filter the virtual machines. If the filter is omitted all machines in
+        the subscription will be selected for the probe.
+        Filtering example:
+        'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
-    with auth(secrets) as cred:
-        machines = pick_subscribed_machines(configuration, cred)
-        return len(machines)
-
-
-def pick_subscribed_machines(configuration, cred):
-    azure_subscription_id = configuration['azure']['subscription_id']
-    resource_client = ResourceManagementClient(cred, azure_subscription_id)
-    compute_client = ComputeManagementClient(cred, azure_subscription_id)
-    resource_groups_list = resource_client.resource_groups.list()
-    machines_list_all = compute_client.virtual_machines.list_all()
-    rg = configuration['azure']['resource_groups'].split(',')
-    machines = pick_machines(resource_groups_list, machines_list_all, rg)
-    return machines
+    logger.debug("Start count_machines: configuration='{}', filter='{}'"
+                 .format(configuration, filter))
+    machines = pick_machines(configuration, secrets, filter)
+    return len(machines)
