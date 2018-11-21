@@ -6,6 +6,8 @@
 -   Install Azure CLI resource-graph extension if it is not installed
 -   Enable filtering of Azure infrastructure resources, e.g. virtual machines
 -   Enable filtering of Azure infrastructure resources in probes
+-   Introduce actions on Azure Kubernetes Services (AKS), like stopping, restarting, and
+    powering off AKS nodes
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.2.0...HEAD
 

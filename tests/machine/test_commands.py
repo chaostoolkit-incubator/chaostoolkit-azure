@@ -11,7 +11,7 @@ def test_delete_machine_command():
     }
     command = delete_machine_command(machine)
 
-    assert len(command) == 6
+    assert len(command) == 7
     assert command[1] == 'delete'
     assert command[3] == machine['resourceGroup']
     assert command[5] == machine['name']
