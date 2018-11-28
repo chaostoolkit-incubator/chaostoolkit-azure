@@ -1,7 +1,8 @@
 def delete_machine_command(choice):
     command = ['vm', 'delete',
                '-g', choice['resourceGroup'],
-               '-n', choice['name']]
+               '-n', choice['name'],
+               '-y']
 
     return command
 
