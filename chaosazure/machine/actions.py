@@ -17,6 +17,9 @@ def delete_machine(configuration: Configuration = None,
     """
     Delete a virtual machines at random.
 
+    ***Be aware**: Deleting a machine is an invasive action. You will not be
+    able to recover the machine once you deleted it.
+
     Parameters
     ----------
     filter : str

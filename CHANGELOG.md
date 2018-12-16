@@ -10,6 +10,7 @@
     deleting AKS nodes
 -   Introduce actions on Azure Virtual Machine Scalesets (VMSS), like stopping, restarting, and
     deallocating AKS nodes
+-   Emphasize the risk of deleting actions in the docstrings
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.2.0...HEAD
 

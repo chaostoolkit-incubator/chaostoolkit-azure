@@ -16,6 +16,9 @@ def delete_node(filter: str = None,
     """
     Delete a node at random from a managed Azure Kubernetes Service.
 
+    **Be aware**: Deleting a node is an invasive action. You will not be able
+    to recover the node once you deleted it.
+
     Parameters
     ----------
     filter : str
