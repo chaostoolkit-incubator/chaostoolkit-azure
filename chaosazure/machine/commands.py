@@ -21,3 +21,11 @@ def restart_machine_command(choice):
                '-n', choice['name']]
 
     return command
+
+
+def start_machine_command(choice):
+    command = ['vm', 'start',
+               '-g', choice['resourceGroup'],
+               '-n', choice['name']]
+
+    return command
