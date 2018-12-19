@@ -2,6 +2,12 @@
 
 ## [Unreleased][]
 
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.3.0...HEAD
+
+## [0.3.0][] - 2018-12-19
+
+[0.3.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.2.0...0.3.0
+
 -   Introduce Azure CLI
 -   Install Azure CLI resource-graph extension if it is not installed
 -   Enable filtering of Azure infrastructure resources, e.g. virtual machines
@@ -11,8 +17,6 @@
 -   Introduce actions on Azure Virtual Machine Scalesets (VMSS), like stopping, restarting, and
     deallocating AKS nodes
 -   Emphasize the risk of deleting actions in the docstrings
-
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.2.0...HEAD
 
 ## [0.2.0][] - 2018-10-19
 
