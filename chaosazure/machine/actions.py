@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 import random
 
+from azure.mgmt.compute import ComputeManagementClient
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
-from chaosazure.cli.runner import execute
-from chaosazure.machine.commands import restart_machine_command, \
-    poweroff_machine_command, delete_machine_command
-from chaosazure.machine.picker import pick_machines
+from chaosazure import auth
+from chaosazure.machine.machine_fetcher import fetch_machines
 
-__all__ = ["delete_machine", "poweroff_machine", "restart_machine"]
+__all__ = ["delete_machine", "stop_machine", "restart_machine"]
 
 
-def delete_machine(configuration: Configuration = None,
-                   secrets: Secrets = None, filter: str = None):
+def delete_machine(filter: str = None,
+                   configuration: Configuration = None,
+                   secrets: Secrets = None):
     """
     Delete a virtual machines at random.
 
@@ -28,20 +28,24 @@ def delete_machine(configuration: Configuration = None,
         Filtering example:
         'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
-    logger.debug("Start delete_machine: configuration='{}', filter='{}'"
-                 .format(configuration, filter))
+    logger.debug(
+        "Start delete_machine: configuration='{}', filter='{}'".format(
+            configuration, filter))
 
-    machines = pick_machines(configuration, secrets, filter)
+    machines = fetch_machines(filter, secrets, configuration)
     choice = random.choice(machines)
 
-    command = delete_machine_command(choice)
-    execute(configuration, secrets, command)
+    client = init_client(secrets, configuration)
+
+    logger.debug("Deleting machine: {}".format(choice['name']))
+    client.virtual_machines.delete(choice['resourceGroup'], choice['name'])
 
 
-def poweroff_machine(configuration: Configuration = None,
-                     secrets: Secrets = None, filter: str = None):
+def stop_machine(filter: str = None,
+                 configuration: Configuration = None,
+                 secrets: Secrets = None):
     """
-    Power off a virtual machines at random.
+    Stop a virtual machines at random.
 
     Parameters
     ----------
@@ -51,18 +55,22 @@ def poweroff_machine(configuration: Configuration = None,
         Filtering example:
         'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
-    logger.debug("Start poweroff_machine: configuration='{}', filter='{}'"
-                 .format(configuration, filter))
+    logger.debug(
+        "Start poweroff_machine: configuration='{}', filter='{}'".format(
+            configuration, filter))
 
-    machines = pick_machines(configuration, secrets, filter)
+    machines = fetch_machines(filter, secrets, configuration)
     choice = random.choice(machines)
 
-    command = poweroff_machine_command(choice)
-    execute(configuration, secrets, command)
+    client = init_client(secrets, configuration)
+
+    logger.debug("Stopping machine: {}".format(choice['name']))
+    client.virtual_machines.power_off(choice['resourceGroup'], choice['name'])
 
 
-def restart_machine(configuration: Configuration = None,
-                    secrets: Secrets = None, filter: str = None):
+def restart_machine(filter: str = None,
+                    configuration: Configuration = None,
+                    secrets: Secrets = None):
     """
     Restart a virtual machines at random.
 
@@ -74,11 +82,26 @@ def restart_machine(configuration: Configuration = None,
         Filtering example:
         'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
-    logger.debug("Start restart_machine: configuration='{}', filter='{}'"
-                 .format(configuration, filter))
+    logger.debug(
+        "Start restart_machine: configuration='{}', filter='{}'".format(
+            configuration, filter))
 
-    machines = pick_machines(configuration, secrets, filter)
+    machines = fetch_machines(filter, secrets, configuration)
     choice = random.choice(machines)
 
-    command = restart_machine_command(choice)
-    execute(configuration, secrets, command)
+    client = init_client(secrets, configuration)
+
+    logger.debug("Restarting machine: {}".format(choice['name']))
+    client.virtual_machines.restart(choice['resourceGroup'], choice['name'])
+
+
+###############################################################################
+# Private helper functions
+###############################################################################
+def init_client(secrets, configuration):
+    with auth(secrets) as cred:
+        subscription_id = configuration['azure']['subscription_id']
+        client = ComputeManagementClient(
+            credentials=cred, subscription_id=subscription_id)
+
+        return client
