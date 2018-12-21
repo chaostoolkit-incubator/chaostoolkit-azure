@@ -1,5 +1,5 @@
-azure-cli==2.0.48
-msrestazure~=0.4.7
+azure-mgmt
+azure-mgmt-resourcegraph
 chaostoolkit-lib>=0.15.0
 dateparser
 logzero

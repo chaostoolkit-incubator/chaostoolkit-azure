@@ -3,6 +3,7 @@
 ## [Unreleased][]
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.3.0...HEAD
+-   Remove Azure CLI and introduce the Azure Python SDK instead. See #36.
 
 ## [0.3.0][] - 2018-12-19
 
