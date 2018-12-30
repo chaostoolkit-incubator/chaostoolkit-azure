@@ -1,11 +1,13 @@
 import random
 
+from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
-from chaosazure.aks.aks_fetcher import fetch_aks
+from chaosazure.aks.constants import RES_TYPE_AKS
 from chaosazure.machine.actions import delete_machine, stop_machine, \
     restart_machine
+from chaosazure.rgraph.resource_graph import fetch_resources
 
 __all__ = ["delete_node", "stop_node", "restart_node"]
 
@@ -31,7 +33,7 @@ def delete_node(filter: str = None,
         "Start delete_node: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    query = __create_query_for_aks_node(filter, configuration, secrets)
+    query = node_resource_group_query(filter, configuration, secrets)
     delete_machine(query, configuration, secrets)
 
 
@@ -53,7 +55,7 @@ def stop_node(filter: str = None,
         "Start stop_node: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    query = __create_query_for_aks_node(filter, configuration, secrets)
+    query = node_resource_group_query(filter, configuration, secrets)
     stop_machine(query, configuration, secrets)
 
 
@@ -75,18 +77,22 @@ def restart_node(filter: str = None,
         "Start restart_node: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    query = __create_query_for_aks_node(filter, configuration, secrets)
+    query = node_resource_group_query(filter, configuration, secrets)
     restart_machine(query, configuration, secrets)
 
 
 ###############################################################################
 # Private helper functions
 ###############################################################################
-def __create_query_for_aks_node(query, configuration, secrets):
-    fetched_aks = fetch_aks(query, secrets, configuration)
-    logger.debug(
-        "Found AKS clusters: {}".format([x['name'] for x in fetched_aks]))
-    aks = random.choice(fetched_aks)
-    node_resource_group = aks['nodeResourceGroup']
-    query_nodes = "where resourceGroup =~ '{}'".format(node_resource_group)
-    return query_nodes
+def node_resource_group_query(query, configuration, secrets):
+    aks = fetch_resources(query, RES_TYPE_AKS, secrets, configuration)
+    if not aks:
+        logger.warning("No AKS clusters found")
+        raise FailedActivity("No AKS clusters found")
+    else:
+        logger.debug(
+            "Found AKS clusters: {}".format(
+                [x['name'] for x in aks]))
+    choice = random.choice(aks)
+    node_resource_group = choice['properties']['nodeResourceGroup']
+    return "where resourceGroup =~ '{}'".format(node_resource_group)

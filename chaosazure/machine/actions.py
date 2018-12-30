@@ -2,11 +2,13 @@
 import random
 
 from azure.mgmt.compute import ComputeManagementClient
+from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
 from chaosazure import auth
-from chaosazure.machine.machine_fetcher import fetch_machines
+from chaosazure.machine.constants import RES_TYPE_VM
+from chaosazure.rgraph.resource_graph import fetch_resources
 
 __all__ = ["delete_machine", "stop_machine", "restart_machine"]
 
@@ -32,12 +34,10 @@ def delete_machine(filter: str = None,
         "Start delete_machine: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    machines = fetch_machines(filter, secrets, configuration)
-    choice = random.choice(machines)
-
-    client = init_client(secrets, configuration)
+    choice = choose_machine_at_random(filter, configuration, secrets)
 
     logger.debug("Deleting machine: {}".format(choice['name']))
+    client = init_client(secrets, configuration)
     client.virtual_machines.delete(choice['resourceGroup'], choice['name'])
 
 
@@ -56,15 +56,13 @@ def stop_machine(filter: str = None,
         'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
     logger.debug(
-        "Start poweroff_machine: configuration='{}', filter='{}'".format(
+        "Start stop_machine: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    machines = fetch_machines(filter, secrets, configuration)
-    choice = random.choice(machines)
-
-    client = init_client(secrets, configuration)
+    choice = choose_machine_at_random(filter, configuration, secrets)
 
     logger.debug("Stopping machine: {}".format(choice['name']))
+    client = init_client(secrets, configuration)
     client.virtual_machines.power_off(choice['resourceGroup'], choice['name'])
 
 
@@ -86,18 +84,29 @@ def restart_machine(filter: str = None,
         "Start restart_machine: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    machines = fetch_machines(filter, secrets, configuration)
-    choice = random.choice(machines)
-
-    client = init_client(secrets, configuration)
+    choice = choose_machine_at_random(filter, configuration, secrets)
 
     logger.debug("Restarting machine: {}".format(choice['name']))
+    client = init_client(secrets, configuration)
     client.virtual_machines.restart(choice['resourceGroup'], choice['name'])
 
 
 ###############################################################################
 # Private helper functions
 ###############################################################################
+def choose_machine_at_random(filter, configuration, secrets):
+    machines = fetch_resources(filter, RES_TYPE_VM, secrets, configuration)
+    if not machines:
+        logger.warning("No virtual machines found")
+        raise FailedActivity("No virtual machines found")
+    else:
+        logger.debug(
+            "Found virtual machines: {}".format(
+                [x['name'] for x in machines]))
+    choice = random.choice(machines)
+    return choice
+
+
 def init_client(secrets, configuration):
     with auth(secrets) as cred:
         subscription_id = configuration['azure']['subscription_id']

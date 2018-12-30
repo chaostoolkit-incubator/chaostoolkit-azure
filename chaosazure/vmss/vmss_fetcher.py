@@ -1,15 +1,6 @@
 from azure.mgmt.compute import ComputeManagementClient
-from chaoslib import Configuration, Secrets
 
 from chaosazure import auth
-from chaosazure.rgraph.resource_graph import fetch_resources
-from chaosazure.vmss.constants import RES_TYPE_VMSS
-
-
-def fetch_vmss(query: str, configuration: Configuration, secrets: Secrets):
-    vmss = fetch_resources(query, RES_TYPE_VMSS, secrets, configuration)
-    results = __parse_vmss_result(vmss)
-    return results
 
 
 def fetch_vmss_instances(choice, configuration, secrets):
@@ -40,17 +31,6 @@ def __parse_vmss_instances_result(instances):
         m = {
             'name': i.name,
             'instanceId': i.instance_id
-        }
-        results.append(m)
-    return results
-
-
-def __parse_vmss_result(result_json):
-    results = []
-    for elem in result_json:
-        m = {
-            'name': elem['name'],
-            'resourceGroup': elem['resourceGroup']
         }
         results.append(m)
     return results

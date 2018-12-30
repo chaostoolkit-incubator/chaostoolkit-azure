@@ -2,13 +2,15 @@
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
-from chaosazure.machine.machine_fetcher import fetch_machines
+from chaosazure.machine.constants import RES_TYPE_VM
+from chaosazure.rgraph.resource_graph import fetch_resources
 
 __all__ = ["describe_machines", "count_machines"]
 
 
-def describe_machines(configuration: Configuration = None,
-                      secrets: Secrets = None, filter: str = None):
+def describe_machines(filter: str = None,
+                      configuration: Configuration = None,
+                      secrets: Secrets = None):
     """
     Describe Azure virtual machines.
 
@@ -24,12 +26,13 @@ def describe_machines(configuration: Configuration = None,
         "Start describe_machines: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    machines = fetch_machines(configuration, secrets, filter)
+    machines = fetch_resources(filter, RES_TYPE_VM, secrets, configuration)
     return machines
 
 
-def count_machines(configuration: Configuration = None,
-                   secrets: Secrets = None, filter: str = None) -> int:
+def count_machines(filter: str = None,
+                   configuration: Configuration = None,
+                   secrets: Secrets = None) -> int:
     """
     Return count of Azure virtual machines.
 
@@ -45,5 +48,5 @@ def count_machines(configuration: Configuration = None,
         "Start count_machines: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    machines = fetch_machines(configuration, secrets, filter)
+    machines = fetch_resources(filter, RES_TYPE_VM, secrets, configuration)
     return len(machines)
