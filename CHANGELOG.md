@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased][]
+-   Introduce rollback action for virtual machines
+
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.3.1...HEAD
 
