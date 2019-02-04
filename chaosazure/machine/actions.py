@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import random
 
 from azure.mgmt.compute import ComputeManagementClient
@@ -7,11 +8,11 @@ from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
 from chaosazure import auth
-from chaosazure.machine.constants import RES_TYPE_VM
+from chaosazure.machine.constants import RES_TYPE_VM, OS_LINUX, OS_WINDOWS
 from chaosazure.rgraph.resource_graph import fetch_resources
 
 __all__ = ["delete_machine", "stop_machine", "restart_machine",
-           "start_machine"]
+           "start_machine", "stress_cpu"]
 
 
 def delete_machine(filter: str = None,
@@ -117,6 +118,69 @@ def start_machine(filter: str = None,
     __start_stopped_machines(client, stopped_machines)
 
 
+def stress_cpu(filter: str = None,
+               duration: int = 120,
+               timeout: int = 60,
+               configuration: Configuration = None,
+               secrets: Secrets = None):
+    """
+    Stress CPU up to 100% at random machine.
+
+    Parameters
+    ----------
+    filter : str
+        Filter the virtual machines. If the filter is omitted all machines in
+        the subscription will be selected as potential chaos candidates.
+        Filtering example:
+        'where resourceGroup=="myresourcegroup" and name="myresourcename"'
+    duration : int
+        Duration of the stress test (in seconds) that generates high CPU usage
+    timeout : int
+        Additional wait time (in seconds) for stress operation to be completed.
+        Getting and sending data from/to Azure may take some time so it's not
+        recommended to set this value to lower than 30s
+    """
+    logger.debug(
+        "Start stress_cpu: configuration='{}', filter='{}'".format(
+            configuration, filter))
+
+    choice = __fetch_machine_at_random(filter, configuration, secrets)
+
+    logger.debug("Stressing CPUs machine: {}".format(choice['name']))
+    client = __init_client(secrets, configuration)
+
+    os_type = __get_os_type(choice)
+    if os_type == OS_WINDOWS:
+        command_id = 'RunPowerShellScript'
+        script_name = "cpu_stress_test.ps1"
+    elif os_type == OS_LINUX:
+        command_id = 'RunShellScript'
+        script_name = "cpu_stress_test.sh"
+    else:
+        raise FailedActivity("Cannot run CPU stress test on OS: %s" % os_type)
+
+    with open(os.path.join(os.path.dirname(__file__),
+                           "scripts", script_name)) as file:
+        script_content = file.read()
+
+    parameters = {
+        'command_id': command_id,
+        'script': [script_content],
+        'parameters': [
+            {'name': "duration", 'value': duration}
+        ]
+    }
+
+    poller = client.virtual_machines.run_command(
+        choice['resourceGroup'], choice['name'], parameters)
+    result = poller.result(duration + timeout)  # Blocking till executed
+    if result:
+        logger.debug(result.value[0].message)  # stdout/stderr
+    else:
+        raise FailedActivity("stress_cpu operation did not finish on time. "
+                             "You may consider increasing timeout setting.")
+
+
 ###############################################################################
 # Private helper functions
 ###############################################################################
@@ -158,6 +222,15 @@ def __fetch_machine_at_random(filter, configuration, secrets):
         filter, configuration=configuration, secrets=secrets)
     choice = random.choice(machines)
     return choice
+
+
+def __get_os_type(machine):
+    os_type = machine['properties']['storageProfile']['osDisk']['osType']\
+        .lower()
+    if os_type not in (OS_LINUX, OS_WINDOWS):
+        raise FailedActivity("Unknown OS Type: %s" % os_type)
+
+    return os_type
 
 
 def __init_client(secrets, configuration):
