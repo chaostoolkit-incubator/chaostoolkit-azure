@@ -22,8 +22,8 @@ __version__ = '0.3.1'
 
 
 @contextlib.contextmanager
-def sf_auth(configuration: Configuration,
-            secrets: Secrets) -> ServiceFabricAuth:
+def sf_auth(configuration: Configuration = None,
+            secrets: Secrets = None) -> ServiceFabricAuth:
     """
     Attempt to load the Service Fabric authentication information from a local
     configuration file or the passed `configuration` mapping. The latter takes
@@ -218,16 +218,15 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
         compute_client = ComputeManagementClient(cred, azure_subscription_id)
     ```
     """
-    azure_secrets = secrets or {}
+    creds = dict(
+        azure_client_id=None, azure_client_secret=None, azure_tenant_id=None)
 
-    if not azure_secrets:
-        raise FailedActivity("Azure secrets not found")
+    if secrets:
+        creds["azure_client_id"] = secrets.get("client_id")
+        creds["azure_client_secret"] = secrets.get("client_secret")
+        creds["azure_tenant_id"] = secrets.get("tenant_id")
 
-    client_id, client_secret, tenant_id = __fetch_secrets(azure_secrets)
-    __check_secrets(client_id, client_secret, tenant_id)
-    credentials = __generate_service_principal_credentials(client_id,
-                                                           client_secret,
-                                                           tenant_id)
+    credentials = __get_credentials(creds)
 
     yield credentials
 
@@ -247,39 +246,13 @@ def discover(discover_system: bool = True) -> Discovery:
 ###############################################################################
 # Private functions
 ###############################################################################
-def __generate_service_principal_credentials(client_id, client_secret,
-                                             tenant_id):
+def __get_credentials(creds):
     credentials = ServicePrincipalCredentials(
-        client_id=client_id,
-        secret=client_secret,
-        tenant=tenant_id
+        client_id=creds['azure_client_id'],
+        secret=creds['azure_client_secret'],
+        tenant=creds['azure_tenant_id']
     )
     return credentials
-
-
-def __check_secrets(client_id, client_secret, tenant_id):
-    if not client_id or not client_secret or not tenant_id:
-        raise FailedActivity("Client could not find Azure credentials")
-
-
-def __fetch_secrets(azure_secrets):
-    #
-    # fetch secrets from environment
-    #
-    client_id = os.getenv(azure_secrets.get('client_id'))
-    client_secret = os.getenv(azure_secrets.get('client_secret'))
-    tenant_id = os.getenv(azure_secrets.get('tenant_id'))
-
-    #
-    # fetch secrets from file content itself when empty
-    #
-    if not client_id:
-        client_id = azure_secrets.get('client_id')
-    if not client_secret:
-        client_secret = azure_secrets.get('client_secret')
-    if not tenant_id:
-        tenant_id = azure_secrets.get('tenant_id')
-    return client_id, client_secret, tenant_id
 
 
 def __load_exported_activities() -> List[DiscoveredActivities]:
@@ -291,6 +264,6 @@ def __load_exported_activities() -> List[DiscoveredActivities]:
     activities.extend(discover_probes("chaosazure.fabric.probes"))
     activities.extend(discover_actions("chaosazure.machine.actions"))
     activities.extend(discover_probes("chaosazure.machine.probes"))
-    activities.extend(discover_probes("chaosazure.aks.actions"))
-    activities.extend(discover_probes("chaosazure.vmss.actions"))
+    activities.extend(discover_actions("chaosazure.aks.actions"))
+    activities.extend(discover_actions("chaosazure.vmss.actions"))
     return activities

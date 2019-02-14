@@ -6,6 +6,8 @@
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.3.1...HEAD
 
+-   Refactoring: Remove redundant check for security variables  from environment
+
 ## [0.3.1][] - 2019-06-01
 
 [0.3.1]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.3.0...0.3.1
