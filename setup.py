@@ -38,6 +38,7 @@ packages = [
     'chaosazure.aks',
     'chaosazure.fabric',
     'chaosazure.machine',
+    'chaosazure.webapp',
     'chaosazure.rgraph',
     'chaosazure.vmss'
 ]

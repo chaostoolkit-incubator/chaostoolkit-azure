@@ -2,6 +2,7 @@
 
 ## [Unreleased][]
 -   Introduce rollback action for virtual machines
+-   Introduce actions to stop, restart and start Azure Web Apps
 
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.3.1...HEAD
