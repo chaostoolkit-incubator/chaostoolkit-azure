@@ -34,24 +34,14 @@ experiment file:
     "name": "start-service-factory-chaos",
     "provider": {
         "type": "python",
-        "module": "chaosazure.factory.actions",
-        "func": "start_chaos",
+        "module": "chaosazure.vm.actions",
+        "func": "stop_machine",
         "secrets": ["azure"],
         "arguments": {
             "parameters": {
                 "TimeToRunInSeconds": 45
             }
         }
-    }
-},
-{
-    "type": "action",
-    "name": "stop-service-factory-chaos",
-    "provider": {
-        "type": "python",
-        "module": "chaosazure.factory.actions",
-        "func": "stop_chaos",
-        "secrets": ["azure"]
     }
 }
 ```
@@ -65,63 +55,13 @@ Please explore the code to see existing probes and actions.
 ## Configuration
 
 ### Credentials
+This extension uses the [Azure SDK][sdk] libraries under the hood. The Azure SDK library
+expects that you have a tenant and client identifier, as well as a client secret and subscription, that allows you to 
+authenticate with the Azure resource management API.
 
-This extension uses the [requests][] and [Azure SDK][sdk] libraries under the hood. The requests library
-expects that you have a PFX certificate, converted as to the PEM format, that allows you to 
-authenticate with the [Service Factory][sf] endpoint.
-
-[sf]: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-controlled-chaos
 [creds]: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-connect-to-secure-cluster
 [requests]: http://docs.python-requests.org/en/master/
 [sdk]: https://github.com/Azure/azure-sdk-for-python
-
-Generally speaking, there are two ways of doing this:
-
-* you have [created][creds] a configuration file where you will run the
-  experiment from (so with a `~/.sfctl/config` file)
-* you explicitly pass the correct environment variables to the experiment
-  definition as follows:
-
-    Configuration section:
-
-    ```json
-    {
-        "endpoint": "https://XYZ.westus.cloudapp.azure.com:19080",
-        "verify_tls": false,
-        "use_ca": false
-    }
-    ```
-
-    Secrets section:
-
-    ```json
-    {
-        "azure": {
-            "security": "pem",
-            "pem_path": "./cluster-client-cert.pem"
-        }
-    }
-    ```
-
-    The PEM can also be passed as an environment variable:
-
-    ```json
-    {
-        "azure": {
-            "security": "pem",
-            "pem_content": {
-                "type": "env",
-                "key": "AZURE_PEM"
-            }
-        }
-    }
-    ```
-
-    The environment variable name can be anything.
-    
-The Azure SDK library on the other hand expects that you have set up a service principal and provide 
-its credentials. With those credentials you are able to authenticate with the Azure infrastructure 
-and to spread Chaos on e.g. virtual machines.
 
 There are two ways of doing this:
 
@@ -165,86 +105,61 @@ Here is a full example:
 
 ```json
 {
-    "version": "1.0.0",
-    "title": "...",
-    "description": "...",
-    "configuration": {
-        "endpoint": "https://XYZ.westus.cloudapp.azure.com:19080",
-        "verify_tls": false,
-        "use_ca": false
-    },
-    "secrets": {
-        "azure": {
-            "security": "pem",
-            "pem_path": "./cluster-client-cert.pem"
+  "version": "1.0.0",
+  "title": "...",
+  "description": "...",
+  "tags": [
+    "azure",
+    "kubernetes",
+	"aks",
+	"node"
+  ],
+  "configuration": {
+    "azure": {
+      "subscription_id": "xxx"
+	}
+  },
+  "secrets": {
+    "azure": {
+      "client_id": "xxx",
+      "client_secret": "xxx",
+      "tenant_id": "xxx"
+    }
+  },
+  "steady-state-hypothesis": {
+    "title": "Services are all available and healthy",
+    "probes": [
+      {
+        "type": "probe",
+        "name": "consumer-service-must-still-respond",
+        "tolerance": 200,
+        "provider": {
+          "type": "http",
+          "url": "https://some-url/"
         }
-    },
-    "steady-state-hypothesis": {
-        "title": "Services is healthy",
-        "probes": [
-            {
-                "type": "probe",
-                "name": "application-must-respond",
-                "tolerance": 200,
-                "provider": {
-                    "type": "http",
-                    "verify_tls": false,
-                    "url": "https://some-url-in-cluster/"
-                }
-            }
-        ]
-    },
-    "method": [
-        {
-            "type": "action",
-            "name": "start-service-factory-chaos",
-            "provider": {
-                "type": "python",
-                "module": "chaosazure.factory.actions",
-                "func": "start_chaos",
-                "secrets": ["azure"],
-                "arguments": {
-                    "parameters": {
-                        "TimeToRunInSeconds": 45
-                    }
-                }
-            },
-            "pauses": {
-                "after": 30
-            }
-        },
-        {
-            "type": "probe",
-            "ref": "application-must-respond"
-        },
-        {
-            "type": "action",
-            "name": "stop-service-factory-chaos",
-            "provider": {
-                "type": "python",
-                "module": "chaosazure.factory.actions",
-                "func": "stop_chaos",
-                "secrets": ["azure"]
-            },
-            "pauses": {
-                "after": 5
-            }
-        },
-        {
-            "type": "probe",
-            "name": "get-service-factory-chaos-report",
-            "provider": {
-                "type": "python",
-                "module": "chaosazure.factory.probes",
-                "func": "chaos_report",
-                "secrets": ["azure"],
-                "arguments": {
-                    "start_time_utc": "1 minute ago",
-                    "end_time_utc": "now"
-                }
-            }
-        }
+      }
     ]
+  },
+  "method": [
+    {
+      "type": "action",
+      "name": "restart-node-at-random",
+      "provider": {
+        "type": "python",
+        "module": "chaosazure.machine.actions",
+        "func": "restart_machine",
+        "secrets": [
+          "azure"
+        ],
+        "config": [
+          "azure"
+        ]
+      }
+    }
+  ],
+  "rollbacks": [
+    
+  ]
 }
 ```
 

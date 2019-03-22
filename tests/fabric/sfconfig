@@ -1,6 +1,0 @@
-[servicefabric]
-endpoint = https://localhost:19080
-no_verify = true
-use_ca = false
-security = pem
-pem_path = ./cert.pem
