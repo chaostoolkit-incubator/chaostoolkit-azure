@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased][]
+-   Enable virtual machine actions to select more than one machine
 -   Introduce rollback action for virtual machines
 -   Separate service fabric functionality from the chaostoolkit-azure extension
 -   Introduce CPU stress action for VMs

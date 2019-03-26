@@ -35,7 +35,7 @@ experiment file:
     "provider": {
         "type": "python",
         "module": "chaosazure.vm.actions",
-        "func": "stop_machine",
+        "func": "stop_machines",
         "secrets": ["azure"],
         "arguments": {
             "parameters": {
@@ -147,7 +147,7 @@ Here is a full example:
       "provider": {
         "type": "python",
         "module": "chaosazure.machine.actions",
-        "func": "restart_machine",
+        "func": "restart_machines",
         "secrets": [
           "azure"
         ],
