@@ -2,8 +2,8 @@
 """chaostoolkit-azure extension builder and installer"""
 
 import sys
-import io
 
+import io
 import setuptools
 
 sys.path.insert(0, ".")
@@ -36,7 +36,6 @@ license = 'Apache License Version 2.0'
 packages = [
     'chaosazure',
     'chaosazure.aks',
-    'chaosazure.fabric',
     'chaosazure.machine',
     'chaosazure.rgraph',
     'chaosazure.vmss'
