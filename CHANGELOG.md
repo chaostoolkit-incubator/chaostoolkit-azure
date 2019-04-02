@@ -3,6 +3,7 @@
 ## [Unreleased][]
 -   Introduce rollback action for virtual machines
 -   Separate service fabric functionality from the chaostoolkit-azure extension
+-   Introduce CPU stress action for VMs
 
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.3.1...HEAD
