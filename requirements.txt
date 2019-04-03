@@ -1,6 +1,6 @@
-azure-mgmt
+chaostoolkit-lib>==1.1.2
+azure-mgmt-compute
 azure-mgmt-resourcegraph
-chaostoolkit-lib>=0.15.0
 dateparser
 logzero
 requests
