@@ -5,6 +5,8 @@
 -   Separate service fabric functionality from the chaostoolkit-azure extension
 -   Introduce CPU stress action for VMs
 -   Remove not used azure-mgmt dependencies (#53)
+-   Introduce actions to stop, restart and start Azure Web Apps
+-   Introduce probes to take measures of Azure Web Apps
 
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.3.1...HEAD

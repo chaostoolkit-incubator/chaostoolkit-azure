@@ -95,4 +95,6 @@ def __load_exported_activities() -> List[DiscoveredActivities]:
     activities.extend(discover_probes("chaosazure.machine.probes"))
     activities.extend(discover_actions("chaosazure.aks.actions"))
     activities.extend(discover_actions("chaosazure.vmss.actions"))
+    activities.extend(discover_actions("chaosazure.webapp.actions"))
+    activities.extend(discover_probes("chaosazure.webapp.probes"))
     return activities

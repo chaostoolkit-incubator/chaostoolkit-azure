@@ -1,6 +1,7 @@
 chaostoolkit-lib>==1.1.2
 azure-mgmt-compute
 azure-mgmt-resourcegraph
+azure-mgmt-web
 dateparser
 logzero
 requests
