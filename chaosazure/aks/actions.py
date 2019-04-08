@@ -5,8 +5,8 @@ from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
 from chaosazure.aks.constants import RES_TYPE_AKS
-from chaosazure.machine.actions import delete_machine, stop_machine, \
-    restart_machine
+from chaosazure.machine.actions import delete_machines, stop_machines, \
+    restart_machines
 from chaosazure.rgraph.resource_graph import fetch_resources
 
 __all__ = ["delete_node", "stop_node", "restart_node"]
@@ -34,7 +34,7 @@ def delete_node(filter: str = None,
             configuration, filter))
 
     query = node_resource_group_query(filter, configuration, secrets)
-    delete_machine(query, configuration, secrets)
+    delete_machines(query, configuration, secrets)
 
 
 def stop_node(filter: str = None,
@@ -56,7 +56,7 @@ def stop_node(filter: str = None,
             configuration, filter))
 
     query = node_resource_group_query(filter, configuration, secrets)
-    stop_machine(query, configuration, secrets)
+    stop_machines(query, configuration, secrets)
 
 
 def restart_node(filter: str = None,
@@ -78,7 +78,7 @@ def restart_node(filter: str = None,
             configuration, filter))
 
     query = node_resource_group_query(filter, configuration, secrets)
-    restart_machine(query, configuration, secrets)
+    restart_machines(query, configuration, secrets)
 
 
 ###############################################################################

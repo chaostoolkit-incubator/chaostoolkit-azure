@@ -14,7 +14,7 @@ resource = {
 
 
 @patch('chaosazure.aks.actions.fetch_resources', autospec=True)
-@patch('chaosazure.aks.actions.delete_machine', autospec=True)
+@patch('chaosazure.aks.actions.delete_machines', autospec=True)
 def test_delete_node(delete, fetch):
     resource_list = [resource]
     fetch.return_value = resource_list
@@ -33,7 +33,7 @@ def test_restart_node_with_no_nodes(fetch):
 
 
 @patch('chaosazure.aks.actions.fetch_resources', autospec=True)
-@patch('chaosazure.aks.actions.stop_machine', autospec=True)
+@patch('chaosazure.aks.actions.stop_machines', autospec=True)
 def test_stop_node(stop, fetch):
     resource_list = [resource]
     fetch.return_value = resource_list
@@ -52,7 +52,7 @@ def test_restart_node_with_no_nodes(fetch):
 
 
 @patch('chaosazure.aks.actions.fetch_resources', autospec=True)
-@patch('chaosazure.aks.actions.restart_machine', autospec=True)
+@patch('chaosazure.aks.actions.restart_machines', autospec=True)
 def test_restart_node(restart, fetch):
     resource_list = [resource]
     fetch.return_value = resource_list

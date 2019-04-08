@@ -1,12 +1,31 @@
-from azure.mgmt.compute.v2018_10_01.models import VirtualMachineInstanceView, \
-    InstanceViewStatus, RunCommandResult
+import pytest
+from azure.mgmt.compute.v2018_10_01.models import InstanceViewStatus, \
+    RunCommandResult
+from chaoslib.exceptions import FailedActivity
 from unittest.mock import MagicMock, patch, mock_open
 
-import pytest
-from chaoslib.exceptions import FailedActivity
+from chaosazure.machine.actions import restart_machines, stop_machines, \
+    delete_machines, start_machines, stress_cpu
 
-from chaosazure.machine.actions import restart_machine, stop_machine, \
-    delete_machine, start_machine, stress_cpu
+CONFIG = {
+    "azure": {
+        "subscription_id": "X"
+    }
+}
+
+SECRETS = {
+    "client_id": "X",
+    "client_secret": "X",
+    "tenant_id": "X"
+}
+
+MACHINE_ALPHA = {
+    'name': 'VirtualMachineAlpha',
+    'resourceGroup': 'group'}
+
+MACHINE_BETA = {
+    'name': 'VirtualMachineBeta',
+    'resourceGroup': 'group'}
 
 
 class AnyStringWith(str):
@@ -16,26 +35,47 @@ class AnyStringWith(str):
 
 def __get_resource(os_type='Windows'):
     return {
-    'name': 'chaos-machine',
-    'resourceGroup': 'rg',
-    'properties': {
-        'storageProfile': {
-            'osDisk': {
-                'osType': os_type
-            }
-        }}
+        'name': 'chaos-machine',
+        'resourceGroup': 'rg',
+        'properties': {
+            'storageProfile': {
+                'osDisk': {
+                    'osType': os_type
+                }
+            }}
     }
 
 
-@patch('chaosazure.machine.actions.fetch_resources', autospec=True)
-@patch('chaosazure.machine.actions.__init_client', autospec=True)
-def test_delete_machine(init, fetch):
-    resource_list = [__get_resource()]
-    fetch.return_value = resource_list
-    m = MockComputeManagementClient()
-    init.return_value = m
+@patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_delete_one_machine(init, fetch):
+    client = MagicMock()
+    init.return_value = client
 
-    delete_machine(None, None, None)
+    machines = [MACHINE_ALPHA]
+    fetch.return_value = machines
+
+    f = "where resourceGroup=='myresourcegroup' | sample 1"
+    delete_machines(f, CONFIG, SECRETS)
+
+    fetch.assert_called_with(f, CONFIG, SECRETS)
+    assert client.virtual_machines.delete.call_count == 1
+
+
+@patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_delete_two_machines(init, fetch):
+    client = MagicMock()
+    init.return_value = client
+
+    machines = [MACHINE_ALPHA, MACHINE_BETA]
+    fetch.return_value = machines
+
+    f = "where resourceGroup=='myresourcegroup' | sample 2"
+    delete_machines(f, CONFIG, SECRETS)
+
+    fetch.assert_called_with(f, CONFIG, SECRETS)
+    assert client.virtual_machines.delete.call_count == 2
 
 
 @patch('chaosazure.machine.actions.fetch_resources', autospec=True)
@@ -43,20 +83,9 @@ def test_delete_machine_with_no_machines(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []
         fetch.return_value = resource_list
-        delete_machine(None, None, None)
+        delete_machines(None, None, None)
 
     assert "No virtual machines found" in str(x)
-
-
-@patch('chaosazure.machine.actions.fetch_resources', autospec=True)
-@patch('chaosazure.machine.actions.__init_client', autospec=True)
-def test_stop_machine(init, fetch):
-    resource_list = [__get_resource()]
-    fetch.return_value = resource_list
-    m = MockComputeManagementClient()
-    init.return_value = m
-
-    stop_machine(None, None, None)
 
 
 @patch('chaosazure.machine.actions.fetch_resources', autospec=True)
@@ -64,20 +93,73 @@ def test_stop_machine_with_no_machines(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []
         fetch.return_value = resource_list
-        stop_machine(None, None, None)
+        stop_machines(None, None, None)
 
     assert "No virtual machines found" in str(x)
 
 
-@patch('chaosazure.machine.actions.fetch_resources', autospec=True)
-@patch('chaosazure.machine.actions.__init_client', autospec=True)
-def test_restart_machine(init, fetch):
-    resource_list = [__get_resource()]
-    fetch.return_value = resource_list
-    m = MockComputeManagementClient()
-    init.return_value = m
+@patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_stop_one_machine(init, fetch):
+    client = MagicMock()
+    init.return_value = client
 
-    restart_machine(None, None, None)
+    machines = [MACHINE_ALPHA]
+    fetch.return_value = machines
+
+    f = "where resourceGroup=='myresourcegroup' | sample 1"
+    stop_machines(f, CONFIG, SECRETS)
+
+    fetch.assert_called_with(f, CONFIG, SECRETS)
+    assert client.virtual_machines.power_off.call_count == 1
+
+
+@patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_stop_two_machines(init, fetch):
+    client = MagicMock()
+    init.return_value = client
+
+    machines = [MACHINE_ALPHA, MACHINE_BETA]
+    fetch.return_value = machines
+
+    f = "where resourceGroup=='myresourcegroup' | sample 2"
+    stop_machines(f, CONFIG, SECRETS)
+
+    fetch.assert_called_with(f, CONFIG, SECRETS)
+    assert client.virtual_machines.power_off.call_count == 2
+
+
+@patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_restart_one_machine(init, fetch):
+    client = MagicMock()
+    init.return_value = client
+
+    machines = [MACHINE_ALPHA]
+    fetch.return_value = machines
+
+    f = "where resourceGroup=='myresourcegroup' | sample 1"
+    restart_machines(f, CONFIG, SECRETS)
+
+    fetch.assert_called_with(f, CONFIG, SECRETS)
+    assert client.virtual_machines.restart.call_count == 1
+
+
+@patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_restart_two_machines(init, fetch):
+    client = MagicMock()
+    init.return_value = client
+
+    machines = [MACHINE_ALPHA, MACHINE_BETA]
+    fetch.return_value = machines
+
+    f = "where resourceGroup=='myresourcegroup' | sample 2"
+    restart_machines(f, CONFIG, SECRETS)
+
+    fetch.assert_called_with(f, CONFIG, SECRETS)
+    assert client.virtual_machines.restart.call_count == 2
 
 
 @patch('chaosazure.machine.actions.fetch_resources', autospec=True)
@@ -85,7 +167,7 @@ def test_restart_machine_with_no_machines(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []
         fetch.return_value = resource_list
-        restart_machine(None, None, None)
+        restart_machines(None, None, None)
 
     assert "No virtual machines found" in str(x)
 
@@ -95,25 +177,23 @@ def test_start_machine_with_no_machines(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []
         fetch.return_value = resource_list
-        start_machine()
+        start_machines()
 
     assert "No virtual machines found" in str(x)
 
 
-@patch('chaosazure.machine.actions.fetch_resources', autospec=True)
-@patch('chaosazure.machine.actions.__init_client', autospec=True)
-def test_start_machine(init, fetch):
-    resource_list = [__get_resource()]
-    fetch.return_value = resource_list
-    m = MockComputeManagementClient()
-    init.return_value = m
-
-    start_machine(None, None, None)
+@patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
+@patch('chaosazure.machine.actions.__fetch_all_stopped_machines',
+       autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_start_machine(init, fetch_stopped, fetch_all):
+    client = MagicMock()
+    init.return_value = client
 
 
 @patch("builtins.open", new_callable=mock_open, read_data="script")
 @patch('chaosazure.machine.actions.fetch_resources', autospec=True)
-@patch('chaosazure.machine.actions.__init_client', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
 def test_stress_cpu_on_lnx(init, fetch, open):
     # arrange mocks
     client = MagicMock()
@@ -129,12 +209,13 @@ def test_stress_cpu_on_lnx(init, fetch, open):
     result.value = [InstanceViewStatus()]
 
     # act
-    stress_cpu("where name=='some_linux_machine'", 60)
+    stress_cpu(filter="where name=='some_linux_machine'", duration=60,
+               configuration=CONFIG, secrets=SECRETS)
 
     # assert
     fetch.assert_called_with(
         "where name=='some_linux_machine'",
-        "Microsoft.Compute/virtualMachines", None, None)
+        "Microsoft.Compute/virtualMachines", SECRETS, CONFIG)
     open.assert_called_with(AnyStringWith("cpu_stress_test.sh"))
     client.virtual_machines.run_command.assert_called_with(
         resource['resourceGroup'],
@@ -149,10 +230,9 @@ def test_stress_cpu_on_lnx(init, fetch, open):
         })
 
 
-
 @patch("builtins.open", new_callable=mock_open, read_data="script")
 @patch('chaosazure.machine.actions.fetch_resources', autospec=True)
-@patch('chaosazure.machine.actions.__init_client', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
 def test_stress_cpu_on_win(init, fetch, open):
     # arrange mocks
     client = MagicMock()
@@ -190,7 +270,7 @@ def test_stress_cpu_on_win(init, fetch, open):
 
 @patch("builtins.open", new_callable=mock_open, read_data="script")
 @patch('chaosazure.machine.actions.fetch_resources', autospec=True)
-@patch('chaosazure.machine.actions.__init_client', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
 def test_stress_cpu_invalid_resource(init, fetch, open):
     # arrange mocks
     client = MagicMock()
@@ -207,7 +287,7 @@ def test_stress_cpu_invalid_resource(init, fetch, open):
 
 @patch("builtins.open", new_callable=mock_open, read_data="script")
 @patch('chaosazure.machine.actions.fetch_resources', autospec=True)
-@patch('chaosazure.machine.actions.__init_client', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
 def test_stress_cpu_timeout(init, fetch, open):
     # arrange mocks
     client = MagicMock()
@@ -224,32 +304,3 @@ def test_stress_cpu_timeout(init, fetch, open):
     with pytest.raises(FailedActivity, match=r'stress_cpu operation did not '
                                              r'finish on time'):
         stress_cpu("where name=='some_windows_machine'", 60)
-
-
-class MockVirtualMachinesOperations(object):
-    def power_off(self, resource_group, name):
-        pass
-
-    def delete(self, resource_group, name):
-        pass
-
-    def restart(self, resource_group, name):
-        pass
-
-    def start(self, resource_group, name):
-        pass
-
-    def instance_view(self, resource_group, name):
-        statuses = []
-        s = InstanceViewStatus(code='PowerState/Deallocated')
-        statuses.append(s)
-        return VirtualMachineInstanceView(statuses=statuses)
-
-
-class MockComputeManagementClient(object):
-    def __init__(self):
-        self.operations = MockVirtualMachinesOperations()
-
-    @property
-    def virtual_machines(self):
-        return self.operations
