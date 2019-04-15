@@ -3,7 +3,7 @@
 ## [Unreleased][]
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.4.0...HEAD
 
-## [0.4.0][] - 2019-15-04
+## [0.4.0][] - 2019-04-15
 
 [0.4.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.3.1...0.4.0
 
