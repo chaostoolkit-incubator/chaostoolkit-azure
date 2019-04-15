@@ -1,6 +1,14 @@
 # Changelog
 
 ## [Unreleased][]
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.4.0...HEAD
+
+## [0.4.0][] - 2019-15-04
+
+[0.4.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.3.1...0.4.0
+
+### Changed
+
 -   Enable virtual machine actions to select more than one machine
 -   Introduce rollback action for virtual machines
 -   Separate service fabric functionality from the chaostoolkit-azure extension
@@ -8,10 +16,6 @@
 -   Remove not used azure-mgmt dependencies (#53)
 -   Introduce actions to stop, restart and start Azure Web Apps
 -   Introduce probes to take measures of Azure Web Apps
-
-
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.3.1...HEAD
-
 -   Refactoring: Remove redundant check for security variables  from environment
 
 ## [0.3.1][] - 2019-06-01
