@@ -31,7 +31,7 @@ classifiers = [
 ]
 author = "chaostoolkit Team"
 author_email = 'contact@chaostoolkit.org'
-url = 'http://chaostoolkit.org'
+url = 'https://chaostoolkit.org'
 license = 'Apache License Version 2.0'
 packages = [
     'chaosazure',
