@@ -85,7 +85,7 @@ def test_delete_machine_with_no_machines(fetch):
         fetch.return_value = resource_list
         delete_machines(None, None, None)
 
-    assert "No virtual machines found" in str(x)
+    assert "No virtual machines found" in str(x.value)
 
 
 @patch('chaosazure.machine.actions.fetch_resources', autospec=True)
@@ -95,7 +95,7 @@ def test_stop_machine_with_no_machines(fetch):
         fetch.return_value = resource_list
         stop_machines(None, None, None)
 
-    assert "No virtual machines found" in str(x)
+    assert "No virtual machines found" in str(x.value)
 
 
 @patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
@@ -169,7 +169,7 @@ def test_restart_machine_with_no_machines(fetch):
         fetch.return_value = resource_list
         restart_machines(None, None, None)
 
-    assert "No virtual machines found" in str(x)
+    assert "No virtual machines found" in str(x.value)
 
 
 @patch('chaosazure.machine.actions.fetch_resources', autospec=True)
@@ -179,7 +179,7 @@ def test_start_machine_with_no_machines(fetch):
         fetch.return_value = resource_list
         start_machines()
 
-    assert "No virtual machines found" in str(x)
+    assert "No virtual machines found" in str(x.value)
 
 
 @patch('chaosazure.machine.actions.__fetch_machines', autospec=True)

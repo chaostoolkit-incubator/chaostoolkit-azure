@@ -2,6 +2,7 @@ from azure.mgmt.resourcegraph import ResourceGraphClient
 from azure.mgmt.resourcegraph.models import QueryRequest
 
 from chaosazure import auth
+from chaosazure.rgraph.mapper import to_dicts
 
 
 def fetch_resources(query, resource_type, secrets, configuration):
@@ -11,18 +12,8 @@ def fetch_resources(query, resource_type, secrets, configuration):
         client = ResourceGraphClient(credentials=cred)
         resources = client.resources(query)
 
-        results = __to_dicts(resources.data)
+        results = to_dicts(resources.data, client.api_version)
         return results
-
-
-def __to_dicts(table):
-    results = []
-    for row in table.rows:
-        result = {}
-        for col_index in range(len(table.columns)):
-            result[table.columns[col_index].name] = row[col_index]
-        results.append(result)
-    return results
 
 
 def __create_resource_graph_query(query, resource_type, configuration):
