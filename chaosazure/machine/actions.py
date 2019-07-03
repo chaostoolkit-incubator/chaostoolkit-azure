@@ -268,7 +268,8 @@ def fill_disk(filter: str = None,
     duration : int, optional
         Lifetime of the file created. Defaults to 120 seconds.
     timeout : int
-        Additional wait time (in seconds) for filling operation to be completed.
+        Additional wait time (in seconds)
+        for filling operation to be completed.
         Getting and sending data from/to Azure may take some time so it's not
         recommended to set this value to less than 30s. Defaults to 60 seconds.
     size : int
