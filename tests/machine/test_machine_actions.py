@@ -1,3 +1,5 @@
+from zipfile import sizeCentralDir
+
 import pytest
 from azure.mgmt.compute.v2018_10_01.models import InstanceViewStatus, \
     RunCommandResult
@@ -5,18 +7,18 @@ from chaoslib.exceptions import FailedActivity
 from unittest.mock import MagicMock, patch, mock_open
 
 from chaosazure.machine.actions import restart_machines, stop_machines, \
-    delete_machines, start_machines, stress_cpu
+    delete_machines, start_machines, stress_cpu, fill_disk
 
 CONFIG = {
     "azure": {
-        "subscription_id": "X"
+        "subscription_id": "51873780-9098-4027-827f-89a061de0b7a"
     }
 }
 
 SECRETS = {
-    "client_id": "X",
-    "client_secret": "X",
-    "tenant_id": "X"
+    "client_id": "8d997de9-9daf-43a1-98c3-04f41a64b62f",
+    "client_secret": "oIAznMsOFRazS/S603EF30oDS7mivghDUQd14qjOotI=",
+    "tenant_id": "9652d7c2-1ccf-4940-8151-4a92bd474ed0"
 }
 
 MACHINE_ALPHA = {
@@ -304,3 +306,122 @@ def test_stress_cpu_timeout(init, fetch, open):
     with pytest.raises(FailedActivity, match=r'stress_cpu operation did not '
                                              r'finish on time'):
         stress_cpu("where name=='some_windows_machine'", 60)
+
+
+# def test_fill_disk(): fill_disk(filter="where resourceGroup=~'chaosworld' and name=='testWindows'",
+# configuration=CONFIG, secrets=SECRETS)
+
+
+@patch("builtins.open", new_callable=mock_open, read_data="script")
+@patch('chaosazure.machine.actions.fetch_resources', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_fill_disk_on_lnx(init, fetch, open):
+    # arrange mocks
+    client = MagicMock()
+    init.return_value = client
+    resource = __get_resource(os_type='Linux')
+    resource_list = [resource]
+    fetch.return_value = resource_list
+    # run command mocks
+    poller = MagicMock()
+    client.virtual_machines.run_command.return_value = poller
+    result = MagicMock(spec=RunCommandResult)
+    poller.result.return_value = result
+    result.value = [InstanceViewStatus()]
+
+    # act
+    fill_disk(filter="where name=='some_linux_machine'", duration=60, size=100,
+              configuration=CONFIG, secrets=SECRETS)
+
+    # assert
+    fetch.assert_called_with(
+        "where name=='some_linux_machine'",
+        "Microsoft.Compute/virtualMachines", SECRETS, CONFIG)
+    open.assert_called_with(AnyStringWith("fill_disk.sh"))
+    client.virtual_machines.run_command.assert_called_with(
+        resource['resourceGroup'],
+        resource['name'],
+        {
+            'command_id': 'RunShellScript',
+            'script': ['script'],
+            'parameters': [
+                {'name': 'duration', 'value': 60},
+                {'name': 'size', 'value': 100}
+            ]
+        })
+
+
+@patch("builtins.open", new_callable=mock_open, read_data="script")
+@patch('chaosazure.machine.actions.fetch_resources', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_fill_disk_on_win(init, fetch, open):
+    # arrange mocks
+    client = MagicMock()
+    init.return_value = client
+    resource = __get_resource(os_type='Windows')
+    resource_list = [resource]
+    fetch.return_value = resource_list
+    # run command mocks
+    poller = MagicMock()
+    client.virtual_machines.run_command.return_value = poller
+    result = MagicMock(spec=RunCommandResult)
+    poller.result.return_value = result
+    result.value = [InstanceViewStatus()]
+
+    # act
+    fill_disk("where name=='some_windows_machine'", 60, size=100)
+
+    # assert
+    fetch.assert_called_with(
+        "where name=='some_windows_machine'",
+        "Microsoft.Compute/virtualMachines", None, None)
+    open.assert_called_with(AnyStringWith("fill_disk.ps1"))
+    client.virtual_machines.run_command.assert_called_with(
+        resource['resourceGroup'],
+        resource['name'],
+        {
+            'command_id': 'RunPowerShellScript',
+            'script': ['script'],
+            'parameters': [
+                {'name': 'duration', 'value': 60},
+                {'name': 'size', 'value': 100}
+            ]
+        })
+
+
+@patch("builtins.open", new_callable=mock_open, read_data="script")
+@patch('chaosazure.machine.actions.fetch_resources', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_fill_disk_invalid_resource(init, fetch, open):
+    # arrange mocks
+    client = MagicMock()
+    init.return_value = client
+    resource = __get_resource(os_type='Invalid')
+    resource_list = [resource]
+    fetch.return_value = resource_list
+
+    # act
+    with pytest.raises(Exception) as ex:
+        fill_disk("where name=='some_machine'", 60, 100)
+    assert str(ex.value) == 'Unknown OS Type: invalid'
+
+
+@patch("builtins.open", new_callable=mock_open, read_data="script")
+@patch('chaosazure.machine.actions.fetch_resources', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_fill_disk_timeout(init, fetch, open):
+    # arrange mocks
+    client = MagicMock()
+    init.return_value = client
+    resource = __get_resource(os_type='Windows')
+    resource_list = [resource]
+    fetch.return_value = resource_list
+    # run command mocks
+    poller = MagicMock()
+    client.virtual_machines.run_command.return_value = poller
+    poller.result.return_value = None
+
+    # act & assert
+    with pytest.raises(FailedActivity, match=r'stress_cpu operation did not '
+                                             r'finish on time'):
+        stress_cpu("where name=='some_windows_machine'", 60, 100)

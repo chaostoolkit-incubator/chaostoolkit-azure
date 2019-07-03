@@ -9,7 +9,7 @@ from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
 __all__ = ["delete_machines", "stop_machines", "restart_machines",
-           "start_machines", "stress_cpu"]
+           "start_machines", "stress_cpu", "fill_disk"]
 
 
 def delete_machines(filter: str = None,
@@ -248,6 +248,94 @@ def stress_cpu(filter: str = None,
         else:
             raise FailedActivity(
                 "stress_cpu operation did not finish on time. "
+                "You may consider increasing timeout setting.")
+
+
+def fill_disk(filter: str = None,
+              duration: int = 120,
+              timeout: int = 60,
+              size: int = 1000,
+              configuration: Configuration = None,
+              secrets: Secrets = None):
+    """
+    Fill the disk with random data.
+
+    Parameters
+    ----------
+    filter : str, optional
+        Filter the virtual machines. If the filter is omitted all machines in
+        the subscription will be selected as potential chaos candidates.
+    duration : int, optional
+        Lifetime of the file created. Defaults to 120 seconds.
+    timeout : int
+        Additional wait time (in seconds) for filling operation to be completed.
+        Getting and sending data from/to Azure may take some time so it's not
+        recommended to set this value to less than 30s. Defaults to 60 seconds.
+    size : int
+        Size of the file created on the disk. Defaults to 1GB.
+
+
+    Examples
+    --------
+    Some calling examples. Deep dive into the filter syntax:
+    https://docs.microsoft.com/en-us/azure/kusto/query/
+
+    >>> fill_disk("where resourceGroup=='rg'", configuration=c, secrets=s)
+    Fill all machines from the group 'rg'
+
+    >>> fill_disk("where resourceGroup=='rg' and name='name'",
+                    configuration=c, secrets=s)
+    Fill the machine from the group 'rg' having the name 'name'
+
+    >>> fill_disk("where resourceGroup=='rg' | sample 2",
+                    configuration=c, secrets=s)
+    Fill two machines at random from the group 'rg'
+    """
+
+    logger.debug(
+        "Start fill_disk: configuration='{}', filter='{}'".format(
+            configuration, filter))
+
+    machines = __fetch_machines(filter, configuration, secrets)
+    client = __compute_mgmt_client(secrets, configuration)
+
+    for m in machines:
+        name = m['name']
+        group = m['resourceGroup']
+        os_type = __get_os_type(m)
+        if os_type == OS_WINDOWS:
+            command_id = 'RunPowerShellScript'
+            script_name = "fill_disk.ps1"
+        elif os_type == OS_LINUX:
+            command_id = 'RunShellScript'
+            script_name = "fill_disk.sh"
+        else:
+            raise FailedActivity(
+                "Cannot run disk filling test on OS: %s" % os_type)
+
+        with open(os.path.join(os.path.dirname(__file__),
+                               "scripts", script_name)) as file:
+            script_content = file.read()
+
+        logger.debug("Script content: {}".format(script_content))
+        parameters = {
+            'command_id': command_id,
+            'script': [script_content],
+            'parameters': [
+                {'name': "duration", 'value': duration},
+                {'name': "size", 'value': size}
+            ]
+        }
+
+        logger.debug("Filling disk of machine: {}".format(name))
+        poller = client.virtual_machines.run_command(group, name, parameters)
+        result = poller.result(duration + timeout)  # Blocking till executed
+        logger.debug("Execution result: {}".format(poller))
+        if result:
+            logger.debug(result.value[0].message)  # stdout/stderr
+        else:
+            raise FailedActivity(
+                "fill_disk operation did not finish on time. "
                 "You may consider increasing timeout setting.")
 
 
