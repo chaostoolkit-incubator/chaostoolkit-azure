@@ -10,7 +10,7 @@ from msrestazure.azure_active_directory import ServicePrincipalCredentials
 from typing import List
 
 __all__ = ["auth", "discover", "__version__"]
-__version__ = '0.4.0'
+__version__ = '0.5.0'
 
 
 @contextlib.contextmanager
