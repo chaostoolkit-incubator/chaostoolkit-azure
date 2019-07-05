@@ -29,7 +29,7 @@ def test_restart_node_with_no_nodes(fetch):
         fetch.return_value = resource_list
         delete_node(None, None, None)
 
-    assert "No AKS clusters found" in str(x)
+    assert "No AKS clusters found" in str(x.value)
 
 
 @patch('chaosazure.aks.actions.fetch_resources', autospec=True)
@@ -48,7 +48,7 @@ def test_restart_node_with_no_nodes(fetch):
         fetch.return_value = resource_list
         stop_node(None, None, None)
 
-    assert "No AKS clusters found" in str(x)
+    assert "No AKS clusters found" in str(x.value)
 
 
 @patch('chaosazure.aks.actions.fetch_resources', autospec=True)
@@ -67,4 +67,4 @@ def test_restart_node_with_no_nodes(fetch):
         fetch.return_value = resource_list
         restart_node(None, None, None)
 
-    assert "No AKS clusters found" in str(x)
+    assert "No AKS clusters found" in str(x.value)
