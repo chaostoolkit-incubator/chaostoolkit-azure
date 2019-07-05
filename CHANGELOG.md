@@ -1,7 +1,13 @@
 # Changelog
 
 ## [Unreleased][]
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.4.0...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.5.0...HEAD
+
+## [0.5.0][] - 2019-07-05
+
+[0.5.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.4.0...0.5.0
+
+### Added
 
 -  Added the FillDisk feature: Create a file of random data on the disk of the VM for a time period 
 (defaults to a 1GB file for 2 minutes)
