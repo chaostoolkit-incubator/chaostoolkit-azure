@@ -3,6 +3,8 @@
 ## [Unreleased][]
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.4.0...HEAD
 
+-  Added the FillDisk feature: Create a file of random data on the disk of the VM for a time period 
+(defaults to a 1GB file for 2 minutes)
 -  Fixed the new MS Azure REST API version 2019-04-01
 
 ## [0.4.0][] - 2019-04-15
