@@ -3,6 +3,9 @@
 ## [Unreleased][]
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.5.0...HEAD
 
+- Added the network_latency feature: disturb the network of the VM, adding some latency for a time period 
+(defaults to a 200 +/- 50ms latency for 1 minute). Only works on Linux machines for now.
+
 ## [0.5.0][] - 2019-07-05
 
 [0.5.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.4.0...0.5.0
