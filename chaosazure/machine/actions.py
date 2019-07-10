@@ -9,7 +9,8 @@ from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
 __all__ = ["delete_machines", "stop_machines", "restart_machines",
-           "start_machines", "stress_cpu", "fill_disk", "network_latency"]
+           "start_machines", "stress_cpu", "fill_disk", "network_latency",
+           "burn_io"]
 
 
 def delete_machines(filter: str = None,
@@ -428,6 +429,90 @@ def network_latency(filter: str = None,
         else:
             raise FailedActivity(
                 "network_latency operation did not finish on time. "
+                "You may consider increasing timeout setting.")
+
+
+def burn_io(filter: str = None,
+            duration: int = 60,
+            timeout: int = 60,
+            configuration: Configuration = None,
+            secrets: Secrets = None):
+    """
+    Increases the Disk I/O operations per second of the virtual machine.
+
+    Parameters
+    ----------
+    filter : str, optional
+        Filter the virtual machines. If the filter is omitted all machines in
+        the subscription will be selected as potential chaos candidates.
+    duration : int, optional
+        How long the burn lasts. Defaults to 60 seconds.
+    timeout : int
+        Additional wait time (in seconds) for filling operation to be completed
+        Getting and sending data from/to Azure may take some time so it's not
+        recommended to set this value to less than 30s. Defaults to 60 seconds.
+
+
+    Examples
+    --------
+    Some calling examples. Deep dive into the filter syntax:
+    https://docs.microsoft.com/en-us/azure/kusto/query/
+
+    >>> burn_io("where resourceGroup=='rg'", configuration=c, secrets=s)
+    Increase the I/O operations per second of all machines from the group 'rg'
+
+    >>> burn_io("where resourceGroup=='rg' and name='name'",
+                    configuration=c, secrets=s)
+    Increase the I/O operations per second of the machine from the group 'rg'
+    having the name 'name'
+
+    >>> burn_io("where resourceGroup=='rg' | sample 2",
+                    configuration=c, secrets=s)
+    Increase the I/O operations per second of two machines at random from
+    the group 'rg'
+    """
+
+    logger.debug(
+        "Start burn_io: configuration='{}', filter='{}'".format(
+            configuration, filter))
+
+    machines = __fetch_machines(filter, configuration, secrets)
+    client = __compute_mgmt_client(secrets, configuration)
+
+    for m in machines:
+        name = m['name']
+        group = m['resourceGroup']
+        os_type = __get_os_type(m)
+        if os_type == OS_LINUX:
+            command_id = 'RunShellScript'
+            script_name = "burn_io.sh"
+        else:
+            raise FailedActivity(
+                "Cannot run burn_io test on OS: %s" % os_type)
+
+        with open(os.path.join(os.path.dirname(__file__),
+                               "scripts", script_name)) as file:
+            script_content = file.read()
+
+        logger.debug("Script content: {}".format(script_content))
+        parameters = {
+            'command_id': command_id,
+            'script': [script_content],
+            'parameters': [
+                {'name': "duration", 'value': duration},
+            ]
+        }
+
+        logger.debug("Increasing the I/O operations per "
+                     "second of machine: {}".format(name))
+        poller = client.virtual_machines.run_command(group, name, parameters)
+        result = poller.result(duration + timeout)  # Blocking till executed
+        logger.debug("Execution result: {}".format(poller))
+        if result:
+            logger.debug(result.value[0].message)  # stdout/stderr
+        else:
+            raise FailedActivity(
+                "burn_io operation did not finish on time. "
                 "You may consider increasing timeout setting.")
 
 
