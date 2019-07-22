@@ -9,7 +9,7 @@ from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
 __all__ = ["delete_machines", "stop_machines", "restart_machines",
-           "start_machines", "stress_cpu", "fill_disk"]
+           "start_machines", "stress_cpu", "fill_disk", "network_latency"]
 
 
 def delete_machines(filter: str = None,
@@ -337,6 +337,97 @@ def fill_disk(filter: str = None,
         else:
             raise FailedActivity(
                 "fill_disk operation did not finish on time. "
+                "You may consider increasing timeout setting.")
+
+
+def network_latency(filter: str = None,
+                    duration: int = 60,
+                    delay: int = 200,
+                    jitter: int = 50,
+                    timeout: int = 60,
+                    configuration: Configuration = None,
+                    secrets: Secrets = None):
+    """
+    Increases the response time of the virtual machine.
+
+    Parameters
+    ----------
+    filter : str, optional
+        Filter the virtual machines. If the filter is omitted all machines in
+        the subscription will be selected as potential chaos candidates.
+    duration : int, optional
+        How long the latency lasts. Defaults to 60 seconds.
+    timeout : int
+        Additional wait time (in seconds) for filling operation to be completed
+        Getting and sending data from/to Azure may take some time so it's not
+        recommended to set this value to less than 30s. Defaults to 60 seconds.
+    delay : int
+        Added delay in ms. Defaults to 200.
+    jitter : int
+        Variance of the delay in ms. Defaults to 50.
+
+
+    Examples
+    --------
+    Some calling examples. Deep dive into the filter syntax:
+    https://docs.microsoft.com/en-us/azure/kusto/query/
+
+    >>> network_latency("where resourceGroup=='rg'", configuration=c,
+                    secrets=s)
+    Increase the latency of all machines from the group 'rg'
+
+    >>> network_latency("where resourceGroup=='rg' and name='name'",
+                    configuration=c, secrets=s)
+    Increase the latecy of the machine from the group 'rg' having the name
+    'name'
+
+    >>> network_latency("where resourceGroup=='rg' | sample 2",
+                    configuration=c, secrets=s)
+    Increase the latency of two machines at random from the group 'rg'
+    """
+
+    logger.debug(
+        "Start network_latency: configuration='{}', filter='{}'".format(
+            configuration, filter))
+
+    machines = __fetch_machines(filter, configuration, secrets)
+    client = __compute_mgmt_client(secrets, configuration)
+
+    for m in machines:
+        name = m['name']
+        group = m['resourceGroup']
+        os_type = __get_os_type(m)
+        if os_type == OS_LINUX:
+            command_id = 'RunShellScript'
+            script_name = "network_latency.sh"
+        else:
+            raise FailedActivity(
+                "Cannot run network latency test on OS: %s" % os_type)
+
+        with open(os.path.join(os.path.dirname(__file__),
+                               "scripts", script_name)) as file:
+            script_content = file.read()
+
+        logger.debug("Script content: {}".format(script_content))
+        parameters = {
+            'command_id': command_id,
+            'script': [script_content],
+            'parameters': [
+                {'name': "duration", 'value': duration},
+                {'name': "delay", 'value': delay},
+                {'name': "jitter", 'value': jitter}
+            ]
+        }
+
+        logger.debug("Increasing the latency of machine: {}".format(name))
+        poller = client.virtual_machines.run_command(group, name, parameters)
+        result = poller.result(duration + timeout)  # Blocking till executed
+        logger.debug("Execution result: {}".format(poller))
+        if result:
+            logger.debug(result.value[0].message)  # stdout/stderr
+        else:
+            raise FailedActivity(
+                "network_latency operation did not finish on time. "
                 "You may consider increasing timeout setting.")
 
 
