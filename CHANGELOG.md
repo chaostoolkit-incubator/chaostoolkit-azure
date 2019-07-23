@@ -3,8 +3,13 @@
 ## [Unreleased][]
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.5.0...HEAD
 
-- Added the network_latency feature: disturb the network of the VM, adding some latency for a time period 
-(defaults to a 200 +/- 50ms latency for 1 minute). Only works on Linux machines for now.
+- Added the burn_io feature: increase the I/O operations per seconds of the 
+hard drive for a time period (default time period is 1 minute). Works by 
+copying random data into a burn folder, which is deleted at the end of the 
+script.
+- Added the network_latency feature: disturb the network of the VM, adding some
+ latency for a time period (defaults to a 200 +/- 50ms latency for 1 minute).
+  Only works on Linux machines for now.
 
 ## [0.5.0][] - 2019-07-05
 
@@ -12,8 +17,8 @@
 
 ### Added
 
--  Added the FillDisk feature: Create a file of random data on the disk of the VM for a time period 
-(defaults to a 1GB file for 2 minutes)
+-  Added the FillDisk feature: Create a file of random data on the disk of the 
+VM for a time period (defaults to a 1GB file for 2 minutes).
 -  Fixed the new MS Azure REST API version 2019-04-01
 
 ## [0.4.0][] - 2019-04-15

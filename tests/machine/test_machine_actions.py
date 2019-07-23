@@ -7,7 +7,8 @@ from chaoslib.exceptions import FailedActivity
 from unittest.mock import MagicMock, patch, mock_open
 
 from chaosazure.machine.actions import restart_machines, stop_machines, \
-    delete_machines, start_machines, stress_cpu, fill_disk, network_latency
+    delete_machines, start_machines, stress_cpu, fill_disk, network_latency, \
+    burn_io
 
 CONFIG = {
     "azure": {
@@ -308,7 +309,8 @@ def test_stress_cpu_timeout(init, fetch, open):
         stress_cpu("where name=='some_windows_machine'", 60)
 
 
-# def test_fill_disk(): fill_disk(filter="where resourceGroup=~'chaosworld' and name=='testWindows'",
+# def test_fill_disk(): fill_disk(filter="where resourceGroup=~'chaosworld'
+# and name=='testWindows'",
 # configuration=CONFIG, secrets=SECRETS)
 
 
@@ -501,6 +503,82 @@ def test_network_latency_timeout(init, fetch, open):
     poller.result.return_value = None
 
     # act & assert
-    with pytest.raises(FailedActivity, match=r'network_latency operation did not '
-                                             r'finish on time'):
+    with pytest.raises(FailedActivity, match=r'network_latency operation '
+                                             r'did not finish on time'):
         network_latency("where name=='some_linux_machine'", 60, 200, 50)
+
+
+@patch("builtins.open", new_callable=mock_open, read_data="script")
+@patch('chaosazure.machine.actions.fetch_resources', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_burn_io_on_lnx(init, fetch, open):
+    # arrange mocks
+    client = MagicMock()
+    init.return_value = client
+    resource = __get_resource(os_type='Linux')
+    resource_list = [resource]
+    fetch.return_value = resource_list
+    # run command mocks
+    poller = MagicMock()
+    client.virtual_machines.run_command.return_value = poller
+    result = MagicMock(spec=RunCommandResult)
+    poller.result.return_value = result
+    result.value = [InstanceViewStatus()]
+
+    # act
+    burn_io(filter="where name=='some_linux_machine'", duration=60,
+                    configuration=CONFIG, secrets=SECRETS)
+
+    # assert
+    fetch.assert_called_with(
+        "where name=='some_linux_machine'",
+        "Microsoft.Compute/virtualMachines", SECRETS, CONFIG)
+    open.assert_called_with(AnyStringWith("burn_io.sh"))
+    client.virtual_machines.run_command.assert_called_with(
+        resource['resourceGroup'],
+        resource['name'],
+        {
+            'command_id': 'RunShellScript',
+            'script': ['script'],
+            'parameters': [
+                {'name': 'duration', 'value': 60}
+            ]
+        })
+
+
+@patch("builtins.open", new_callable=mock_open, read_data="script")
+@patch('chaosazure.machine.actions.fetch_resources', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_burn_io_invalid_resource(init, fetch, open):
+    # arrange mocks
+    client = MagicMock()
+    init.return_value = client
+    resource = __get_resource(os_type='Invalid')
+    resource_list = [resource]
+    fetch.return_value = resource_list
+
+    # act
+    with pytest.raises(Exception) as ex:
+        burn_io("where name=='some_machine'", 60)
+    assert str(ex.value) == 'Unknown OS Type: invalid'
+
+
+@patch("builtins.open", new_callable=mock_open, read_data="script")
+@patch('chaosazure.machine.actions.fetch_resources', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_burn_io_timeout(init, fetch, open):
+    # arrange mocks
+    client = MagicMock()
+    init.return_value = client
+    resource = __get_resource(os_type='Linux')
+    resource_list = [resource]
+    fetch.return_value = resource_list
+    # run command mocks
+    poller = MagicMock()
+    client.virtual_machines.run_command.return_value = poller
+    poller.result.return_value = None
+
+    # act & assert
+    with pytest.raises(FailedActivity, match=r'burn_io operation did not '
+                                             r'finish on time'):
+        burn_io("where name=='some_linux_machine'", 60)
