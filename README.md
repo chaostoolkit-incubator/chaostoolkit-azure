@@ -70,9 +70,18 @@ There are two ways of doing this:
     ```json
     {
         "azure": {
-            "client_id": "AZURE_CLIENT_ID",
-            "client_secret": "AZURE_CLIENT_SECRET",
-            "tenant_id": "AZURE_TENANT_ID"
+            "client_id": {
+                "type": "env",
+                "key": "AZURE_CLIENT_ID"
+            },
+            "client_secret": {
+                "type": "env",
+                "key": "AZURE_CLIENT_SECRET"
+            },
+            "tenant_id": {
+                "type": "env",
+                "key": "AZURE_TENANT_ID"
+            }
         }
     }
     ```
