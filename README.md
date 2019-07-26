@@ -70,9 +70,18 @@ There are two ways of doing this:
     ```json
     {
         "azure": {
-            "client_id": "AZURE_CLIENT_ID",
-            "client_secret": "AZURE_CLIENT_SECRET",
-            "tenant_id": "AZURE_TENANT_ID"
+            "client_id": {
+                "type": "env",
+                "key": "AZURE_CLIENT_ID"
+            },
+            "client_secret": {
+                "type": "env",
+                "key": "AZURE_CLIENT_SECRET"
+            },
+            "tenant_id": {
+                "type": "env",
+                "key": "AZURE_TENANT_ID"
+            }
         }
     }
     ```
@@ -87,6 +96,20 @@ There are two ways of doing this:
             "tenant_id": "your-tenant-id"
         }
     }
+    ```
+
+    Also if you are not working with Public Global Azure, e.g. China Cloud
+    You can feed the cloud environment name as well.
+    Please refer to msrestazure.azure_cloud
+    ```json
+        {
+            "azure": {
+                "client_id": "xxxxxxx",
+                "client_secret": "*******",
+                "tenant_id": "@@@@@@@@@@@",
+                "azure_cloud": "AZURE_CHINA_CLOUD"
+            }
+        }
     ```
     
     Additionally you need to provide the Azure subscription id.
