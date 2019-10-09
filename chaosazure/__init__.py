@@ -6,8 +6,10 @@ from chaoslib.discovery import initialize_discovery_result, discover_actions, \
     discover_probes
 from chaoslib.types import Discovery, DiscoveredActivities, Secrets
 from logzero import logger
-from msrestazure.azure_active_directory import ServicePrincipalCredentials
+from msrestazure.azure_active_directory import ServicePrincipalCredentials, \
+    AADTokenCredentials
 from typing import List
+from adal import AuthenticationContext
 
 __all__ = ["auth", "discover", "__version__"]
 __version__ = '0.5.0'
@@ -18,10 +20,13 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
     """
     Attempt to load the Azure authentication information from a local
     configuration file or the passed `configuration` mapping. The latter takes
-    precedence over the local configuration file.
+    precedence over the local configuration file. Service principle and token
+    based credentials are supported. Token based credentials do not currently
+    support refresh token functionality.
 
     If you provide a secrets dictionary, the returned mapping will
-    be created from their content. For instance, you could have:
+    be created from their content. For instance, for service principle based
+    credentials, you could have:
 
     Secrets mapping (in your experiment file):
     ```json
@@ -38,6 +43,10 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
     from the specified local environment variables, e.g. `AZURE_CLIENT_ID`,
     `AZURE_TENANT_ID`, and `AZURE_CLIENT_SECRET` that you will have populated
     before hand.
+
+    If the client_secret is not provided, then token based credentials is
+    assumed and an access_token value must be present and updated as the token
+    expires.
     ```
 
     Using this function goes as follows:
@@ -49,6 +58,7 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
         compute_client = ComputeManagementClient(cred, azure_subscription_id)
     ```
     """
+
     creds = dict(
         azure_client_id=None, azure_client_secret=None, azure_tenant_id=None)
 
@@ -56,6 +66,7 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
         creds["azure_client_id"] = secrets.get("client_id")
         creds["azure_client_secret"] = secrets.get("client_secret")
         creds["azure_tenant_id"] = secrets.get("tenant_id")
+        creds["access_token"] = secrets.get("access_token")
 
     credentials = __get_credentials(creds)
 
@@ -78,11 +89,15 @@ def discover(discover_system: bool = True) -> Discovery:
 # Private functions
 ###############################################################################
 def __get_credentials(creds):
-    credentials = ServicePrincipalCredentials(
-        client_id=creds['azure_client_id'],
-        secret=creds['azure_client_secret'],
-        tenant=creds['azure_tenant_id']
-    )
+    if creds['azure_client_secret'] is not None:
+        credentials = ServicePrincipalCredentials(
+            client_id=creds['azure_client_id'],
+            secret=creds['azure_client_secret'],
+            tenant=creds['azure_tenant_id']
+        )
+    else:
+        token = dict(accessToken=creds['access_token'])
+        credentials = AADTokenCredentials(token, creds['azure_client_id'])
     return credentials
 
 
