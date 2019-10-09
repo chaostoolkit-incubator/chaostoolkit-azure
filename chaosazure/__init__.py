@@ -6,8 +6,9 @@ from chaoslib.discovery import initialize_discovery_result, discover_actions, \
     discover_probes
 from chaoslib.types import Discovery, DiscoveredActivities, Secrets
 from logzero import logger
-from msrestazure.azure_active_directory import ServicePrincipalCredentials
+from msrestazure.azure_active_directory import ServicePrincipalCredentials, AADTokenCredentials
 from typing import List
+from adal import AuthenticationContext
 
 __all__ = ["auth", "discover", "__version__"]
 __version__ = '0.5.0'
@@ -49,6 +50,7 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
         compute_client = ComputeManagementClient(cred, azure_subscription_id)
     ```
     """
+
     creds = dict(
         azure_client_id=None, azure_client_secret=None, azure_tenant_id=None)
 
@@ -56,6 +58,7 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
         creds["azure_client_id"] = secrets.get("client_id")
         creds["azure_client_secret"] = secrets.get("client_secret")
         creds["azure_tenant_id"] = secrets.get("tenant_id")
+        creds["token"] = secrets.get("token")
 
     credentials = __get_credentials(creds)
 
@@ -78,11 +81,15 @@ def discover(discover_system: bool = True) -> Discovery:
 # Private functions
 ###############################################################################
 def __get_credentials(creds):
-    credentials = ServicePrincipalCredentials(
-        client_id=creds['azure_client_id'],
-        secret=creds['azure_client_secret'],
-        tenant=creds['azure_tenant_id']
-    )
+    if creds['azure_client_secret'] is not None:
+        credentials = ServicePrincipalCredentials(
+            client_id=creds['azure_client_id'],
+            secret=creds['azure_client_secret'],
+            tenant=creds['azure_tenant_id']
+        )
+    else:
+        token = dict(accessToken = creds['token'])
+        credentials = AADTokenCredentials(token, creds['azure_client_id']) 
     return credentials
 
 
