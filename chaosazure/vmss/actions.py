@@ -140,11 +140,12 @@ def deallocate_vmss(filter: str = None,
         vmss['name'],
         vmss_instance['instanceId'])
 
+
 def stress_vmss_instance_cpu(filter: str = None,
-               duration: int = 120,
-               timeout: int = 60,
-               configuration: Configuration = None,
-               secrets: Secrets = None):
+                    duration: int = 120,
+                    timeout: int = 60,
+                    configuration: Configuration = None,
+                    secrets: Secrets = None):
     """
     Stress CPU up to 100% at random machines.
 
@@ -166,7 +167,8 @@ def stress_vmss_instance_cpu(filter: str = None,
     Some calling examples. Deep dive into the filter syntax:
     https://docs.microsoft.com/en-us/azure/kusto/query/
 
-    >>> stress_vmss_instance_cpu("where resourceGroup=='rg'", configuration=c, secrets=s)
+    >>> stress_vmss_instance_cpu("where resourceGroup=='rg'", configuration=c,
+                    secrets=s)
     Stress all machines from the group 'rg'
 
     >>> stress_vmss_instance_cpu("where resourceGroup=='rg' and name='name'",
