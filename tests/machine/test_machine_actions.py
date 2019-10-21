@@ -22,6 +22,13 @@ SECRETS = {
     "tenant_id": "9652d7c2-1ccf-4940-8151-4a92bd474ed0"
 }
 
+SECRETS_CHINA = {
+    "client_id": "8d997de9-9daf-43a1-98c3-04f41a64b62f",
+    "client_secret": "oIAznMsOFRazS/S603EF30oDS7mivghDUQd14qjOotI=",
+    "tenant_id": "9652d7c2-1ccf-4940-8151-4a92bd474ed0",
+    "azure_cloud": "AZURE_CHINA_CLOUD"
+}
+
 MACHINE_ALPHA = {
     'name': 'VirtualMachineAlpha',
     'resourceGroup': 'group'}
@@ -62,6 +69,22 @@ def test_delete_one_machine(init, fetch):
     delete_machines(f, CONFIG, SECRETS)
 
     fetch.assert_called_with(f, CONFIG, SECRETS)
+    assert client.virtual_machines.delete.call_count == 1
+
+
+@patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
+@patch('chaosazure.machine.actions.__compute_mgmt_client', autospec=True)
+def test_delete_one_machine_china(init, fetch):
+    client = MagicMock()
+    init.return_value = client
+
+    machines = [MACHINE_ALPHA]
+    fetch.return_value = machines
+
+    f = "where resourceGroup=='myresourcegroup' | sample 1"
+    delete_machines(f, CONFIG, SECRETS_CHINA)
+
+    fetch.assert_called_with(f, CONFIG, SECRETS_CHINA)
     assert client.virtual_machines.delete.call_count == 1
 
 
