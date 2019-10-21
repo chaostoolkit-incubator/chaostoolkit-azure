@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 import os
-from azure.mgmt.compute import ComputeManagementClient
-from chaosazure import auth
-from chaosazure.machine.constants import RES_TYPE_VM, OS_LINUX, OS_WINDOWS
-from chaosazure.rgraph.resource_graph import fetch_resources
+
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
+
+from chaosazure import init_client
+from chaosazure.machine.constants import RES_TYPE_VM, OS_LINUX, OS_WINDOWS
+from chaosazure.rgraph.resource_graph import fetch_resources
+
 
 __all__ = ["delete_machines", "stop_machines", "restart_machines",
            "start_machines", "stress_cpu", "fill_disk", "network_latency",
@@ -562,9 +564,4 @@ def __get_os_type(machine):
 
 
 def __compute_mgmt_client(secrets, configuration):
-    with auth(secrets) as cred:
-        subscription_id = configuration['azure']['subscription_id']
-        client = ComputeManagementClient(
-            credentials=cred, subscription_id=subscription_id)
-
-        return client
+    return init_client(secrets, configuration)

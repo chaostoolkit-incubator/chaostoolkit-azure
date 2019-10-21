@@ -2,14 +2,22 @@
 
 """Top-level package for chaostoolkit-azure."""
 import contextlib
-from chaoslib.discovery import initialize_discovery_result, discover_actions, \
-    discover_probes
-from chaoslib.types import Discovery, DiscoveredActivities, Secrets
-from logzero import logger
-from msrestazure.azure_active_directory import ServicePrincipalCredentials
 from typing import List
 
-__all__ = ["auth", "discover", "__version__"]
+from azure.mgmt.compute import ComputeManagementClient
+from azure.mgmt.resourcegraph import ResourceGraphClient
+from chaoslib.discovery import initialize_discovery_result, discover_actions, \
+    discover_probes
+from chaoslib.types import Discovery, DiscoveredActivities, \
+    Secrets, Configuration
+from logzero import logger
+import msrestazure
+from msrestazure.azure_active_directory import ServicePrincipalCredentials
+from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD, \
+    AZURE_US_GOV_CLOUD, AZURE_GERMAN_CLOUD, AZURE_CHINA_CLOUD
+
+__all__ = ["auth", "discover", "__version__", "init_client",
+           "init_resource_graph_client"]
 __version__ = '0.5.0'
 
 
@@ -33,6 +41,19 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
         }
     }
     ```
+    Also if you are not working with Public Global Azure, e.g. China Cloud
+    You can feed the cloud environment name as well.
+    Please refer to msrestazure.azure_cloud
+    ```json
+    {
+        "azure": {
+            "client_id": "xxxxxxx",
+            "client_secret": "*******",
+            "tenant_id": "@@@@@@@@@@@",
+            "azure_cloud": "AZURE_CHINA_CLOUD"
+        }
+    }
+    ```
 
     The client_id, tenant_id, and client_secret content will be read
     from the specified local environment variables, e.g. `AZURE_CLIENT_ID`,
@@ -48,14 +69,27 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
         resource_client = ResourceManagementClient(cred, azure_subscription_id)
         compute_client = ComputeManagementClient(cred, azure_subscription_id)
     ```
+
+    Again, if you are not working with Public Azure Cloud,
+    and you set azure_cloud in secret,
+    this will pass one more parameter `base_url` to above function.
+    ```python
+        cloud = __get_cloud_env_by_name(creds['azure_cloud'])
+        client = ComputeManagementClient(
+            credentials=cred, subscription_id=subscription_id,
+                        base_url=cloud.endpoints.resource_manager)
+    ```
+
     """
     creds = dict(
-        azure_client_id=None, azure_client_secret=None, azure_tenant_id=None)
+        azure_client_id=None, azure_client_secret=None,
+        azure_tenant_id=None, azure_cloud=None)
 
     if secrets:
         creds["azure_client_id"] = secrets.get("client_id")
         creds["azure_client_secret"] = secrets.get("client_secret")
         creds["azure_tenant_id"] = secrets.get("tenant_id")
+        creds["azure_cloud"] = secrets.get("azure_cloud", "AZURE_PUBLIC_CLOUD")
 
     credentials = __get_credentials(creds)
 
@@ -74,14 +108,39 @@ def discover(discover_system: bool = True) -> Discovery:
     return discovery
 
 
+def init_client(secrets: Secrets, configuration: Configuration) \
+        -> ComputeManagementClient:
+    with auth(secrets) as cred:
+        subscription_id = configuration['azure']['subscription_id']
+        base_url = __get_cloud_env_by_name(
+            secrets.get("azure_cloud")).endpoints.resource_manager
+        client = ComputeManagementClient(
+            credentials=cred, subscription_id=subscription_id,
+            base_url=base_url)
+
+        return client
+
+
+def init_resource_graph_client(secrets: Secrets) -> ResourceGraphClient:
+    with auth(secrets) as cred:
+        base_url = __get_cloud_env_by_name(
+            secrets.get("azure_cloud")).endpoints.resource_manager
+        client = ResourceGraphClient(
+            credentials=cred,
+            base_url=base_url)
+
+        return client
+
+
 ###############################################################################
 # Private functions
 ###############################################################################
-def __get_credentials(creds):
+def __get_credentials(creds: dict) -> ServicePrincipalCredentials:
     credentials = ServicePrincipalCredentials(
         client_id=creds['azure_client_id'],
         secret=creds['azure_client_secret'],
-        tenant=creds['azure_tenant_id']
+        tenant=creds['azure_tenant_id'],
+        cloud_environment=__get_cloud_env_by_name(creds['azure_cloud'])
     )
     return credentials
 
@@ -98,3 +157,23 @@ def __load_exported_activities() -> List[DiscoveredActivities]:
     activities.extend(discover_actions("chaosazure.webapp.actions"))
     activities.extend(discover_probes("chaosazure.webapp.probes"))
     return activities
+
+
+def __get_cloud_env_by_name(cloud: str = None) \
+        -> msrestazure.azure_cloud.Cloud:
+    try:
+        if cloud is None:
+            return msrestazure.azure_cloud.AZURE_PUBLIC_CLOUD
+
+        cloud = cloud.strip()
+        if cloud == "AZURE_CHINA_CLOUD":
+            return msrestazure.azure_cloud.AZURE_CHINA_CLOUD
+        elif cloud == "AZURE_US_GOV_CLOUD":
+            return msrestazure.azure_cloud.AZURE_US_GOV_CLOUD
+        elif cloud == "AZURE_GERMAN_CLOUD":
+            return msrestazure.azure_cloud.AZURE_GERMAN_CLOUD
+        else:
+            return msrestazure.azure_cloud.AZURE_PUBLIC_CLOUD
+    except AttributeError:
+        logger.info("Invalid azure cloud name, use default AZURE_PUBLIC_CLOUD")
+        return msrestazure.azure_cloud.AZURE_PUBLIC_CLOUD

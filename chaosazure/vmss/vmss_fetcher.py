@@ -1,6 +1,4 @@
-from azure.mgmt.compute import ComputeManagementClient
-
-from chaosazure import auth
+from chaosazure import init_client
 
 
 def fetch_vmss_instances(choice, configuration, secrets):
@@ -34,12 +32,3 @@ def __parse_vmss_instances_result(instances):
         }
         results.append(m)
     return results
-
-
-def init_client(secrets, configuration):
-    with auth(secrets) as cred:
-        subscription_id = configuration['azure']['subscription_id']
-        client = ComputeManagementClient(
-            credentials=cred, subscription_id=subscription_id)
-
-        return client

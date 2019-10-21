@@ -97,6 +97,20 @@ There are two ways of doing this:
         }
     }
     ```
+
+    Also if you are not working with Public Global Azure, e.g. China Cloud
+    You can feed the cloud environment name as well.
+    Please refer to msrestazure.azure_cloud
+    ```json
+        {
+            "azure": {
+                "client_id": "xxxxxxx",
+                "client_secret": "*******",
+                "tenant_id": "@@@@@@@@@@@",
+                "azure_cloud": "AZURE_CHINA_CLOUD"
+            }
+        }
+    ```
     
     Additionally you need to provide the Azure subscription id.
 

@@ -1,11 +1,10 @@
 import random
 
-from azure.mgmt.compute import ComputeManagementClient
 from chaoslib import Configuration, Secrets
 from chaoslib.exceptions import FailedActivity
 from logzero import logger
 
-from chaosazure import auth
+from chaosazure import init_client
 from chaosazure.rgraph.resource_graph import fetch_resources
 from chaosazure.vmss.constants import RES_TYPE_VMSS
 from chaosazure.vmss.vmss_fetcher import fetch_vmss_instances
@@ -165,12 +164,3 @@ def choose_vmss_at_random(filter, configuration, secrets):
             "Found virtual machine scale sets: {}".format(
                 [x['name'] for x in vmss]))
     return random.choice(vmss)
-
-
-def init_client(secrets, configuration):
-    with auth(secrets) as cred:
-        subscription_id = configuration['azure']['subscription_id']
-        client = ComputeManagementClient(
-            credentials=cred, subscription_id=subscription_id)
-
-        return client
