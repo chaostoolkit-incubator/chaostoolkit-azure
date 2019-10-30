@@ -108,4 +108,3 @@ def format_query(sample, node_resource_group):
     else:
         return "where resourceGroup =~ '{}' | sample {}".format(
             node_resource_group, sample)
-
