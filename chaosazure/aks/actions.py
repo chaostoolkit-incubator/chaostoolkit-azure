@@ -99,8 +99,13 @@ def node_resource_group_query(query, sample, configuration, secrets):
     choice = random.choice(aks)
     node_resource_group = choice['properties']['nodeResourceGroup']
 
+    return format_query(sample, node_resource_group)
+
+
+def format_query(sample, node_resource_group):
     if sample is None:
         return "where resourceGroup =~ '{}'".format(node_resource_group)
     else:
         return "where resourceGroup =~ '{}' | sample {}".format(
             node_resource_group, sample)
+
