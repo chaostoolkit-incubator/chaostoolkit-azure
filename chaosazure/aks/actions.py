@@ -102,4 +102,5 @@ def node_resource_group_query(query, sample, configuration, secrets):
     if sample is None:
         return "where resourceGroup =~ '{}'".format(node_resource_group)
     else:
-        return "where resourceGroup =~ '{}' | sample {}".format(node_resource_group, sample)
+        return "where resourceGroup =~ '{}' | sample {}".format(
+            node_resource_group, sample)
