@@ -1,12 +1,13 @@
 import random
-from azure.mgmt.web import WebSiteManagementClient
+
 from chaoslib import Secrets, Configuration
 from chaoslib.exceptions import FailedActivity
 from logzero import logger
 
-from chaosazure import auth
+from chaosazure import init_client
 from chaosazure.rgraph.resource_graph import fetch_resources
 from chaosazure.webapp.constants import RES_TYPE_WEBAPP
+
 
 __all__ = ["stop_webapp", "restart_webapp", "start_webapp", "delete_webapp"]
 
@@ -32,7 +33,7 @@ def stop_webapp(filter: str = None,
     choice = __fetch_webapp_at_random(filter, configuration, secrets)
 
     logger.debug("Stopping web app: {}".format(choice['name']))
-    client = __init_client(secrets, configuration)
+    client = init_client(secrets, configuration)
     client.web_apps.stop(choice['resourceGroup'], choice['name'])
 
 
@@ -57,7 +58,7 @@ def restart_webapp(filter: str = None,
     choice = __fetch_webapp_at_random(filter, configuration, secrets)
 
     logger.debug("Restarting web app: {}".format(choice['name']))
-    client = __init_client(secrets, configuration)
+    client = init_client(secrets, configuration)
     client.web_apps.restart(choice['resourceGroup'], choice['name'])
 
 
@@ -82,7 +83,7 @@ def start_webapp(filter: str = None,
     choice = __fetch_webapp_at_random(filter, configuration, secrets)
 
     logger.debug("Starting web app: {}".format(choice['name']))
-    client = __init_client(secrets, configuration)
+    client = init_client(secrets, configuration)
     client.web_apps.start(choice['resourceGroup'], choice['name'])
 
 
@@ -110,7 +111,7 @@ def delete_webapp(filter: str = None,
     choice = __fetch_webapp_at_random(filter, configuration, secrets)
 
     logger.debug("Deleting web app: {}".format(choice['name']))
-    client = __init_client(secrets, configuration)
+    client = init_client(secrets, configuration)
     client.web_apps.delete(choice['resourceGroup'], choice['name'])
 
 
@@ -133,13 +134,3 @@ def __fetch_webapp_at_random(filter, configuration, secrets):
     webapps = fetch_webapps(filter, configuration, secrets)
     choice = random.choice(webapps)
     return choice
-
-
-def __init_client(secrets, configuration):
-    with auth(secrets) as cred:
-        subscription_id = configuration['azure']['subscription_id']
-        client = WebSiteManagementClient(
-            credentials=cred,
-            subscription_id=subscription_id)
-
-        return client

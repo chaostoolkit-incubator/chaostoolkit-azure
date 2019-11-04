@@ -10,6 +10,9 @@ script.
 - Added the network_latency feature: disturb the network of the VM, adding some
  latency for a time period (defaults to a 200 +/- 50ms latency for 1 minute).
   Only works on Linux machines for now.
+- Supporting multiple Azure Cloud, such as AZURE_CHINA_CLOUD.
+- Code clean up and refactoring, moving up client initiation.
+
 
 ## [0.5.0][] - 2019-07-05
 

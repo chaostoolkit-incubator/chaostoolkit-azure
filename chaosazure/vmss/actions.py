@@ -1,12 +1,11 @@
 import os
 import random
 
-from azure.mgmt.compute import ComputeManagementClient
 from chaoslib import Configuration, Secrets
 from chaoslib.exceptions import FailedActivity
 from logzero import logger
 
-from chaosazure import auth
+from chaosazure import init_client
 from chaosazure.rgraph.resource_graph import fetch_resources
 from chaosazure.vmss.constants import RES_TYPE_VMSS
 from chaosazure.machine.constants import OS_LINUX, OS_WINDOWS
