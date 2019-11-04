@@ -258,15 +258,6 @@ def choose_vmss_at_random(filter, configuration, secrets):
     return random.choice(vmss)
 
 
-def init_client(secrets, configuration):
-    with auth(secrets) as cred:
-        subscription_id = configuration['azure']['subscription_id']
-        client = ComputeManagementClient(
-            credentials=cred, subscription_id=subscription_id)
-
-        return client
-
-
 def __get_os_type(m):
     os_type = m['osType']
     if os_type not in (OS_LINUX, OS_WINDOWS):
