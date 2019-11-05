@@ -232,7 +232,7 @@ def stress_cpu(filter: str = None,
                 "Cannot run CPU stress test on OS: %s" % os_type)
 
         with open(os.path.join(os.path.dirname(__file__),
-                               "scripts", script_name)) as file:
+                               "../scripts", script_name)) as file:
             script_content = file.read()
 
         parameters = {
@@ -318,7 +318,7 @@ def fill_disk(filter: str = None,
                 "Cannot run disk filling test on OS: %s" % os_type)
 
         with open(os.path.join(os.path.dirname(__file__),
-                               "scripts", script_name)) as file:
+                               "../scripts", script_name)) as file:
             script_content = file.read()
 
         logger.debug("Script content: {}".format(script_content))
@@ -408,7 +408,7 @@ def network_latency(filter: str = None,
                 "Cannot run network latency test on OS: %s" % os_type)
 
         with open(os.path.join(os.path.dirname(__file__),
-                               "scripts", script_name)) as file:
+                               "../scripts", script_name)) as file:
             script_content = file.read()
 
         logger.debug("Script content: {}".format(script_content))
@@ -493,7 +493,7 @@ def burn_io(filter: str = None,
                 "Cannot run burn_io test on OS: %s" % os_type)
 
         with open(os.path.join(os.path.dirname(__file__),
-                               "scripts", script_name)) as file:
+                               "../scripts", script_name)) as file:
             script_content = file.read()
 
         logger.debug("Script content: {}".format(script_content))

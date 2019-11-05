@@ -12,7 +12,7 @@ script.
   Only works on Linux machines for now.
 - Supporting multiple Azure Cloud, such as AZURE_CHINA_CLOUD.
 - Code clean up and refactoring, moving up client initiation.
-
+- Added the ability to stress a machine instance in a virtual machine scale set
 
 ## [0.5.0][] - 2019-07-05
 
