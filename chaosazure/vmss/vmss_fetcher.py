@@ -28,7 +28,8 @@ def __parse_vmss_instances_result(instances):
     for i in instances:
         m = {
             'name': i.name,
-            'instanceId': i.instance_id
+            'instanceId': i.instance_id,
+            'osType': i.storage_profile.os_disk.os_type.lower()
         }
         results.append(m)
     return results
