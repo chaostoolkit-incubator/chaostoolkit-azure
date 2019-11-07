@@ -13,6 +13,7 @@ script.
 - Supporting multiple Azure Cloud, such as AZURE_CHINA_CLOUD.
 - Code clean up and refactoring, moving up client initiation.
 - Added the ability to stress a machine instance in a virtual machine scale set
+- Supporting Azure token based credentials (no refresh token support yet)
 
 ## [0.5.0][] - 2019-07-05
 
