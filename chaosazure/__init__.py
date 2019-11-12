@@ -4,6 +4,7 @@
 import contextlib
 from typing import List
 
+from adal import AuthenticationContext
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resourcegraph import ResourceGraphClient
 from chaoslib.discovery import initialize_discovery_result, discover_actions, \
@@ -12,7 +13,8 @@ from chaoslib.types import Discovery, DiscoveredActivities, \
     Secrets, Configuration
 from logzero import logger
 import msrestazure
-from msrestazure.azure_active_directory import ServicePrincipalCredentials
+from msrestazure.azure_active_directory import ServicePrincipalCredentials, \
+    AADTokenCredentials
 from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD, \
     AZURE_US_GOV_CLOUD, AZURE_GERMAN_CLOUD, AZURE_CHINA_CLOUD
 
@@ -26,10 +28,13 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
     """
     Attempt to load the Azure authentication information from a local
     configuration file or the passed `configuration` mapping. The latter takes
-    precedence over the local configuration file.
+    precedence over the local configuration file. Service principle and token
+    based credentials are supported. Token based credentials do not currently
+    support refresh token functionality.
 
     If you provide a secrets dictionary, the returned mapping will
-    be created from their content. For instance, you could have:
+    be created from their content. For instance, for service principle based
+    credentials, you could have:
 
     Secrets mapping (in your experiment file):
     ```json
@@ -59,6 +64,10 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
     from the specified local environment variables, e.g. `AZURE_CLIENT_ID`,
     `AZURE_TENANT_ID`, and `AZURE_CLIENT_SECRET` that you will have populated
     before hand.
+
+    If the client_secret is not provided, then token based credentials is
+    assumed and an access_token value must be present and updated as the token
+    expires.
     ```
 
     Using this function goes as follows:
@@ -90,6 +99,7 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
         creds["azure_client_secret"] = secrets.get("client_secret")
         creds["azure_tenant_id"] = secrets.get("tenant_id")
         creds["azure_cloud"] = secrets.get("azure_cloud", "AZURE_PUBLIC_CLOUD")
+        creds["access_token"] = secrets.get("access_token")
 
     credentials = __get_credentials(creds)
 
@@ -136,12 +146,16 @@ def init_resource_graph_client(secrets: Secrets) -> ResourceGraphClient:
 # Private functions
 ###############################################################################
 def __get_credentials(creds: dict) -> ServicePrincipalCredentials:
-    credentials = ServicePrincipalCredentials(
-        client_id=creds['azure_client_id'],
-        secret=creds['azure_client_secret'],
-        tenant=creds['azure_tenant_id'],
-        cloud_environment=__get_cloud_env_by_name(creds['azure_cloud'])
-    )
+    if creds['azure_client_secret'] is not None:
+        credentials = ServicePrincipalCredentials(
+            client_id=creds['azure_client_id'],
+            secret=creds['azure_client_secret'],
+            tenant=creds['azure_tenant_id'],
+            cloud_environment=__get_cloud_env_by_name(creds['azure_cloud'])
+        )
+    else:
+        token = dict(accessToken=creds['access_token'])
+        credentials = AADTokenCredentials(token, creds['azure_client_id'])
     return credentials
 
 
