@@ -1,7 +1,13 @@
 # Changelog
 
 ## [Unreleased][]
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.5.0...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.6.0...HEAD
+
+## [0.6.0][] - 2019-11-12
+
+[0.6.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.5.0...0.6.0
+
+### Added
 
 - Added the burn_io feature: increase the I/O operations per seconds of the 
 hard drive for a time period (default time period is 1 minute). Works by 
