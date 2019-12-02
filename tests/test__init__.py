@@ -1,8 +1,10 @@
 import pytest
 from chaosazure import __get_cloud_env_by_name, init_client,\
     init_resource_graph_client
+from chaoslib.exceptions import InterruptExecution    
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resourcegraph import ResourceGraphClient
+from logzero import logger
 from unittest.mock import MagicMock, patch, ANY
 from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD, \
     AZURE_US_GOV_CLOUD, AZURE_GERMAN_CLOUD, AZURE_CHINA_CLOUD
@@ -43,6 +45,13 @@ SECRETS_USGOV = {
 SECRETS_PUBLIC = {
     "client_id": "***REMOVED***",
     "client_secret": "***REMOVED***",
+    "tenant_id": "***REMOVED***",
+    "azure_cloud": "AZURE_PUBLIC_CLOUD"
+}
+
+SECRETS_PUBLIC_TOKEN = {
+    "client_id": "***REMOVED***",
+    "access_token": "***REMOVED***",
     "tenant_id": "***REMOVED***",
     "azure_cloud": "AZURE_PUBLIC_CLOUD"
 }
@@ -435,3 +444,32 @@ def test_init_rg_client_usgov(cmclient, spcred):
         base_url=__get_cloud_env_by_name(
             SECRETS_USGOV.get("azure_cloud")).
             endpoints.resource_manager)
+
+@patch('chaosazure.AADTokenCredentials', autospec=True)
+@patch('chaosazure.ComputeManagementClient', autospec=True)
+def test_init_client_public_token_credentials(cmclient, aadcred):
+    client = MagicMock()
+    cmclient.return_value = client
+
+    cred = MagicMock()
+    aadcred.return_value = cred
+
+    init_client(SECRETS_PUBLIC_TOKEN, CONFIG)
+
+    aadcred.assert_called_with(
+        dict(accessToken=SECRETS_PUBLIC_TOKEN.get('access_token')),
+        client_id=SECRETS_PUBLIC_TOKEN.get('client_id'))
+
+    cmclient.assert_called_with(
+        credentials=ANY,
+        subscription_id=CONFIG['azure']['subscription_id'],
+        base_url=__get_cloud_env_by_name(
+            SECRETS_PUBLIC.get("azure_cloud")).
+            endpoints.resource_manager)
+
+@patch('chaosazure.logger', autospec=True)
+def test_access_token_or_client_secret_must_be_set(logger: logger):
+    with pytest.raises(InterruptExecution) as execinfo:  
+        init_client(dict(), CONFIG) 
+
+    assert str(execinfo.value) == 'Authentication to Azure requires a client secret or an access token'           
