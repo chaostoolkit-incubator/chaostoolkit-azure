@@ -9,6 +9,7 @@ from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resourcegraph import ResourceGraphClient
 from chaoslib.discovery import initialize_discovery_result, discover_actions, \
     discover_probes
+from chaoslib.exceptions import InterruptExecution
 from chaoslib.types import Discovery, DiscoveredActivities, \
     Secrets, Configuration
 from logzero import logger
@@ -92,7 +93,7 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
     """
     creds = dict(
         azure_client_id=None, azure_client_secret=None,
-        azure_tenant_id=None, azure_cloud=None)
+        azure_tenant_id=None, azure_cloud=None, access_token=None)
 
     if secrets:
         creds["azure_client_id"] = secrets.get("client_id")
@@ -153,9 +154,12 @@ def __get_credentials(creds: dict) -> ServicePrincipalCredentials:
             tenant=creds['azure_tenant_id'],
             cloud_environment=__get_cloud_env_by_name(creds['azure_cloud'])
         )
-    else:
+    elif creds['access_token'] is not None:
         token = dict(accessToken=creds['access_token'])
         credentials = AADTokenCredentials(token, creds['azure_client_id'])
+    else:
+        raise InterruptExecution("Authentication to Azure requires a"
+                                 " client secret or an access token")
     return credentials
 
 
