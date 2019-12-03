@@ -3,6 +3,10 @@
 ## [Unreleased][]
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.6.0...HEAD
 
+### Added
+
+- Supporting criteria for selection of the virtual machine scale set instance to stop
+
 ## [0.6.0][] - 2019-11-12
 
 [0.6.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.5.0...0.6.0

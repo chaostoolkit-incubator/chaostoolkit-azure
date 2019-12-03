@@ -1,5 +1,6 @@
 import os
 import random
+from typing import Any, Dict, Iterable, Mapping
 
 from chaoslib import Configuration, Secrets
 from chaoslib.exceptions import FailedActivity
@@ -81,6 +82,7 @@ def restart_vmss(filter: str = None,
 
 def stop_vmss(filter: str = None,
               configuration: Configuration = None,
+              instance_criteria: Iterable[Mapping[str, any]] = None,
               secrets: Secrets = None):
     """
     Stop a virtual machine scale set instance at random.
@@ -92,14 +94,39 @@ def stop_vmss(filter: str = None,
         potential chaos candidates.
         Filtering example:
         'where resourceGroup=="myresourcegroup" and name="myresourcename"'
+    instance_criteria :  Iterable[Mapping[str, any]]
+        Allows specification of criteria for selection of a given virtual
+        machine scale set instance. If the instance_criteria is omitted,
+        an instance will be chosen at random. All of the criteria within each
+        item of the Iterable must match, i.e. AND logic is applied.
+        The first item with all matching criterion will be used to select the
+        instance.
+        Criteria example:
+        [
+         {"name": "myVMSSInstance1"},
+         {
+          "name": "myVMSSInstance2",
+          "instanceId": "2"
+         }
+         {"instanceId": "3"},
+        ]
+        If the instances include two items. One with name = myVMSSInstance4
+        and instanceId = 2. The other with name = myVMSSInstance2 and
+        instanceId = 3. The criteria {"instanceId": "3"} will be the first
+        match since both the name and the instanceId did not match on the
+        first criteria.
     """
     logger.debug(
         "Start stop_vmss: configuration='{}', filter='{}'".format(
             configuration, filter))
 
     vmss = choose_vmss_at_random(filter, configuration, secrets)
-    vmss_instance = choose_vmss_instance_at_random(
-        vmss, configuration, secrets)
+    if not instance_criteria:
+        vmss_instance = choose_vmss_instance_at_random(
+            vmss, configuration, secrets)
+    else:
+        vmss_instance = choose_vmss_instance(
+            vmss, configuration, instance_criteria, secrets)
 
     logger.debug(
         "Stopping instance: {}".format(vmss_instance['name']))
@@ -244,6 +271,55 @@ def choose_vmss_instance_at_random(vmss_choice, configuration, secrets):
                 [x['name'] for x in vmss_instances]))
     choice_vmss_instance = random.choice(vmss_instances)
     return choice_vmss_instance
+
+
+def choose_vmss_instance(vmss_choice: dict,
+                         configuration: Configuration = None,
+                         instance_criteria: Iterable[Mapping[str, any]] = None,
+                         secrets: Secrets = None) -> Dict[str, Any]:
+    vmss_instances = fetch_vmss_instances(vmss_choice, configuration, secrets)
+    if not vmss_instances:
+        logger.debug("No virtual machine scale set instances found")
+        raise FailedActivity("No virtual machine scale set instances found")
+    else:
+        logger.debug(
+            "Found virtual machine scale set instances: {}".format(
+                [x['name'] for x in vmss_instances]))
+
+    choice_vmss_instance = None
+    for vmss in vmss_instances:
+        if vmss_matches_criteria(vmss, instance_criteria):
+            choice_vmss_instance = vmss
+            break
+
+    if not choice_vmss_instance:
+        logger.debug("No virtual machine scale set instance found for "
+                     "virtual machine scale set %s and criteria %s"
+                     % (vmss, instance_criteria))
+        raise FailedActivity("No virtual machine scale set instances found for"
+                             " criteria")
+
+    logger.warning("Attempting to stop instance with name %s"
+                   % choice_vmss_instance['name'])
+
+    return choice_vmss_instance
+
+
+def vmss_matches_criteria(vmss: dict,
+                          instance_criteria:
+                          Iterable[Mapping[str, any]] = None):
+    for criteria in instance_criteria:
+        logger.debug("Checking criteria %s" % criteria)
+        found_mismatch = False
+        for key, value in criteria.items():
+            if vmss[key] != value:
+                found_mismatch = True
+                break
+        if not found_mismatch:
+            logger.debug("Matching criteria %s" % criteria)
+            return True
+
+    return False
 
 
 def choose_vmss_at_random(filter, configuration, secrets):
