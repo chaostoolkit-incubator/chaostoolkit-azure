@@ -13,6 +13,7 @@ __all__ = ["delete_node", "stop_node", "restart_node"]
 
 
 def delete_node(filter: str = None,
+                sample: int = None,
                 configuration: Configuration = None,
                 secrets: Secrets = None):
     """
@@ -33,11 +34,12 @@ def delete_node(filter: str = None,
         "Start delete_node: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    query = node_resource_group_query(filter, configuration, secrets)
+    query = node_resource_group_query(filter, sample, configuration, secrets)
     delete_machines(query, configuration, secrets)
 
 
 def stop_node(filter: str = None,
+              sample: int = None,
               configuration: Configuration = None,
               secrets: Secrets = None):
     """
@@ -55,11 +57,12 @@ def stop_node(filter: str = None,
         "Start stop_node: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    query = node_resource_group_query(filter, configuration, secrets)
+    query = node_resource_group_query(filter, sample, configuration, secrets)
     stop_machines(query, configuration, secrets)
 
 
 def restart_node(filter: str = None,
+                 sample: int = None,
                  configuration: Configuration = None,
                  secrets: Secrets = None):
     """
@@ -77,14 +80,14 @@ def restart_node(filter: str = None,
         "Start restart_node: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    query = node_resource_group_query(filter, configuration, secrets)
+    query = node_resource_group_query(filter, sample, configuration, secrets)
     restart_machines(query, configuration, secrets)
 
 
 ###############################################################################
 # Private helper functions
 ###############################################################################
-def node_resource_group_query(query, configuration, secrets):
+def node_resource_group_query(query, sample, configuration, secrets):
     aks = fetch_resources(query, RES_TYPE_AKS, secrets, configuration)
     if not aks:
         logger.warning("No AKS clusters found")
@@ -95,4 +98,13 @@ def node_resource_group_query(query, configuration, secrets):
                 [x['name'] for x in aks]))
     choice = random.choice(aks)
     node_resource_group = choice['properties']['nodeResourceGroup']
-    return "where resourceGroup =~ '{}'".format(node_resource_group)
+
+    return format_query(sample, node_resource_group)
+
+
+def format_query(sample, node_resource_group):
+    if sample is None:
+        return "where resourceGroup =~ '{}'".format(node_resource_group)
+    else:
+        return "where resourceGroup =~ '{}' | sample {}".format(
+            node_resource_group, sample)
