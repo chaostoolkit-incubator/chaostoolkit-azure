@@ -2,8 +2,6 @@ import pytest
 from chaosazure import __get_cloud_env_by_name, init_client,\
     init_resource_graph_client
 from chaoslib.exceptions import InterruptExecution    
-from azure.mgmt.compute import ComputeManagementClient
-from azure.mgmt.resourcegraph import ResourceGraphClient
 from logzero import logger
 from unittest.mock import MagicMock, patch, ANY
 from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD, \

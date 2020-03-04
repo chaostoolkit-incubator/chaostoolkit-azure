@@ -1,5 +1,3 @@
-from zipfile import sizeCentralDir
-
 import pytest
 from azure.mgmt.compute.v2018_10_01.models import InstanceViewStatus, \
     RunCommandResult
