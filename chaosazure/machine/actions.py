@@ -258,6 +258,7 @@ def fill_disk(filter: str = None,
               duration: int = 120,
               timeout: int = 60,
               size: int = 1000,
+              path: str = None,
               configuration: Configuration = None,
               secrets: Secrets = None):
     """
@@ -277,6 +278,9 @@ def fill_disk(filter: str = None,
         recommended to set this value to less than 30s. Defaults to 60 seconds.
     size : int
         Size of the file created on the disk. Defaults to 1GB.
+    path : str, optional
+        The absolute path to write the fill file into.
+        Defaults: C:/burn for Windows clients, /root/burn for Linux clients.
 
 
     Examples
@@ -310,9 +314,11 @@ def fill_disk(filter: str = None,
         if os_type == OS_WINDOWS:
             command_id = 'RunPowerShellScript'
             script_name = "fill_disk.ps1"
+            fill_path = "C:/burn" if path is None else path
         elif os_type == OS_LINUX:
             command_id = 'RunShellScript'
             script_name = "fill_disk.sh"
+            fill_path = "/root/burn" if path is None else path
         else:
             raise FailedActivity(
                 "Cannot run disk filling test on OS: %s" % os_type)
@@ -327,7 +333,8 @@ def fill_disk(filter: str = None,
             'script': [script_content],
             'parameters': [
                 {'name': "duration", 'value': duration},
-                {'name': "size", 'value': size}
+                {'name': "size", 'value': size},
+                {'name': "path", 'value': fill_path}
             ]
         }
 

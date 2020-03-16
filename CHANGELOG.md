@@ -6,6 +6,7 @@
 ### Added
 
 - Supporting criteria for selection of the virtual machine scale set instance to stop
+- Added optional path parameter to fill_disk
 
 ## [0.6.0][] - 2019-11-12
 
