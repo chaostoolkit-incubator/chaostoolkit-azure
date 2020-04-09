@@ -113,11 +113,39 @@ There are two ways of doing this:
     ```
     
     Additionally you need to provide the Azure subscription id.
+    Either by reading from the environment variable named, for example,
+    `SUBSCRIPTION_ID`:
 
     ```json
     {
-        "azure": {
-            "subscription_id": "your-azure-subscription-id"
+        "configuration": {
+            "azure_subscription_id": {
+                "type": "env",
+                "key": "SUBSCRIPTION_ID"
+            }
+        }
+    }
+    ```
+
+    Or statically set into the configuration:
+    ```json
+    {
+        "configuration": {
+            "azure_subscription_id": "your-azure-subscription-id"
+        }
+    }
+    ```
+
+    An old, bu deprecated way of doing it was as follows, this still works
+    but should not be favoured over the previous approaches as it's not the
+    Chaos Toolkit way to pass structured condigurations.
+
+    ```json
+    {
+        "configuration": {
+            "azure": {
+                "subscription_id": "your-azure-subscription-id"
+            }
         }
     }
     ```
@@ -139,7 +167,10 @@ Here is a full example:
   ],
   "configuration": {
     "azure": {
-      "subscription_id": "xxx"
+      "azure_subscription_id": {
+        "type": "env",
+        "key": "SUBSCRIPTION_ID"
+      }
 	}
   },
   "secrets": {

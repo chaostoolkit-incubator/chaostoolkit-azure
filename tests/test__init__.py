@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from chaosazure import __get_cloud_env_by_name, init_client,\
     init_resource_graph_client
@@ -10,6 +12,13 @@ from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD, \
 CONFIG = {
     "azure": {
         "subscription_id": "***REMOVED***"
+    }
+}
+
+FLAT_CONFIG_FROM_EN = {
+    "azure_subscription_id": {
+        "type": "env",
+        "key": "SUBSCRIPTION_ID"
     }
 }
 
@@ -470,4 +479,36 @@ def test_access_token_or_client_secret_must_be_set(logger: logger):
     with pytest.raises(InterruptExecution) as execinfo:  
         init_client(dict(), CONFIG) 
 
-    assert str(execinfo.value) == 'Authentication to Azure requires a client secret or an access token'           
+    assert str(execinfo.value) == 'Authentication to Azure requires a client secret or an access token'
+
+
+@patch('chaosazure.ServicePrincipalCredentials', autospec=True)
+def test_credential_using_nested_config(spcred):
+    cred = MagicMock()
+    spcred.return_value = cred
+
+    init_client(SECRETS, CONFIG)
+
+    spcred.assert_called_with(
+        client_id=SECRETS.get("client_id"),
+        secret=SECRETS.get('client_secret'),
+        tenant=SECRETS.get('tenant_id'),
+        cloud_environment=__get_cloud_env_by_name(SECRETS.get('azure_cloud')))
+
+
+@patch('chaosazure.ServicePrincipalCredentials', autospec=True)
+def test_credential_using_flat_config_with_env(spcred):
+    cred = MagicMock()
+    spcred.return_value = cred
+
+    os.putenv("SUBSCRIPTION_ID", "***REMOVED***")
+    try:
+        init_client(SECRETS, FLAT_CONFIG_FROM_EN)
+    finally:
+        os.environ.pop("SUBSCRIPTION_ID", None)
+
+    spcred.assert_called_with(
+        client_id=SECRETS.get("client_id"),
+        secret=SECRETS.get('client_secret'),
+        tenant=SECRETS.get('tenant_id'),
+        cloud_environment=__get_cloud_env_by_name(SECRETS.get('azure_cloud')))

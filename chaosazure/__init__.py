@@ -122,7 +122,9 @@ def discover(discover_system: bool = True) -> Discovery:
 def init_client(secrets: Secrets, configuration: Configuration) \
         -> ComputeManagementClient:
     with auth(secrets) as cred:
-        subscription_id = configuration['azure']['subscription_id']
+        subscription_id = configuration.get("azure_subscription_id")
+        if not subscription_id:
+            subscription_id = configuration['azure']['subscription_id']
         base_url = __get_cloud_env_by_name(
             secrets.get("azure_cloud")).endpoints.resource_manager
         client = ComputeManagementClient(

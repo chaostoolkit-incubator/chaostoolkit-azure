@@ -7,6 +7,12 @@
 
 - Supporting criteria for selection of the virtual machine scale set instance to stop
 
+### Changed
+
+- Use the official configuration accessor for `subscription_id` [#91][91]
+
+[91]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/issues/91
+
 ## [0.6.0][] - 2019-11-12
 
 [0.6.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.5.0...0.6.0

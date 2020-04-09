@@ -14,7 +14,9 @@ def fetch_resources(query, resource_type, secrets, configuration):
 
 
 def __create_resource_graph_query(query, resource_type, configuration):
-    subscription_id = configuration['azure']['subscription_id']
+    subscription_id = configuration.get("azure_subscription_id")
+    if not subscription_id:
+        subscription_id = configuration['azure']['subscription_id']
     _query = __create_query(resource_type, query)
     query = QueryRequest(
         query=_query,
