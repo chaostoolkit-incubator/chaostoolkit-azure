@@ -1,7 +1,11 @@
 # Changelog
 
 ## [Unreleased][]
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.7.0...HEAD
+
+## [0.7.0][] - 2020-04-09
+
+[0.7.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.6.0...0.7.0
 
 ### Added
 

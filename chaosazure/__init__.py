@@ -21,7 +21,7 @@ from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD, \
 
 __all__ = ["auth", "discover", "__version__", "init_client",
            "init_resource_graph_client"]
-__version__ = '0.6.0'
+__version__ = '0.7.0'
 
 
 @contextlib.contextmanager
