@@ -369,7 +369,8 @@ def test_fill_disk_on_lnx(init, fetch, open):
             'script': ['script'],
             'parameters': [
                 {'name': 'duration', 'value': 60},
-                {'name': 'size', 'value': 100}
+                {'name': 'size', 'value': 100},
+                {'name': 'path', 'value': '/root/burn'}
             ]
         })
 
@@ -407,7 +408,8 @@ def test_fill_disk_on_win(init, fetch, open):
             'script': ['script'],
             'parameters': [
                 {'name': 'duration', 'value': 60},
-                {'name': 'size', 'value': 100}
+                {'name': 'size', 'value': 100},
+                {'name': 'path', 'value': 'C:/burn'}
             ]
         })
 
