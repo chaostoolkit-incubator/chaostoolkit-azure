@@ -1,5 +1,5 @@
 import random
-from typing import Any, Dict, Iterable, Mapping
+from typing import Any, Dict, Iterable, Mapping, List
 
 from chaoslib import Configuration, Secrets
 from chaoslib.exceptions import FailedActivity
@@ -84,7 +84,7 @@ def choose_vmss_at_random(filter, configuration, secrets):
     return random.choice(vmss)
 
 
-def fetch_vmss_instances(choice, configuration, secrets):
+def fetch_vmss_instances(choice, configuration, secrets) -> List[Dict]:
     vmss_instances = []
     client = init_client(secrets, configuration)
     pages = client.virtual_machine_scale_set_vms.list(
