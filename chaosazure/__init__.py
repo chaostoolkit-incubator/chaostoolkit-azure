@@ -4,28 +4,28 @@
 import contextlib
 from typing import List
 
-from adal import AuthenticationContext
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resourcegraph import ResourceGraphClient
-from chaoslib.discovery import initialize_discovery_result, discover_actions, \
-    discover_probes
-from chaoslib.exceptions import InterruptExecution
+from chaoslib.discovery import initialize_discovery_result, \
+    discover_actions, discover_probes
 from chaoslib.types import Discovery, DiscoveredActivities, \
     Secrets, Configuration
 from logzero import logger
-import msrestazure
-from msrestazure.azure_active_directory import ServicePrincipalCredentials, \
-    AADTokenCredentials
-from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD, \
-    AZURE_US_GOV_CLOUD, AZURE_GERMAN_CLOUD, AZURE_CHINA_CLOUD
+from msrestazure.azure_active_directory import AADMixin
 
-__all__ = ["auth", "discover", "__version__", "init_client",
-           "init_resource_graph_client"]
+from chaosazure.auth import Auth, create
+
+__all__ = [
+    "auth", "discover", "__version__", "init_client",
+    "init_resource_graph_client"
+]
 __version__ = '0.7.0'
+
+from chaosazure.common import cloud
 
 
 @contextlib.contextmanager
-def auth(secrets: Secrets) -> ServicePrincipalCredentials:
+def auth(secrets: Secrets) -> AADMixin:
     """
     Attempt to load the Azure authentication information from a local
     configuration file or the passed `configuration` mapping. The latter takes
@@ -34,8 +34,8 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
     support refresh token functionality.
 
     If you provide a secrets dictionary, the returned mapping will
-    be created from their content. For instance, for service principle based
-    credentials, you could have:
+    be created from their content. For example, a service principle based
+    credential has:
 
     Secrets mapping (in your experiment file):
     ```json
@@ -48,7 +48,8 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
     }
     ```
     Also if you are not working with Public Global Azure, e.g. China Cloud
-    You can feed the cloud environment name as well.
+    you can feed the cloud environment name. If omitted the Public Cloud is
+    taken as default.
     Please refer to msrestazure.azure_cloud
     ```json
     {
@@ -75,7 +76,7 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
 
     ```python
     with auth(secrets) as cred:
-        azure_subscription_id = configuration['azure']['subscription_id']
+        azure_subscription_id = configuration.get("azure_subscription_id")
         resource_client = ResourceManagementClient(cred, azure_subscription_id)
         compute_client = ComputeManagementClient(cred, azure_subscription_id)
     ```
@@ -91,20 +92,13 @@ def auth(secrets: Secrets) -> ServicePrincipalCredentials:
     ```
 
     """
-    creds = dict(
-        azure_client_id=None, azure_client_secret=None,
-        azure_tenant_id=None, azure_cloud=None, access_token=None)
 
-    if secrets:
-        creds["azure_client_id"] = secrets.get("client_id")
-        creds["azure_client_secret"] = secrets.get("client_secret")
-        creds["azure_tenant_id"] = secrets.get("tenant_id")
-        creds["azure_cloud"] = secrets.get("azure_cloud", "AZURE_PUBLIC_CLOUD")
-        creds["access_token"] = secrets.get("access_token")
-
-    credentials = __get_credentials(creds)
-
-    yield credentials
+    # No input validation needed:
+    # 1) Either no secrets are passed at all - chaostoolkit-lib
+    #    will handle it for us *or*
+    # 2) Secret arguments are partially missing or invalid - we
+    #    rely on the ms azure library
+    yield create(secrets)
 
 
 def discover(discover_system: bool = True) -> Discovery:
@@ -119,28 +113,30 @@ def discover(discover_system: bool = True) -> Discovery:
     return discovery
 
 
-def init_client(secrets: Secrets, configuration: Configuration) \
-        -> ComputeManagementClient:
-    with auth(secrets) as cred:
-        subscription_id = configuration.get("azure_subscription_id")
-        if not subscription_id:
-            subscription_id = configuration['azure']['subscription_id']
-        base_url = __get_cloud_env_by_name(
-            secrets.get("azure_cloud")).endpoints.resource_manager
+def init_client(
+        secrets: Secrets,
+        configuration: Configuration) -> ComputeManagementClient:
+    with auth(secrets) as authentication:
+        _subscription_id = configuration.get("azure_subscription_id")
+        if not _subscription_id:
+            _subscription_id = configuration['azure']['subscription_id']
+        _base_url = authentication.cloud_environment.endpoints.resource_manager
+
         client = ComputeManagementClient(
-            credentials=cred, subscription_id=subscription_id,
-            base_url=base_url)
+            credentials=authentication,
+            subscription_id=_subscription_id,
+            base_url=_base_url)
 
         return client
 
 
 def init_resource_graph_client(secrets: Secrets) -> ResourceGraphClient:
-    with auth(secrets) as cred:
-        base_url = __get_cloud_env_by_name(
-            secrets.get("azure_cloud")).endpoints.resource_manager
+    with auth(secrets) as authentication:
+        _base_url = authentication.cloud_environment.endpoints.resource_manager
+
         client = ResourceGraphClient(
-            credentials=cred,
-            base_url=base_url)
+            credentials=authentication,
+            base_url=_base_url)
 
         return client
 
@@ -148,23 +144,6 @@ def init_resource_graph_client(secrets: Secrets) -> ResourceGraphClient:
 ###############################################################################
 # Private functions
 ###############################################################################
-def __get_credentials(creds: dict) -> ServicePrincipalCredentials:
-    if creds['azure_client_secret'] is not None:
-        credentials = ServicePrincipalCredentials(
-            client_id=creds['azure_client_id'],
-            secret=creds['azure_client_secret'],
-            tenant=creds['azure_tenant_id'],
-            cloud_environment=__get_cloud_env_by_name(creds['azure_cloud'])
-        )
-    elif creds['access_token'] is not None:
-        token = dict(accessToken=creds['access_token'])
-        credentials = AADTokenCredentials(token, creds['azure_client_id'])
-    else:
-        raise InterruptExecution("Authentication to Azure requires a"
-                                 " client secret or an access token")
-    return credentials
-
-
 def __load_exported_activities() -> List[DiscoveredActivities]:
     """
     Extract metadata from actions and probes exposed by this extension.
@@ -177,23 +156,3 @@ def __load_exported_activities() -> List[DiscoveredActivities]:
     activities.extend(discover_actions("chaosazure.webapp.actions"))
     activities.extend(discover_probes("chaosazure.webapp.probes"))
     return activities
-
-
-def __get_cloud_env_by_name(cloud: str = None) \
-        -> msrestazure.azure_cloud.Cloud:
-    try:
-        if cloud is None:
-            return msrestazure.azure_cloud.AZURE_PUBLIC_CLOUD
-
-        cloud = cloud.strip()
-        if cloud == "AZURE_CHINA_CLOUD":
-            return msrestazure.azure_cloud.AZURE_CHINA_CLOUD
-        elif cloud == "AZURE_US_GOV_CLOUD":
-            return msrestazure.azure_cloud.AZURE_US_GOV_CLOUD
-        elif cloud == "AZURE_GERMAN_CLOUD":
-            return msrestazure.azure_cloud.AZURE_GERMAN_CLOUD
-        else:
-            return msrestazure.azure_cloud.AZURE_PUBLIC_CLOUD
-    except AttributeError:
-        logger.info("Invalid azure cloud name, use default AZURE_PUBLIC_CLOUD")
-        return msrestazure.azure_cloud.AZURE_PUBLIC_CLOUD

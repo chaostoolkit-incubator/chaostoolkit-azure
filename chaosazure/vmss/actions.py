@@ -1,18 +1,18 @@
 import os
-import random
-from typing import Any, Dict, Iterable, Mapping
+from typing import Iterable, Mapping
 
 from chaoslib import Configuration, Secrets
-from chaoslib.exceptions import FailedActivity
 from logzero import logger
 
 from chaosazure import init_client
-from chaosazure.rgraph.resource_graph import fetch_resources
-from chaosazure.vmss.constants import RES_TYPE_VMSS
-from chaosazure.machine.constants import OS_LINUX, OS_WINDOWS
-from chaosazure.vmss.vmss_fetcher import fetch_vmss_instances
+from chaosazure.vmss import command
+from chaosazure.vmss.vmss_fetcher import choose_vmss_at_random, \
+    choose_vmss_instance_at_random, choose_vmss_instance
 
-__all__ = ["delete_vmss", "restart_vmss", "stop_vmss", "deallocate_vmss"]
+__all__ = [
+    "delete_vmss", "restart_vmss", "stop_vmss", "deallocate_vmss",
+    "burn_io", "fill_disk", "network_latency", "stress_vmss_instance_cpu"
+]
 
 
 def delete_vmss(filter: str = None,
@@ -205,27 +205,17 @@ def stress_vmss_instance_cpu(filter: str = None,
                     configuration=c, secrets=s)
     Stress two machines at random from the group 'rg'
     """
+    msg = "Starting stress_vmss_instance_cpu:" \
+          " configuration='{}', filter='{}', duration='{}', timeout='{}'" \
+        .format(configuration, filter, duration, timeout)
+    logger.debug(msg)
 
-    logger.debug(
-        "Start stress_cpu: configuration='{}', filter='{}'".format(
-            configuration, filter))
-
+    # TODO Place for improvement: Let the user decide what
+    #  he wants to chaos engineer - not the function :)
     vmss = choose_vmss_at_random(filter, configuration, secrets)
-    m = choose_vmss_instance_at_random(
-        vmss, configuration, secrets)
+    machine = choose_vmss_instance_at_random(vmss, configuration, secrets)
 
-    name = m['name']
-    group = vmss['resourceGroup']
-    os_type = __get_os_type(m)
-    if os_type == OS_WINDOWS:
-        command_id = 'RunPowerShellScript'
-        script_name = "cpu_stress_test.ps1"
-    elif os_type == OS_LINUX:
-        command_id = 'RunShellScript'
-        script_name = "cpu_stress_test.sh"
-    else:
-        raise FailedActivity(
-            "Cannot run CPU stress test on OS: %s" % os_type)
+    command_id, script_name = command.prepare(machine, 'cpu_stress_test')
 
     with open(os.path.join(os.path.dirname(__file__),
                            "../scripts", script_name)) as file:
@@ -239,104 +229,141 @@ def stress_vmss_instance_cpu(filter: str = None,
         ]
     }
 
-    logger.debug(
-        "Stressing instance: {}".format(m['name']))
-    client = init_client(secrets, configuration)
-    poller = client.virtual_machine_scale_set_vms.run_command(
-        vmss['resourceGroup'],
-        vmss['name'],
-        m['instanceId'],
-        parameters)
-
-    result = poller.result(duration + timeout)  # Blocking till executed
-    if result:
-        logger.debug(result.value[0].message)  # stdout/stderr
-    else:
-        raise FailedActivity(
-            "stress_vmss_instance_cpu operation did not finish on time. "
-            "You may consider increasing timeout setting.")
+    logger.debug("Stressing CPU of VMSS instance: '{}'"
+                 .format(machine['name']))
+    _timeout = duration + timeout
+    _error_msg = "You may consider increasing timeout setting."
+    command.run(
+        vmss['resourceGroup'], vmss['name'], machine, _timeout, parameters,
+        secrets, configuration, _error_msg)
 
 
-###############################################################################
-# Private helper functions
-###############################################################################
-def choose_vmss_instance_at_random(vmss_choice, configuration, secrets):
-    vmss_instances = fetch_vmss_instances(vmss_choice, configuration, secrets)
-    if not vmss_instances:
-        logger.warning("No virtual machine scale set instances found")
-        raise FailedActivity("No virtual machine scale set instances found")
-    else:
-        logger.debug(
-            "Found virtual machine scale set instances: {}".format(
-                [x['name'] for x in vmss_instances]))
-    choice_vmss_instance = random.choice(vmss_instances)
-    return choice_vmss_instance
+def burn_io(filter: str = None,
+            duration: int = 60,
+            timeout: int = 60,
+            configuration: Configuration = None,
+            secrets: Secrets = None):
+    """
+    Increases the Disk I/O operations per second of the VMSS machine.
+    Similar to the burn_io action of the machine.actions module.
+    """
+    msg = "Starting burn_io: configuration='{}', filter='{}', duration='{}'," \
+          " timeout='{}'".format(configuration, filter, duration, timeout)
+    logger.debug(msg)
+
+    # TODO Place for improvement: Let the user decide what
+    #  he wants to chaos engineer - not the function :)
+    vmss = choose_vmss_at_random(filter, configuration, secrets)
+    machine = choose_vmss_instance_at_random(vmss, configuration, secrets)
+
+    command_id, script_name = command.prepare(machine, 'burn_io')
+
+    with open(os.path.join(os.path.dirname(__file__),
+                           "../scripts", script_name)) as file:
+        script_content = file.read()
+
+    parameters = {
+        'command_id': command_id,
+        'script': [script_content],
+        'parameters': [
+            {'name': "duration", 'value': duration}
+        ]
+    }
+
+    logger.debug("Burning IO of VMSS instance: '{}'"
+                 .format(machine['name']))
+    _timeout = duration + timeout
+    command.run(
+        vmss['resourceGroup'], vmss['name'], machine, _timeout, parameters,
+        secrets, configuration)
 
 
-def choose_vmss_instance(vmss_choice: dict,
-                         configuration: Configuration = None,
-                         instance_criteria: Iterable[Mapping[str, any]] = None,
-                         secrets: Secrets = None) -> Dict[str, Any]:
-    vmss_instances = fetch_vmss_instances(vmss_choice, configuration, secrets)
-    if not vmss_instances:
-        logger.debug("No virtual machine scale set instances found")
-        raise FailedActivity("No virtual machine scale set instances found")
-    else:
-        logger.debug(
-            "Found virtual machine scale set instances: {}".format(
-                [x['name'] for x in vmss_instances]))
+def fill_disk(filter: str = None,
+              duration: int = 120,
+              timeout: int = 60,
+              size: int = 1000,
+              path: str = None,
+              configuration: Configuration = None,
+              secrets: Secrets = None):
+    """
+    Fill the VMSS machine disk with random data. Similar to
+    the fill_disk action of the machine.actions module.
+    """
+    msg = "Starting fill_disk: configuration='{}', filter='{}'," \
+          " duration='{}', size='{}', path='{}', timeout='{}'" \
+        .format(configuration, filter, duration, size, path, timeout)
+    logger.debug(msg)
 
-    choice_vmss_instance = None
-    for vmss in vmss_instances:
-        if vmss_matches_criteria(vmss, instance_criteria):
-            choice_vmss_instance = vmss
-            break
+    # TODO Place for improvement: Let the user decide what
+    #  he wants to chaos engineer - not the function :)
+    vmss = choose_vmss_at_random(filter, configuration, secrets)
+    machine = choose_vmss_instance_at_random(vmss, configuration, secrets)
 
-    if not choice_vmss_instance:
-        logger.debug("No virtual machine scale set instance found for "
-                     "virtual machine scale set %s and criteria %s"
-                     % (vmss, instance_criteria))
-        raise FailedActivity("No virtual machine scale set instances found for"
-                             " criteria")
+    command_id, script_name = command.prepare(machine, 'fill_disk')
+    fill_path = command.prepare_path(machine, path)
 
-    logger.warning("Attempting to stop instance with name %s"
-                   % choice_vmss_instance['name'])
+    with open(os.path.join(os.path.dirname(__file__),
+                           "../scripts", script_name)) as file:
+        script_content = file.read()
 
-    return choice_vmss_instance
+    parameters = {
+        'command_id': command_id,
+        'script': [script_content],
+        'parameters': [
+            {'name': "duration", 'value': duration},
+            {'name': "size", 'value': size},
+            {'name': "path", 'value': fill_path}
+        ]
+    }
 
-
-def vmss_matches_criteria(vmss: dict,
-                          instance_criteria:
-                          Iterable[Mapping[str, any]] = None):
-    for criteria in instance_criteria:
-        logger.debug("Checking criteria %s" % criteria)
-        found_mismatch = False
-        for key, value in criteria.items():
-            if vmss[key] != value:
-                found_mismatch = True
-                break
-        if not found_mismatch:
-            logger.debug("Matching criteria %s" % criteria)
-            return True
-
-    return False
+    logger.debug("Filling disk of VMSS instance: '{}'"
+                 .format(machine['name']))
+    _timeout = duration + timeout
+    command.run(
+        vmss['resourceGroup'], vmss['name'], machine, _timeout, parameters,
+        secrets, configuration)
 
 
-def choose_vmss_at_random(filter, configuration, secrets):
-    vmss = fetch_resources(filter, RES_TYPE_VMSS, secrets, configuration)
-    if not vmss:
-        logger.warning("No virtual machine scale sets found")
-        raise FailedActivity("No virtual machine scale sets found")
-    else:
-        logger.debug(
-            "Found virtual machine scale sets: {}".format(
-                [x['name'] for x in vmss]))
-    return random.choice(vmss)
+def network_latency(filter: str = None,
+                    duration: int = 60,
+                    delay: int = 200,
+                    jitter: int = 50,
+                    timeout: int = 60,
+                    configuration: Configuration = None,
+                    secrets: Secrets = None):
+    """
+    Increases the response time of the virtual machine. Similar to
+    the network_latency action of the machine.actions module.
+    """
+    msg = "Starting network_latency: configuration='{}', filter='{}'," \
+          " duration='{}', delay='{}', jitter='{}', timeout='{}'"\
+        .format(configuration, filter, duration, delay, jitter, timeout)
+    logger.debug(msg)
 
+    # TODO Place for improvement: Let the user decide what
+    #  he wants to chaos engineer - not the function :)
+    vmss = choose_vmss_at_random(filter, configuration, secrets)
+    machine = choose_vmss_instance_at_random(vmss, configuration, secrets)
 
-def __get_os_type(m):
-    os_type = m['osType']
-    if os_type not in (OS_LINUX, OS_WINDOWS):
-        raise FailedActivity("Unknown OS Type: %s" % os_type)
+    command_id, script_name = command.prepare(machine, 'network_latency')
 
-    return os_type
+    with open(os.path.join(os.path.dirname(__file__),
+                           "../scripts", script_name)) as file:
+        script_content = file.read()
+
+    parameters = {
+        'command_id': command_id,
+        'script': [script_content],
+        'parameters': [
+            {'name': "duration", 'value': duration},
+            {'name': "delay", 'value': delay},
+            {'name': "jitter", 'value': jitter}
+        ]
+    }
+
+    logger.debug("Adding network latency of VMSS instance: '{}'"
+                 .format(machine['name']))
+    _timeout = duration + timeout
+    command.run(
+        vmss['resourceGroup'], vmss['name'], machine, _timeout, parameters,
+        secrets, configuration)

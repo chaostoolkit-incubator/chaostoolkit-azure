@@ -23,8 +23,8 @@ resource_vmss_instance_3 = {
     'instanceId': '3'}
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_deallocate_vmss(client, fetch_instances, fetch_vmss):
     vmss_list = [resource_vmss]
@@ -38,8 +38,8 @@ def test_deallocate_vmss(client, fetch_instances, fetch_vmss):
     deallocate_vmss(None, None, None)
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 def test_deallocate_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
     with pytest.raises(FailedActivity) as x:
         vmss_list = [resource_vmss]
@@ -53,7 +53,7 @@ def test_deallocate_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
     assert "No virtual machine scale set instances found" in str(x.value)
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
 def test_deallocate_vmss_having_no_vmss(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []
@@ -63,8 +63,8 @@ def test_deallocate_vmss_having_no_vmss(fetch):
     assert "No virtual machine scale sets found" in str(x.value)
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_stop_vmss(client, fetch_instances, fetch_vmss):
     vmss_list = [resource_vmss]
@@ -77,8 +77,8 @@ def test_stop_vmss(client, fetch_instances, fetch_vmss):
 
     stop_vmss(None, None, None, None)
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 @patch('chaosazure.ComputeManagementClient', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_stop_vmss_with_criteria(init_client, cmclient, fetch_instances, fetch_vmss):
@@ -101,8 +101,8 @@ def test_stop_vmss_with_criteria(init_client, cmclient, fetch_instances, fetch_v
         resource_vmss['name'],
         resource_vmss_instance_3['instanceId'])
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 @patch('chaosazure.ComputeManagementClient', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_stop_vmss_with_criteria_no_matches(init_client, cmclient, fetch_instances, fetch_vmss):
@@ -127,8 +127,8 @@ def test_stop_vmss_with_criteria_no_matches(init_client, cmclient, fetch_instanc
             resource_vmss_instance_3['instanceId'])
     assert "No virtual machine scale set instances found for criteria" in str(x.value)
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 @patch('chaosazure.ComputeManagementClient', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_stop_vmss_with_critiria_having_no_vmss_instances(init_client, cmclient, fetch_instances, fetch_vmss):
@@ -150,8 +150,8 @@ def test_stop_vmss_with_critiria_having_no_vmss_instances(init_client, cmclient,
     assert "No virtual machine scale set instances found" in str(x.value)
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 @patch('chaosazure.ComputeManagementClient', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_stop_vmss_with_criteria_match_on_instance_id(init_client, cmclient, fetch_instances, fetch_vmss):
@@ -174,8 +174,8 @@ def test_stop_vmss_with_criteria_match_on_instance_id(init_client, cmclient, fet
         resource_vmss['name'],
         resource_vmss_instance_2['instanceId'])
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 def test_stop_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
     with pytest.raises(FailedActivity) as x:
         vmss_list = [resource_vmss]
@@ -189,7 +189,7 @@ def test_stop_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
     assert "No virtual machine scale set instances found" in str(x.value)
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
 def test_stop_vmss_having_no_vmss(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []
@@ -199,8 +199,8 @@ def test_stop_vmss_having_no_vmss(fetch):
     assert "No virtual machine scale sets found" in str(x.value)
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_restart_vmss(client, fetch_instances, fetch_vmss):
     vmss_list = [resource_vmss]
@@ -214,8 +214,8 @@ def test_restart_vmss(client, fetch_instances, fetch_vmss):
     restart_vmss(None, None, None)
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 def test_restart_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
     with pytest.raises(FailedActivity) as x:
         vmss_list = [resource_vmss]
@@ -229,7 +229,7 @@ def test_restart_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
     assert "No virtual machine scale set instances found" in str(x.value)
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
 def test_restart_vmss_having_no_vmss(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []
@@ -239,8 +239,8 @@ def test_restart_vmss_having_no_vmss(fetch):
     assert "No virtual machine scale sets found" in str(x.value)
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_delete_vmss(client, fetch_instances, fetch_vmss):
     vmss_list = [resource_vmss]
@@ -254,8 +254,8 @@ def test_delete_vmss(client, fetch_instances, fetch_vmss):
     delete_vmss(None, None, None)
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.actions.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
 def test_delete_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
     with pytest.raises(FailedActivity) as x:
         vmss_list = [resource_vmss]
@@ -269,7 +269,7 @@ def test_delete_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
     assert "No virtual machine scale set instances found" in str(x.value)
 
 
-@patch('chaosazure.vmss.actions.fetch_resources', autospec=True)
+@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
 def test_delete_vmss_having_no_vmss(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []

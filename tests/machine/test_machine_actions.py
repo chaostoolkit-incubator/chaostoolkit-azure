@@ -1,8 +1,9 @@
+from unittest.mock import MagicMock, patch, mock_open
+
 import pytest
 from azure.mgmt.compute.v2018_10_01.models import InstanceViewStatus, \
     RunCommandResult
 from chaoslib.exceptions import FailedActivity
-from unittest.mock import MagicMock, patch, mock_open
 
 from chaosazure.machine.actions import restart_machines, stop_machines, \
     delete_machines, start_machines, stress_cpu, fill_disk, network_latency, \
@@ -550,7 +551,7 @@ def test_burn_io_on_lnx(init, fetch, open):
 
     # act
     burn_io(filter="where name=='some_linux_machine'", duration=60,
-                    configuration=CONFIG, secrets=SECRETS)
+            configuration=CONFIG, secrets=SECRETS)
 
     # assert
     fetch.assert_called_with(

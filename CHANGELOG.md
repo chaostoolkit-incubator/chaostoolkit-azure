@@ -3,6 +3,16 @@
 ## [Unreleased][]
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.7.0...HEAD
 
+- Added network latency operation vor VMSS instances
+- Added burn io (memory exploit) operation vor VMSS instances
+- Added fill disk operation vor VMSS instances
+- Interrupt an experiment execution when secrets are error-prone
+- Interrupt an experiment execution when an invalid cloud is configured
+- Remove an unused configuration property from the resource graph since it is deprecated
+- Technical refactoring: Separate concerns from the main _init_ module
+- Technical refactoring: Applied DRY principles in test module
+- Technical refactoring: Resource graph client now outputs error messages
+
 ## [0.7.0][] - 2020-04-09
 
 [0.7.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.6.0...0.7.0
