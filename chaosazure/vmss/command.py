@@ -4,6 +4,8 @@ from logzero import logger
 from chaosazure import init_client
 from chaosazure.machine.constants import OS_LINUX, OS_WINDOWS
 
+UNSUPPORTED_WINDOWS_SCRIPTS = ['network_latency', 'burn_io']
+
 
 def prepare_path(machine: dict, path: str):
     os_type = __get_os_type(machine)
@@ -21,11 +23,11 @@ def prepare(machine: dict, script: str):
         command_id = 'RunShellScript'
         script_name = "{}.sh".format(script)
     else:
-        if script == 'network_latency':
-            raise InterruptExecution("Network latency is not supported "
-                                     "for '{}'".format(OS_WINDOWS))
+        if script in UNSUPPORTED_WINDOWS_SCRIPTS:
+            raise InterruptExecution("'{}' is not supported for os '{}'"
+                                     .format(script, OS_WINDOWS))
         command_id = 'RunPowerShellScript'
-        script_name = ".ps1".format(script)
+        script_name = "{}.ps1".format(script)
 
     return command_id, script_name
 
