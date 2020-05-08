@@ -3,7 +3,7 @@ from chaoslib.exceptions import InterruptExecution
 from msrest.exceptions import AuthenticationError
 from msrestazure.azure_active_directory import AADMixin
 
-from chaosazure.auth.authentication import Auth, \
+from chaosazure.authent.authentication import Auth, \
     ServicePrincipalAuth, TokenAuth
 
 AAD_TOKEN = "aad_token"

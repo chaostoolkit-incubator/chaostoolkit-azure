@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-import os
 
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
 from chaosazure import init_client
+from chaosazure.common.compute import command
 from chaosazure.machine.constants import RES_TYPE_VM, OS_LINUX, OS_WINDOWS
 from chaosazure.rgraph.resource_graph import fetch_resources
-
 
 __all__ = ["delete_machines", "stop_machines", "restart_machines",
            "start_machines", "stress_cpu", "fill_disk", "network_latency",
@@ -178,7 +177,7 @@ def stress_cpu(filter: str = None,
                configuration: Configuration = None,
                secrets: Secrets = None):
     """
-    Stress CPU up to 100% at random machines.
+    Stress CPU up to 100% at virtual machines.
 
     Parameters
     ----------
@@ -210,30 +209,16 @@ def stress_cpu(filter: str = None,
     Stress two machines at random from the group 'rg'
     """
 
-    logger.debug(
-        "Start stress_cpu: configuration='{}', filter='{}'".format(
-            configuration, filter))
+    msg = "Starting stress_cpu:" \
+          " configuration='{}', filter='{}', duration='{}', timeout='{}'" \
+        .format(configuration, filter, duration, timeout)
+    logger.debug(msg)
 
     machines = __fetch_machines(filter, configuration, secrets)
-    client = __compute_mgmt_client(secrets, configuration)
 
-    for m in machines:
-        name = m['name']
-        group = m['resourceGroup']
-        os_type = __get_os_type(m)
-        if os_type == OS_WINDOWS:
-            command_id = 'RunPowerShellScript'
-            script_name = "cpu_stress_test.ps1"
-        elif os_type == OS_LINUX:
-            command_id = 'RunShellScript'
-            script_name = "cpu_stress_test.sh"
-        else:
-            raise FailedActivity(
-                "Cannot run CPU stress test on OS: %s" % os_type)
-
-        with open(os.path.join(os.path.dirname(__file__),
-                               "../scripts", script_name)) as file:
-            script_content = file.read()
+    for machine in machines:
+        command_id, script_content = command \
+            .prepare(machine, 'cpu_stress_test')
 
         parameters = {
             'command_id': command_id,
@@ -243,15 +228,10 @@ def stress_cpu(filter: str = None,
             ]
         }
 
-        logger.debug("Stressing CPU of machine: {}".format(name))
-        poller = client.virtual_machines.run_command(group, name, parameters)
-        result = poller.result(duration + timeout)  # Blocking till executed
-        if result:
-            logger.debug(result.value[0].message)  # stdout/stderr
-        else:
-            raise FailedActivity(
-                "stress_cpu operation did not finish on time. "
-                "You may consider increasing timeout setting.")
+        logger.debug("Stressing CPU of machine: '{}'".format(machine['name']))
+        _timeout = duration + timeout
+        command.run(
+            machine, _timeout, parameters, secrets, configuration)
 
 
 def fill_disk(filter: str = None,
@@ -300,34 +280,17 @@ def fill_disk(filter: str = None,
     Fill two machines at random from the group 'rg'
     """
 
-    logger.debug(
-        "Start fill_disk: configuration='{}', filter='{}'".format(
-            configuration, filter))
+    msg = "Starting fill_disk: configuration='{}', filter='{}'," \
+          " duration='{}', size='{}', path='{}', timeout='{}'" \
+        .format(configuration, filter, duration, size, path, timeout)
+    logger.debug(msg)
 
     machines = __fetch_machines(filter, configuration, secrets)
-    client = __compute_mgmt_client(secrets, configuration)
 
-    for m in machines:
-        name = m['name']
-        group = m['resourceGroup']
-        os_type = __get_os_type(m)
-        if os_type == OS_WINDOWS:
-            command_id = 'RunPowerShellScript'
-            script_name = "fill_disk.ps1"
-            fill_path = "C:/burn" if path is None else path
-        elif os_type == OS_LINUX:
-            command_id = 'RunShellScript'
-            script_name = "fill_disk.sh"
-            fill_path = "/root/burn" if path is None else path
-        else:
-            raise FailedActivity(
-                "Cannot run disk filling test on OS: %s" % os_type)
+    for machine in machines:
+        command_id, script_content = command.prepare(machine, 'fill_disk')
+        fill_path = command.prepare_path(machine, path)
 
-        with open(os.path.join(os.path.dirname(__file__),
-                               "../scripts", script_name)) as file:
-            script_content = file.read()
-
-        logger.debug("Script content: {}".format(script_content))
         parameters = {
             'command_id': command_id,
             'script': [script_content],
@@ -338,16 +301,9 @@ def fill_disk(filter: str = None,
             ]
         }
 
-        logger.debug("Filling disk of machine: {}".format(name))
-        poller = client.virtual_machines.run_command(group, name, parameters)
-        result = poller.result(duration + timeout)  # Blocking till executed
-        logger.debug("Execution result: {}".format(poller))
-        if result:
-            logger.debug(result.value[0].message)  # stdout/stderr
-        else:
-            raise FailedActivity(
-                "fill_disk operation did not finish on time. "
-                "You may consider increasing timeout setting.")
+        logger.debug("Filling disk of machine: {}".format(machine['name']))
+        _timeout = duration + timeout
+        command.run(machine, _timeout, parameters, secrets, configuration)
 
 
 def network_latency(filter: str = None,
@@ -401,22 +357,10 @@ def network_latency(filter: str = None,
             configuration, filter))
 
     machines = __fetch_machines(filter, configuration, secrets)
-    client = __compute_mgmt_client(secrets, configuration)
 
-    for m in machines:
-        name = m['name']
-        group = m['resourceGroup']
-        os_type = __get_os_type(m)
-        if os_type == OS_LINUX:
-            command_id = 'RunShellScript'
-            script_name = "network_latency.sh"
-        else:
-            raise FailedActivity(
-                "Cannot run network latency test on OS: %s" % os_type)
-
-        with open(os.path.join(os.path.dirname(__file__),
-                               "../scripts", script_name)) as file:
-            script_content = file.read()
+    for machine in machines:
+        command_id, script_content = command \
+            .prepare(machine, 'network_latency')
 
         logger.debug("Script content: {}".format(script_content))
         parameters = {
@@ -429,16 +373,10 @@ def network_latency(filter: str = None,
             ]
         }
 
-        logger.debug("Increasing the latency of machine: {}".format(name))
-        poller = client.virtual_machines.run_command(group, name, parameters)
-        result = poller.result(duration + timeout)  # Blocking till executed
-        logger.debug("Execution result: {}".format(poller))
-        if result:
-            logger.debug(result.value[0].message)  # stdout/stderr
-        else:
-            raise FailedActivity(
-                "network_latency operation did not finish on time. "
-                "You may consider increasing timeout setting.")
+        logger.debug("Increasing the latency of machine: {}"
+                     .format(machine['name']))
+        _timeout = duration + timeout
+        command.run(machine, _timeout, parameters, secrets, configuration)
 
 
 def burn_io(filter: str = None,
@@ -481,48 +419,26 @@ def burn_io(filter: str = None,
     the group 'rg'
     """
 
-    logger.debug(
-        "Start burn_io: configuration='{}', filter='{}'".format(
-            configuration, filter))
+    msg = "Starting burn_io: configuration='{}', filter='{}', duration='{}'," \
+          " timeout='{}'".format(configuration, filter, duration, timeout)
+    logger.debug(msg)
 
     machines = __fetch_machines(filter, configuration, secrets)
-    client = __compute_mgmt_client(secrets, configuration)
 
-    for m in machines:
-        name = m['name']
-        group = m['resourceGroup']
-        os_type = __get_os_type(m)
-        if os_type == OS_LINUX:
-            command_id = 'RunShellScript'
-            script_name = "burn_io.sh"
-        else:
-            raise FailedActivity(
-                "Cannot run burn_io test on OS: %s" % os_type)
+    for machine in machines:
+        command_id, script_content = command.prepare(machine, 'burn_io')
 
-        with open(os.path.join(os.path.dirname(__file__),
-                               "../scripts", script_name)) as file:
-            script_content = file.read()
-
-        logger.debug("Script content: {}".format(script_content))
         parameters = {
             'command_id': command_id,
             'script': [script_content],
             'parameters': [
-                {'name': "duration", 'value': duration},
+                {'name': "duration", 'value': duration}
             ]
         }
 
-        logger.debug("Increasing the I/O operations per "
-                     "second of machine: {}".format(name))
-        poller = client.virtual_machines.run_command(group, name, parameters)
-        result = poller.result(duration + timeout)  # Blocking till executed
-        logger.debug("Execution result: {}".format(poller))
-        if result:
-            logger.debug(result.value[0].message)  # stdout/stderr
-        else:
-            raise FailedActivity(
-                "burn_io operation did not finish on time. "
-                "You may consider increasing timeout setting.")
+        logger.debug("Burning IO of machine: '{}'".format(machine['name']))
+        _timeout = duration + timeout
+        command.run(machine, _timeout, parameters, secrets, configuration)
 
 
 ###############################################################################

@@ -13,7 +13,7 @@ from chaoslib.types import Discovery, DiscoveredActivities, \
 from logzero import logger
 from msrestazure.azure_active_directory import AADMixin
 
-from chaosazure.auth import Auth, create
+from chaosazure.authent import Auth, create
 
 __all__ = [
     "auth", "discover", "__version__", "init_client",

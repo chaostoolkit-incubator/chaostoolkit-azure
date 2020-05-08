@@ -5,7 +5,7 @@ from chaoslib import Configuration, Secrets
 from logzero import logger
 
 from chaosazure import init_client
-from chaosazure.vmss import command
+from chaosazure.common.compute import command
 from chaosazure.vmss.vmss_fetcher import choose_vmss_at_random, \
     choose_vmss_instance_at_random, choose_vmss_instance
 
@@ -213,13 +213,9 @@ def stress_vmss_instance_cpu(filter: str = None,
     # TODO Place for improvement: Let the user decide what
     #  he wants to chaos engineer - not the function :)
     vmss = choose_vmss_at_random(filter, configuration, secrets)
-    machine = choose_vmss_instance_at_random(vmss, configuration, secrets)
+    instance = choose_vmss_instance_at_random(vmss, configuration, secrets)
 
-    command_id, script_name = command.prepare(machine, 'cpu_stress_test')
-
-    with open(os.path.join(os.path.dirname(__file__),
-                           "../scripts", script_name)) as file:
-        script_content = file.read()
+    command_id, script_content = command.prepare(instance, 'cpu_stress_test')
 
     parameters = {
         'command_id': command_id,
@@ -230,12 +226,9 @@ def stress_vmss_instance_cpu(filter: str = None,
     }
 
     logger.debug("Stressing CPU of VMSS instance: '{}'"
-                 .format(machine['name']))
+                 .format(instance['instanceId']))
     _timeout = duration + timeout
-    _error_msg = "You may consider increasing timeout setting."
-    command.run(
-        vmss['resourceGroup'], vmss['name'], machine, _timeout, parameters,
-        secrets, configuration, _error_msg)
+    command.run(instance, _timeout, parameters, secrets, configuration)
 
 
 def burn_io(filter: str = None,
@@ -254,13 +247,9 @@ def burn_io(filter: str = None,
     # TODO Place for improvement: Let the user decide what
     #  he wants to chaos engineer - not the function :)
     vmss = choose_vmss_at_random(filter, configuration, secrets)
-    machine = choose_vmss_instance_at_random(vmss, configuration, secrets)
+    instance = choose_vmss_instance_at_random(vmss, configuration, secrets)
 
-    command_id, script_name = command.prepare(machine, 'burn_io')
-
-    with open(os.path.join(os.path.dirname(__file__),
-                           "../scripts", script_name)) as file:
-        script_content = file.read()
+    command_id, script_content = command.prepare(instance, 'burn_io')
 
     parameters = {
         'command_id': command_id,
@@ -271,11 +260,9 @@ def burn_io(filter: str = None,
     }
 
     logger.debug("Burning IO of VMSS instance: '{}'"
-                 .format(machine['name']))
+                 .format(instance['name']))
     _timeout = duration + timeout
-    command.run(
-        vmss['resourceGroup'], vmss['name'], machine, _timeout, parameters,
-        secrets, configuration)
+    command.run(instance, _timeout, parameters, secrets, configuration)
 
 
 def fill_disk(filter: str = None,
@@ -297,14 +284,10 @@ def fill_disk(filter: str = None,
     # TODO Place for improvement: Let the user decide what
     #  he wants to chaos engineer - not the function :)
     vmss = choose_vmss_at_random(filter, configuration, secrets)
-    machine = choose_vmss_instance_at_random(vmss, configuration, secrets)
+    instance = choose_vmss_instance_at_random(vmss, configuration, secrets)
 
-    command_id, script_name = command.prepare(machine, 'fill_disk')
-    fill_path = command.prepare_path(machine, path)
-
-    with open(os.path.join(os.path.dirname(__file__),
-                           "../scripts", script_name)) as file:
-        script_content = file.read()
+    command_id, script_content = command.prepare(instance, 'fill_disk')
+    fill_path = command.prepare_path(instance, path)
 
     parameters = {
         'command_id': command_id,
@@ -317,11 +300,9 @@ def fill_disk(filter: str = None,
     }
 
     logger.debug("Filling disk of VMSS instance: '{}'"
-                 .format(machine['name']))
+                 .format(instance['name']))
     _timeout = duration + timeout
-    command.run(
-        vmss['resourceGroup'], vmss['name'], machine, _timeout, parameters,
-        secrets, configuration)
+    command.run(instance, _timeout, parameters, secrets, configuration)
 
 
 def network_latency(filter: str = None,
@@ -336,20 +317,16 @@ def network_latency(filter: str = None,
     the network_latency action of the machine.actions module.
     """
     msg = "Starting network_latency: configuration='{}', filter='{}'," \
-          " duration='{}', delay='{}', jitter='{}', timeout='{}'"\
+          " duration='{}', delay='{}', jitter='{}', timeout='{}'" \
         .format(configuration, filter, duration, delay, jitter, timeout)
     logger.debug(msg)
 
     # TODO Place for improvement: Let the user decide what
     #  he wants to chaos engineer - not the function :)
     vmss = choose_vmss_at_random(filter, configuration, secrets)
-    machine = choose_vmss_instance_at_random(vmss, configuration, secrets)
+    instance = choose_vmss_instance_at_random(vmss, configuration, secrets)
 
-    command_id, script_name = command.prepare(machine, 'network_latency')
-
-    with open(os.path.join(os.path.dirname(__file__),
-                           "../scripts", script_name)) as file:
-        script_content = file.read()
+    command_id, script_content = command.prepare(instance, 'network_latency')
 
     parameters = {
         'command_id': command_id,
@@ -361,9 +338,7 @@ def network_latency(filter: str = None,
         ]
     }
 
-    logger.debug("Adding network latency of VMSS instance: '{}'"
-                 .format(machine['name']))
+    logger.debug("Increasing the latency of VMSS instance: '{}'"
+                 .format(instance['name']))
     _timeout = duration + timeout
-    command.run(
-        vmss['resourceGroup'], vmss['name'], machine, _timeout, parameters,
-        secrets, configuration)
+    command.run(instance, _timeout, parameters, secrets, configuration)
