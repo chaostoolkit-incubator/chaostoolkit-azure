@@ -13,6 +13,7 @@
 - Technical refactoring: Separate concerns from the main _init_ module
 - Technical refactoring: Applied DRY principles in test module
 - Technical refactoring: Resource graph client now outputs error messages
+- Allow to load secrets from azure credential file
 
 ## [0.7.0][] - 2020-04-09
 

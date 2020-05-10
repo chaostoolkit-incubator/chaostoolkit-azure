@@ -3,13 +3,15 @@ from datetime import datetime
 from azure.mgmt.resourcegraph.models \
     import QueryRequest, ErrorResponseException
 from chaoslib.exceptions import InterruptExecution
+from chaoslib.types import Secrets, Configuration
 from logzero import logger
 
 from chaosazure import init_resource_graph_client
+from chaosazure.common.config import load_configuration
 
 
 def fetch_resources(input_query: str, resource_type: str,
-                    secrets, configuration):
+                    secrets: Secrets, configuration: Configuration):
     # prepare query
     _query = __query_from(resource_type, input_query)
     _query_request = __query_request_from(_query, configuration)
@@ -31,14 +33,11 @@ def fetch_resources(input_query: str, resource_type: str,
     return results
 
 
-def __query_request_from(query, configuration):
-    subscription_id = configuration.get("azure_subscription_id")
-    if not subscription_id:
-        subscription_id = configuration['azure']['subscription_id']
-
+def __query_request_from(query, experiment_configuration: Configuration):
+    configuration = load_configuration(experiment_configuration)
     result = QueryRequest(
         query=query,
-        subscriptions=[subscription_id]
+        subscriptions=[configuration.get('subscription_id')]
     )
     return result
 

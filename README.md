@@ -30,19 +30,19 @@ experiment file:
 
 ```json
 {
-    "type": "action",
-    "name": "start-service-factory-chaos",
-    "provider": {
-        "type": "python",
-        "module": "chaosazure.vm.actions",
-        "func": "stop_machines",
-        "secrets": ["azure"],
-        "arguments": {
-            "parameters": {
-                "TimeToRunInSeconds": 45
-            }
-        }
+  "type": "action",
+  "name": "start-service-factory-chaos",
+  "provider": {
+    "type": "python",
+    "module": "chaosazure.vm.actions",
+    "func": "stop_machines",
+    "secrets": ["azure"],
+    "arguments": {
+      "parameters": {
+        "TimeToRunInSeconds": 45
+      }
     }
+  }
 }
 ```
 
@@ -50,128 +50,140 @@ That's it!
 
 Please explore the code to see existing probes and actions.
 
-
-
 ## Configuration
 
-### Credentials
-This extension uses the [Azure SDK][sdk] libraries under the hood. The Azure SDK library
-expects that you have a tenant and client identifier, as well as a client secret and subscription, that allows you to 
-authenticate with the Azure resource management API.
+This extension uses the [Azure SDK][sdk] libraries under the hood. The Azure SDK library expects that you have a tenant and client identifier, as well as a client secret and subscription, that allows you to authenticate with the Azure resource management API.
+
+Configuration values for the Chaos Toolkit Extension for Azure can come from several sources:
+
+- Experiment file
+- Azure credential file
+
+The extension will first try to load the configuration from the `experiment file`. If configuration is not provided in the `experiment file`, it will try to load it from the `Azure credential file`.
 
 [creds]: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-connect-to-secure-cluster
 [requests]: http://docs.python-requests.org/en/master/
 [sdk]: https://github.com/Azure/azure-sdk-for-python
 
-There are two ways of doing this:
+### Credentials
 
-* you can either pass the name of the environment variables to the experiment definition as follows (recommended):
+- Secrets in the Experiment file
 
-    ```json
-    {
-        "azure": {
-            "client_id": {
-                "type": "env",
-                "key": "AZURE_CLIENT_ID"
-            },
-            "client_secret": {
-                "type": "env",
-                "key": "AZURE_CLIENT_SECRET"
-            },
-            "tenant_id": {
-                "type": "env",
-                "key": "AZURE_TENANT_ID"
-            }
-        }
+  ```json
+  {
+    "secrets": {
+      "azure": {
+        "client_id": "your-super-secret-client-id",
+        "client_secret": "your-even-more-super-secret-client-secret",
+        "tenant_id": "your-tenant-id"
+      }
     }
-    ```
-    
-* or you inject the secrets explicitly to the experiment definition:
+  }
+  ```
 
-    ```json
-    {
-        "azure": {
-            "client_id": "your-super-secret-client-id",
-            "client_secret": "your-even-more-super-secret-client-secret",
-            "tenant_id": "your-tenant-id"
-        }
+  You can retrieve secretes as well from [environment][env_secrets] or [HashiCorp vault][vault_secrets]. 
+
+  
+  If you are not working with Public Global Azure, e.g. China Cloud You can set the cloud environment.
+
+  ```json
+  {
+    "client_id": "your-super-secret-client-id",
+    "client_secret": "your-even-more-super-secret-client-secret",
+    "tenant_id": "your-tenant-id",
+    "azure_cloud": "AZURE_CHINA_CLOUD"
+  }
+  ```
+
+  Available cloud names:
+
+  - AZURE_CHINA_CLOUD
+  - AZURE_GERMAN_CLOUD
+  - AZURE_PUBLIC_CLOUD
+  - AZURE_US_GOV_CLOUD
+
+  [vault_secrets]: https://docs.chaostoolkit.org/reference/api/experiment/#vault-secrets
+  [env_secrets]: https://docs.chaostoolkit.org/reference/api/experiment/#environment-secrets
+
+
+- Secrets in the Azure credential file
+
+  You can retrieve a credentials file with your subscription ID already in place by signing in to Azure using the az login command followed by the az ad sp create-for-rbac command
+
+  ```bash
+  az login
+  az ad sp create-for-rbac --sdk-auth > credentials.json
+  ```
+
+  credentials.json:
+
+  ```json
+  {
+    "subscriptionId": "<azure_aubscription_id>",
+    "tenantId": "<tenant_id>",
+    "clientId": "<application_id>",
+    "clientSecret": "<application_secret>",
+    "activeDirectoryEndpointUrl": "https://login.microsoftonline.com",
+    "resourceManagerEndpointUrl": "https://management.azure.com/",
+    "activeDirectoryGraphResourceId": "https://graph.windows.net/",
+    "sqlManagementEndpointUrl": "https://management.core.windows.net:8443/",
+    "galleryEndpointUrl": "https://gallery.azure.com/",
+    "managementEndpointUrl": "https://management.core.windows.net/"
+  }
+  ```
+
+  Store the path to the file in an environment variable called **AZURE_AUTH_LOCATION** and make sure that your experiment does **NOT** contain `secrets` section. 
+
+### Subscription
+
+Additionally you need to provide the Azure subscription id.
+
+- Subscription id in the experiment file
+
+  ```json
+  {
+    "configuration": {
+      "azure_subscription_id": "your-azure-subscription-id"
     }
-    ```
+  }
+  ```
 
-    Also if you are not working with Public Global Azure, e.g. China Cloud
-    You can feed the cloud environment name as well.
-    Please refer to msrestazure.azure_cloud
-    ```json
-        {
-            "azure": {
-                "client_id": "xxxxxxx",
-                "client_secret": "*******",
-                "tenant_id": "@@@@@@@@@@@",
-                "azure_cloud": "AZURE_CHINA_CLOUD"
-            }
-        }
-    ```
-    
-    Additionally you need to provide the Azure subscription id.
-    Either by reading from the environment variable named, for example,
-    `SUBSCRIPTION_ID`:
+  Configuration may be as well retrieved from an [environment][env_configuration].
 
-    ```json
-    {
-        "configuration": {
-            "azure_subscription_id": {
-                "type": "env",
-                "key": "SUBSCRIPTION_ID"
-            }
-        }
+  An old, but deprecated way of doing it was as follows, this still works
+  but should not be favoured over the previous approaches as it's not the
+  Chaos Toolkit way to pass structured configurations.
+
+  ```json
+  {
+    "configuration": {
+      "azure": {
+        "subscription_id": "your-azure-subscription-id"
+      }
     }
-    ```
+  }
+  ```
 
-    Or statically set into the configuration:
-    ```json
-    {
-        "configuration": {
-            "azure_subscription_id": "your-azure-subscription-id"
-        }
-    }
-    ```
+  [env_configuration]: https://docs.chaostoolkit.org/reference/api/experiment/#environment-configurations
 
-    An old, bu deprecated way of doing it was as follows, this still works
-    but should not be favoured over the previous approaches as it's not the
-    Chaos Toolkit way to pass structured condigurations.
+- Subscription id in the Azure credential file
 
-    ```json
-    {
-        "configuration": {
-            "azure": {
-                "subscription_id": "your-azure-subscription-id"
-            }
-        }
-    }
-    ```
+  Credential file described in the previous "Credential" section contains as well subscription id. If **AZURE_AUTH_LOCATION** is set and subscription id is **NOT** set in the experiment definition, extension will try to load it from the credential file.
+
+  
 
 ### Putting it all together
 
-Here is a full example:
+Here is a full example for an experiment containing secrets and configuration: 
 
 ```json
 {
   "version": "1.0.0",
   "title": "...",
   "description": "...",
-  "tags": [
-    "azure",
-    "kubernetes",
-	"aks",
-	"node"
-  ],
+  "tags": ["azure", "kubernetes", "aks", "node"],
   "configuration": {
-    "azure": {
-      "azure_subscription_id": {
-        "type": "env",
-        "key": "SUBSCRIPTION_ID"
-      }
-	}
+    "azure_subscription_id": "xxx"
   },
   "secrets": {
     "azure": {
@@ -202,18 +214,12 @@ Here is a full example:
         "type": "python",
         "module": "chaosazure.machine.actions",
         "func": "restart_machines",
-        "secrets": [
-          "azure"
-        ],
-        "config": [
-          "azure"
-        ]
+        "secrets": ["azure"],
+        "config": ["azure_subscription_id"]
       }
     }
   ],
-  "rollbacks": [
-    
-  ]
+  "rollbacks": []
 }
 ```
 
@@ -242,7 +248,7 @@ those dependencies.
 [venv]: http://chaostoolkit.org/reference/usage/install/#create-a-virtual-environment
 
 ```console
-$ pip install -r requirements-dev.txt -r requirements.txt 
+$ pip install -r requirements-dev.txt -r requirements.txt
 ```
 
 Then, point your environment to this directory:
