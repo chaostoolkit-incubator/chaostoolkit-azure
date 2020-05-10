@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 from chaoslib.exceptions import InterruptExecution
 
-from chaosazure.auth import create, authentication
+from chaosazure.authent import create, authentication
 from tests.data import secrets_provider
 
 

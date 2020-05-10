@@ -99,20 +99,22 @@ def fetch_vmss_instances(choice, configuration, secrets) -> List[Dict]:
         except StopIteration:
             break
 
-    results = __parse_vmss_instances_result(vmss_instances)
+    results = __parse_vmss_instances_result(vmss_instances, choice)
     return results
 
 
 ###############################################################################
 # Private helper functions
 ###############################################################################
-def __parse_vmss_instances_result(instances):
+def __parse_vmss_instances_result(instances, vmss: dict):
     results = []
-    for i in instances:
+    for instance in instances:
         m = {
-            'name': i.name,
-            'instanceId': i.instance_id,
-            'osType': i.storage_profile.os_disk.os_type.lower()
+            'name': vmss['name'],
+            'resourceGroup': vmss['resourceGroup'],
+            'instanceId': instance.instance_id,
+            'osType': instance.storage_profile.os_disk.os_type.lower(),
+            'type': instance.type
         }
         results.append(m)
     return results
