@@ -1,11 +1,10 @@
 from abc import ABCMeta, abstractmethod
+from typing import Dict
 
 from chaoslib import Secrets
 from chaoslib.exceptions import InterruptExecution
-from msrestazure.azure_active_directory import AADMixin, \
-    AADTokenCredentials, ServicePrincipalCredentials
-
-from chaosazure.common import cloud
+from msrestazure.azure_active_directory import (AADMixin, AADTokenCredentials,
+                                                ServicePrincipalCredentials)
 
 
 class Auth(metaclass=ABCMeta):
@@ -17,24 +16,22 @@ class Auth(metaclass=ABCMeta):
 
 class ServicePrincipalAuth(Auth):
 
-    def create(self, secrets: Secrets) -> ServicePrincipalCredentials:
-        _cloud = cloud.get_or_raise(secrets.get('azure_cloud'))
+    def create(self, secrets: Dict) -> ServicePrincipalCredentials:
         result = ServicePrincipalCredentials(
             client_id=secrets.get('client_id'),
             secret=secrets.get('client_secret'),
             tenant=secrets.get('tenant_id'),
-            cloud_environment=_cloud
+            cloud_environment=secrets.get('cloud')
         )
         return result
 
 
 class TokenAuth(Auth):
 
-    def create(self, secrets: Secrets) -> AADTokenCredentials:
-        _cloud = cloud.get_or_raise(secrets['azure_cloud'])
+    def create(self, secrets: Dict) -> AADTokenCredentials:
         result = AADTokenCredentials(
-            {"accessToken": secrets['access_token']},
-            secrets['client_id'],
-            cloud_environment=_cloud)
+            token={"accessToken": secrets['access_token']},
+            client_id=secrets.get('client_id'),
+            cloud_environment=secrets.get('cloud'))
 
         return result

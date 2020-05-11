@@ -1,104 +1,25 @@
 # -*- coding: utf-8 -*-
 
 """Top-level package for chaostoolkit-azure."""
-import contextlib
+
 from typing import List
 
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resourcegraph import ResourceGraphClient
-from chaoslib.discovery import initialize_discovery_result, \
-    discover_actions, discover_probes
-from chaoslib.types import Discovery, DiscoveredActivities, \
-    Secrets, Configuration
+from chaoslib.discovery import (discover_actions, discover_probes,
+                                initialize_discovery_result)
+from chaoslib.types import (Configuration, DiscoveredActivities, Discovery,
+                            Secrets)
 from logzero import logger
-from msrestazure.azure_active_directory import AADMixin
 
-from chaosazure.authent import Auth, create
+from chaosazure.auth import auth
+from chaosazure.common.config import load_configuration, load_secrets
 
 __all__ = [
-    "auth", "discover", "__version__", "init_client",
+    "discover", "__version__", "init_client",
     "init_resource_graph_client"
 ]
 __version__ = '0.7.0'
-
-from chaosazure.common import cloud
-
-
-@contextlib.contextmanager
-def auth(secrets: Secrets) -> AADMixin:
-    """
-    Attempt to load the Azure authentication information from a local
-    configuration file or the passed `configuration` mapping. The latter takes
-    precedence over the local configuration file. Service principle and token
-    based credentials are supported. Token based credentials do not currently
-    support refresh token functionality.
-
-    If you provide a secrets dictionary, the returned mapping will
-    be created from their content. For example, a service principle based
-    credential has:
-
-    Secrets mapping (in your experiment file):
-    ```json
-    {
-        "azure": {
-            "client_id": "AZURE_CLIENT_ID",
-            "client_secret": "AZURE_CLIENT_SECRET",
-            "tenant_id": "AZURE_TENANT_ID"
-        }
-    }
-    ```
-    Also if you are not working with Public Global Azure, e.g. China Cloud
-    you can feed the cloud environment name. If omitted the Public Cloud is
-    taken as default.
-    Please refer to msrestazure.azure_cloud
-    ```json
-    {
-        "azure": {
-            "client_id": "xxxxxxx",
-            "client_secret": "*******",
-            "tenant_id": "@@@@@@@@@@@",
-            "azure_cloud": "AZURE_CHINA_CLOUD"
-        }
-    }
-    ```
-
-    The client_id, tenant_id, and client_secret content will be read
-    from the specified local environment variables, e.g. `AZURE_CLIENT_ID`,
-    `AZURE_TENANT_ID`, and `AZURE_CLIENT_SECRET` that you will have populated
-    before hand.
-
-    If the client_secret is not provided, then token based credentials is
-    assumed and an access_token value must be present and updated as the token
-    expires.
-    ```
-
-    Using this function goes as follows:
-
-    ```python
-    with auth(secrets) as cred:
-        azure_subscription_id = configuration.get("azure_subscription_id")
-        resource_client = ResourceManagementClient(cred, azure_subscription_id)
-        compute_client = ComputeManagementClient(cred, azure_subscription_id)
-    ```
-
-    Again, if you are not working with Public Azure Cloud,
-    and you set azure_cloud in secret,
-    this will pass one more parameter `base_url` to above function.
-    ```python
-        cloud = __get_cloud_env_by_name(creds['azure_cloud'])
-        client = ComputeManagementClient(
-            credentials=cred, subscription_id=subscription_id,
-                        base_url=cloud.endpoints.resource_manager)
-    ```
-
-    """
-
-    # No input validation needed:
-    # 1) Either no secrets are passed at all - chaostoolkit-lib
-    #    will handle it for us *or*
-    # 2) Secret arguments are partially missing or invalid - we
-    #    rely on the ms azure library
-    yield create(secrets)
 
 
 def discover(discover_system: bool = True) -> Discovery:
@@ -114,29 +35,30 @@ def discover(discover_system: bool = True) -> Discovery:
 
 
 def init_client(
-        secrets: Secrets,
-        configuration: Configuration) -> ComputeManagementClient:
-    with auth(secrets) as authentication:
-        _subscription_id = configuration.get("azure_subscription_id")
-        if not _subscription_id:
-            _subscription_id = configuration['azure']['subscription_id']
-        _base_url = authentication.cloud_environment.endpoints.resource_manager
+        experiment_secrets: Secrets,
+        experiment_configuration: Configuration) -> ComputeManagementClient:
 
+    secrets = load_secrets(experiment_secrets)
+    configuration = load_configuration(experiment_configuration)
+    with auth(secrets) as authentication:
+        base_url = secrets.get('cloud').endpoints.resource_manager
         client = ComputeManagementClient(
             credentials=authentication,
-            subscription_id=_subscription_id,
-            base_url=_base_url)
+            subscription_id=configuration.get('subscription_id'),
+            base_url=base_url)
 
         return client
 
 
-def init_resource_graph_client(secrets: Secrets) -> ResourceGraphClient:
-    with auth(secrets) as authentication:
-        _base_url = authentication.cloud_environment.endpoints.resource_manager
+def init_resource_graph_client(
+        experiment_secrets: Secrets) -> ResourceGraphClient:
 
+    secrets = load_secrets(experiment_secrets)
+    with auth(secrets) as authentication:
+        base_url = secrets.get('cloud').endpoints.resource_manager
         client = ResourceGraphClient(
             credentials=authentication,
-            base_url=_base_url)
+            base_url=base_url)
 
         return client
 
