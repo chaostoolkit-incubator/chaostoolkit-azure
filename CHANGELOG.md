@@ -3,6 +3,7 @@
 ## [Unreleased][]
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.7.0...HEAD
 
+- Allow user to load more than one VMSS instance for VMSS actions
 - Update list of unsupported scripts for Windows VM
 - Added network latency operation vor VMSS instances
 - Added burn io (memory exploit) operation vor VMSS instances

@@ -7,7 +7,7 @@ from logzero import logger
 from chaosazure import init_client
 from chaosazure.common.compute import command
 from chaosazure.machine.constants import RES_TYPE_VM, OS_LINUX, OS_WINDOWS
-from chaosazure.rgraph.resource_graph import fetch_resources
+from chaosazure.common.resources.graph import fetch_resources
 
 __all__ = ["delete_machines", "stop_machines", "restart_machines",
            "start_machines", "stress_cpu", "fill_disk", "network_latency",

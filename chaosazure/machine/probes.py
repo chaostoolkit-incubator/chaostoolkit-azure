@@ -3,7 +3,7 @@ from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
 from chaosazure.machine.constants import RES_TYPE_VM
-from chaosazure.rgraph.resource_graph import fetch_resources
+from chaosazure.common.resources.graph import fetch_resources
 
 __all__ = ["describe_machines", "count_machines"]
 

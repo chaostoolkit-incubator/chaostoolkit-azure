@@ -5,7 +5,7 @@ from chaoslib.exceptions import FailedActivity
 from logzero import logger
 
 from chaosazure import init_client
-from chaosazure.rgraph.resource_graph import fetch_resources
+from chaosazure.common.resources.graph import fetch_resources
 from chaosazure.webapp.constants import RES_TYPE_WEBAPP
 
 
