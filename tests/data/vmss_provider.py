@@ -5,7 +5,7 @@ def provide_instance():
     return {
         'name': 'chaos-machine',
         'resourceGroup': 'rg',
-        'instanceId': 0,
+        'instanceId': '0',
         'type': RES_TYPE_VMSS_VM,
     }
 

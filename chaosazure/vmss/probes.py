@@ -2,7 +2,7 @@
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
-from chaosazure.rgraph.resource_graph import fetch_resources
+from chaosazure.common.resources.graph import fetch_resources
 from chaosazure.vmss.constants import RES_TYPE_VMSS
 
 __all__ = ["count_instances"]

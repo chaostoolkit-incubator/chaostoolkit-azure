@@ -1,4 +1,3 @@
-import os
 from typing import Iterable, Mapping
 
 from chaoslib import Configuration, Secrets
@@ -6,8 +5,7 @@ from logzero import logger
 
 from chaosazure import init_client
 from chaosazure.common.compute import command
-from chaosazure.vmss.vmss_fetcher import choose_vmss_at_random, \
-    choose_vmss_instance_at_random, choose_vmss_instance
+from chaosazure.vmss.fetcher import fetch_vmss, fetch_instances
 
 __all__ = [
     "delete_vmss", "restart_vmss", "stop_vmss", "deallocate_vmss",
@@ -16,6 +14,7 @@ __all__ = [
 
 
 def delete_vmss(filter: str = None,
+                instance_criteria: Iterable[Mapping[str, any]] = None,
                 configuration: Configuration = None,
                 secrets: Secrets = None):
     """
@@ -34,23 +33,26 @@ def delete_vmss(filter: str = None,
         'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
     logger.debug(
-        "Start delete_vmss: configuration='{}', filter='{}'".format(
+        "Starting delete_vmss: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    vmss = choose_vmss_at_random(filter, configuration, secrets)
-    vmss_instance = choose_vmss_instance_at_random(
-        vmss, configuration, secrets)
+    vmss = fetch_vmss(filter, configuration, secrets)
+    for scale_set in vmss:
+        instances = fetch_instances(scale_set, instance_criteria,
+                                    configuration, secrets)
 
-    logger.debug(
-        "Deleting instance: {}".format(vmss_instance['name']))
-    client = init_client(secrets, configuration)
-    client.virtual_machine_scale_set_vms.delete(
-        vmss['resourceGroup'],
-        vmss['name'],
-        vmss_instance['instanceId'])
+        for instance in instances:
+            logger.debug(
+                "Deleting instance: {}".format(instance['name']))
+            client = init_client(secrets, configuration)
+            client.virtual_machine_scale_set_vms.delete(
+                scale_set['resourceGroup'],
+                scale_set['name'],
+                instance['instanceId'])
 
 
 def restart_vmss(filter: str = None,
+                 instance_criteria: Iterable[Mapping[str, any]] = None,
                  configuration: Configuration = None,
                  secrets: Secrets = None):
     """
@@ -65,27 +67,31 @@ def restart_vmss(filter: str = None,
         'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
     logger.debug(
-        "Start restart_vmss: configuration='{}', filter='{}'".format(
+        "Starting restart_vmss: configuration='{}', filter='{}'".format(
             configuration, filter))
-    vmss = choose_vmss_at_random(filter, configuration, secrets)
-    vmss_instance = choose_vmss_instance_at_random(
-        vmss, configuration, secrets)
 
-    logger.debug(
-        "Restarting instance: {}".format(vmss_instance['name']))
-    client = init_client(secrets, configuration)
-    client.virtual_machine_scale_set_vms.restart(
-        vmss['resourceGroup'],
-        vmss['name'],
-        vmss_instance['instanceId'])
+    vmss = fetch_vmss(filter, configuration, secrets)
+    for scale_set in vmss:
+        instances = fetch_instances(scale_set, instance_criteria,
+                                    configuration, secrets)
+
+        for instance in instances:
+            logger.debug(
+                "Restarting instance: {}".format(instance['name']))
+            client = init_client(secrets, configuration)
+            client.virtual_machine_scale_set_vms.restart(
+                scale_set['resourceGroup'],
+                scale_set['name'],
+                instance['instanceId'])
 
 
 def stop_vmss(filter: str = None,
-              configuration: Configuration = None,
               instance_criteria: Iterable[Mapping[str, any]] = None,
+              configuration: Configuration = None,
               secrets: Secrets = None):
     """
-    Stop a virtual machine scale set instance at random.
+    Stops instances from the filtered scale set either at random or by
+     a defined instance criteria.
      Parameters
     ----------
     filter : str
@@ -117,27 +123,26 @@ def stop_vmss(filter: str = None,
         first criteria.
     """
     logger.debug(
-        "Start stop_vmss: configuration='{}', filter='{}'".format(
+        "Starting stop_vmss: configuration='{}', filter='{}'".format(
             configuration, filter))
 
-    vmss = choose_vmss_at_random(filter, configuration, secrets)
-    if not instance_criteria:
-        vmss_instance = choose_vmss_instance_at_random(
-            vmss, configuration, secrets)
-    else:
-        vmss_instance = choose_vmss_instance(
-            vmss, configuration, instance_criteria, secrets)
+    vmss = fetch_vmss(filter, configuration, secrets)
+    for scale_set in vmss:
+        instances = fetch_instances(scale_set, instance_criteria,
+                                    configuration, secrets)
 
-    logger.debug(
-        "Stopping instance: {}".format(vmss_instance['name']))
-    client = init_client(secrets, configuration)
-    client.virtual_machine_scale_set_vms.power_off(
-        vmss['resourceGroup'],
-        vmss['name'],
-        vmss_instance['instanceId'])
+        for instance in instances:
+            logger.debug(
+                "Stopping instance: {}".format(instance['name']))
+            client = init_client(secrets, configuration)
+            client.virtual_machine_scale_set_vms.power_off(
+                scale_set['resourceGroup'],
+                scale_set['name'],
+                instance['instanceId'])
 
 
 def deallocate_vmss(filter: str = None,
+                    instance_criteria: Iterable[Mapping[str, any]] = None,
                     configuration: Configuration = None,
                     secrets: Secrets = None):
     """
@@ -152,33 +157,39 @@ def deallocate_vmss(filter: str = None,
         'where resourceGroup=="myresourcegroup" and name="myresourcename"'
     """
     logger.debug(
-        "Start deallocate_vmss: configuration='{}', filter='{}'".format(
+        "Starting deallocate_vmss: configuration='{}', filter='{}'".format(
             configuration, filter))
-    vmss = choose_vmss_at_random(filter, configuration, secrets)
-    vmss_instance = choose_vmss_instance_at_random(
-        vmss, configuration, secrets)
 
-    logger.debug(
-        "Deallocating instance: {}".format(vmss_instance['name']))
-    client = init_client(secrets, configuration)
-    client.virtual_machine_scale_set_vms.deallocate(
-        vmss['resourceGroup'],
-        vmss['name'],
-        vmss_instance['instanceId'])
+    vmss = fetch_vmss(filter, configuration, secrets)
+    for scale_set in vmss:
+        instances = fetch_instances(scale_set, instance_criteria,
+                                    configuration, secrets)
+
+        for instance in instances:
+            logger.debug(
+                "Deallocating instance: {}".format(instance['name']))
+            client = init_client(secrets, configuration)
+            client.virtual_machine_scale_set_vms.deallocate(
+                scale_set['resourceGroup'],
+                scale_set['name'],
+                instance['instanceId'])
 
 
-def stress_vmss_instance_cpu(filter: str = None,
-                             duration: int = 120,
-                             timeout: int = 60,
-                             configuration: Configuration = None,
-                             secrets: Secrets = None):
+def stress_vmss_instance_cpu(
+        filter: str = None,
+        duration: int = 120,
+        timeout: int = 60,
+        instance_criteria: Iterable[Mapping[str, any]] = None,
+        configuration: Configuration = None,
+        secrets: Secrets = None):
     """
-    Stress CPU up to 100% at random machines.
+    Stresses the CPU of a random VMSS instances in your selected VMSS.
+    Similar to the stress_cpu action of the machine.actions module.
 
     Parameters
     ----------
     filter : str, optional
-        Filter the virtual machines. If the filter is omitted all machines in
+        Filter the VMSS. If the filter is omitted all VMSS in
         the subscription will be selected as potential chaos candidates.
     duration : int, optional
         Duration of the stress test (in seconds) that generates high CPU usage.
@@ -187,82 +198,70 @@ def stress_vmss_instance_cpu(filter: str = None,
         Additional wait time (in seconds) for stress operation to be completed.
         Getting and sending data from/to Azure may take some time so it's not
         recommended to set this value to less than 30s. Defaults to 60 seconds.
-
-    Examples
-    --------
-    Some calling examples. Deep dive into the filter syntax:
-    https://docs.microsoft.com/en-us/azure/kusto/query/
-
-    >>> stress_vmss_instance_cpu("where resourceGroup=='rg'", configuration=c,
-                    secrets=s)
-    Stress all machines from the group 'rg'
-
-    >>> stress_vmss_instance_cpu("where resourceGroup=='rg' and name='name'",
-                    configuration=c, secrets=s)
-    Stress the machine from the group 'rg' having the name 'name'
-
-    >>> stress_vmss_instance_cpu("where resourceGroup=='rg' | sample 2",
-                    configuration=c, secrets=s)
-    Stress two machines at random from the group 'rg'
     """
-    msg = "Starting stress_vmss_instance_cpu:" \
-          " configuration='{}', filter='{}', duration='{}', timeout='{}'" \
-        .format(configuration, filter, duration, timeout)
-    logger.debug(msg)
+    logger.debug(
+        "Starting stress_vmss_instance_cpu:"
+        " configuration='{}', filter='{}',"
+        " duration='{}', timeout='{}'".format(
+            configuration, filter, duration, timeout))
 
-    # TODO Place for improvement: Let the user decide what
-    #  he wants to chaos engineer - not the function :)
-    vmss = choose_vmss_at_random(filter, configuration, secrets)
-    instance = choose_vmss_instance_at_random(vmss, configuration, secrets)
+    vmss = fetch_vmss(filter, configuration, secrets)
+    for scale_set in vmss:
+        instances = fetch_instances(scale_set, instance_criteria,
+                                    configuration, secrets)
 
-    command_id, script_content = command.prepare(instance, 'cpu_stress_test')
+        for instance in instances:
+            command_id, script_content = command.prepare(instance,
+                                                         'cpu_stress_test')
+            parameters = {
+                'command_id': command_id,
+                'script': [script_content],
+                'parameters': [
+                    {'name': "duration", 'value': duration}
+                ]
+            }
 
-    parameters = {
-        'command_id': command_id,
-        'script': [script_content],
-        'parameters': [
-            {'name': "duration", 'value': duration}
-        ]
-    }
-
-    logger.debug("Stressing CPU of VMSS instance: '{}'"
-                 .format(instance['instanceId']))
-    _timeout = duration + timeout
-    command.run(instance, _timeout, parameters, secrets, configuration)
+            logger.debug(
+                "Stressing CPU of VMSS instance: '{}'".format(
+                    instance['instanceId']))
+            _timeout = duration + timeout
+            command.run(instance, _timeout, parameters, secrets, configuration)
 
 
 def burn_io(filter: str = None,
             duration: int = 60,
             timeout: int = 60,
+            instance_criteria: Iterable[Mapping[str, any]] = None,
             configuration: Configuration = None,
             secrets: Secrets = None):
     """
     Increases the Disk I/O operations per second of the VMSS machine.
     Similar to the burn_io action of the machine.actions module.
     """
-    msg = "Starting burn_io: configuration='{}', filter='{}', duration='{}'," \
-          " timeout='{}'".format(configuration, filter, duration, timeout)
-    logger.debug(msg)
+    logger.debug(
+        "Starting burn_io: configuration='{}', filter='{}', duration='{}',"
+        " timeout='{}'".format(configuration, filter, duration, timeout))
 
-    # TODO Place for improvement: Let the user decide what
-    #  he wants to chaos engineer - not the function :)
-    vmss = choose_vmss_at_random(filter, configuration, secrets)
-    instance = choose_vmss_instance_at_random(vmss, configuration, secrets)
+    vmss = fetch_vmss(filter, configuration, secrets)
+    for scale_set in vmss:
+        instances = fetch_instances(scale_set, instance_criteria,
+                                    configuration, secrets)
 
-    command_id, script_content = command.prepare(instance, 'burn_io')
+        for instance in instances:
+            command_id, script_content = command.prepare(instance, 'burn_io')
+            parameters = {
+                'command_id': command_id,
+                'script': [script_content],
+                'parameters': [
+                    {'name': "duration", 'value': duration}
+                ]
+            }
 
-    parameters = {
-        'command_id': command_id,
-        'script': [script_content],
-        'parameters': [
-            {'name': "duration", 'value': duration}
-        ]
-    }
-
-    logger.debug("Burning IO of VMSS instance: '{}'"
-                 .format(instance['name']))
-    _timeout = duration + timeout
-    command.run(instance, _timeout, parameters, secrets, configuration)
+            logger.debug(
+                "Burning IO of VMSS instance: '{}'".format(instance['name']))
+            _timeout = duration + timeout
+            command.run(
+                instance, _timeout, parameters, secrets, configuration)
 
 
 def fill_disk(filter: str = None,
@@ -270,39 +269,44 @@ def fill_disk(filter: str = None,
               timeout: int = 60,
               size: int = 1000,
               path: str = None,
+              instance_criteria: Iterable[Mapping[str, any]] = None,
               configuration: Configuration = None,
               secrets: Secrets = None):
     """
     Fill the VMSS machine disk with random data. Similar to
     the fill_disk action of the machine.actions module.
     """
-    msg = "Starting fill_disk: configuration='{}', filter='{}'," \
-          " duration='{}', size='{}', path='{}', timeout='{}'" \
-        .format(configuration, filter, duration, size, path, timeout)
-    logger.debug(msg)
+    logger.debug(
+        "Starting fill_disk: configuration='{}', filter='{}',"
+        " duration='{}', size='{}', path='{}', timeout='{}'".format(
+            configuration, filter, duration, size, path, timeout))
 
-    # TODO Place for improvement: Let the user decide what
-    #  he wants to chaos engineer - not the function :)
-    vmss = choose_vmss_at_random(filter, configuration, secrets)
-    instance = choose_vmss_instance_at_random(vmss, configuration, secrets)
+    vmss = fetch_vmss(filter, configuration, secrets)
+    for scale_set in vmss:
+        instances = fetch_instances(scale_set, instance_criteria,
+                                    configuration, secrets)
 
-    command_id, script_content = command.prepare(instance, 'fill_disk')
-    fill_path = command.prepare_path(instance, path)
+        for instance in instances:
+            command_id, script_content = command.prepare(instance,
+                                                         'fill_disk')
+            fill_path = command.prepare_path(instance, path)
 
-    parameters = {
-        'command_id': command_id,
-        'script': [script_content],
-        'parameters': [
-            {'name': "duration", 'value': duration},
-            {'name': "size", 'value': size},
-            {'name': "path", 'value': fill_path}
-        ]
-    }
+            parameters = {
+                'command_id': command_id,
+                'script': [script_content],
+                'parameters': [
+                    {'name': "duration", 'value': duration},
+                    {'name': "size", 'value': size},
+                    {'name': "path", 'value': fill_path}
+                ]
+            }
 
-    logger.debug("Filling disk of VMSS instance: '{}'"
-                 .format(instance['name']))
-    _timeout = duration + timeout
-    command.run(instance, _timeout, parameters, secrets, configuration)
+            logger.debug(
+                "Filling disk of VMSS instance: '{}'".format(
+                    instance['name']))
+            _timeout = duration + timeout
+            command.run(
+                instance, _timeout, parameters, secrets, configuration)
 
 
 def network_latency(filter: str = None,
@@ -310,35 +314,39 @@ def network_latency(filter: str = None,
                     delay: int = 200,
                     jitter: int = 50,
                     timeout: int = 60,
+                    instance_criteria: Iterable[Mapping[str, any]] = None,
                     configuration: Configuration = None,
                     secrets: Secrets = None):
     """
     Increases the response time of the virtual machine. Similar to
     the network_latency action of the machine.actions module.
     """
-    msg = "Starting network_latency: configuration='{}', filter='{}'," \
-          " duration='{}', delay='{}', jitter='{}', timeout='{}'" \
-        .format(configuration, filter, duration, delay, jitter, timeout)
-    logger.debug(msg)
+    logger.debug(
+        "Starting network_latency: configuration='{}', filter='{}',"
+        " duration='{}', delay='{}', jitter='{}', timeout='{}'".format(
+            configuration, filter, duration, delay, jitter, timeout))
 
-    # TODO Place for improvement: Let the user decide what
-    #  he wants to chaos engineer - not the function :)
-    vmss = choose_vmss_at_random(filter, configuration, secrets)
-    instance = choose_vmss_instance_at_random(vmss, configuration, secrets)
+    vmss = fetch_vmss(filter, configuration, secrets)
+    for scale_set in vmss:
+        instances = fetch_instances(scale_set, instance_criteria,
+                                    configuration, secrets)
 
-    command_id, script_content = command.prepare(instance, 'network_latency')
+        for instance in instances:
+            command_id, script_content = command.prepare(
+                instance, 'network_latency')
+            parameters = {
+                'command_id': command_id,
+                'script': [script_content],
+                'parameters': [
+                    {'name': "duration", 'value': duration},
+                    {'name': "delay", 'value': delay},
+                    {'name': "jitter", 'value': jitter}
+                ]
+            }
 
-    parameters = {
-        'command_id': command_id,
-        'script': [script_content],
-        'parameters': [
-            {'name': "duration", 'value': duration},
-            {'name': "delay", 'value': delay},
-            {'name': "jitter", 'value': jitter}
-        ]
-    }
-
-    logger.debug("Increasing the latency of VMSS instance: '{}'"
-                 .format(instance['name']))
-    _timeout = duration + timeout
-    command.run(instance, _timeout, parameters, secrets, configuration)
+            logger.debug(
+                "Increasing the latency of VMSS instance: '{}'".format(
+                    instance['name']))
+            _timeout = duration + timeout
+            command.run(
+                instance, _timeout, parameters, secrets, configuration)

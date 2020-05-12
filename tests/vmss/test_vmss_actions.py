@@ -25,48 +25,25 @@ resource_vmss_instance_3 = {
     'instanceId': '3'}
 
 
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_deallocate_vmss(client, fetch_instances, fetch_vmss):
-    vmss_list = [resource_vmss]
-    fetch_vmss.return_value = vmss_list
+    scale_set = vmss_provider.provide_scale_set()
+    scale_sets = [scale_set]
+    fetch_vmss.return_value = scale_sets
 
-    instances_list = [resource_vmss_instance_1]
-    fetch_instances.return_value = instances_list
+    instance = vmss_provider.provide_instance()
+    instances = [instance]
+    fetch_instances.return_value = instances
 
     client.return_value = MockComputeManagementClient()
 
     deallocate_vmss(None, None, None)
 
 
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
-def test_deallocate_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
-    with pytest.raises(FailedActivity) as x:
-        vmss_list = [resource_vmss]
-        fetch_vmss.return_value = vmss_list
-
-        instances_list = []
-        fetch_instances.return_value = instances_list
-
-        deallocate_vmss(None, None, None)
-
-    assert "No virtual machine scale set instances found" in str(x.value)
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-def test_deallocate_vmss_having_no_vmss(fetch):
-    with pytest.raises(FailedActivity) as x:
-        resource_list = []
-        fetch.return_value = resource_list
-        deallocate_vmss(None, None, None)
-
-    assert "No virtual machine scale sets found" in str(x.value)
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_stop_vmss(client, fetch_instances, fetch_vmss):
     vmss_list = [resource_vmss]
@@ -80,133 +57,8 @@ def test_stop_vmss(client, fetch_instances, fetch_vmss):
     stop_vmss(None, None, None, None)
 
 
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
-@patch('chaosazure.ComputeManagementClient', autospec=True)
-@patch('chaosazure.vmss.actions.init_client', autospec=True)
-def test_stop_vmss_with_criteria(init_client, cmclient, fetch_instances, fetch_vmss):
-    client = MagicMock()
-    cmclient.return_value = client
-    init_client.return_value = cmclient
-
-    vmss_list = [resource_vmss]
-    fetch_vmss.return_value = vmss_list
-
-    instances_list = [resource_vmss_instance_1, resource_vmss_instance_2, resource_vmss_instance_3]
-    fetch_instances.return_value = instances_list
-
-    criteria = [{'instanceId': '6'}, {"name": "chaos-vmss-instance-3"}]
-
-    stop_vmss(None, None, criteria, None)
-
-    cmclient.virtual_machine_scale_set_vms.power_off.assert_called_with(
-        resource_vmss['resourceGroup'],
-        resource_vmss['name'],
-        resource_vmss_instance_3['instanceId'])
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
-@patch('chaosazure.ComputeManagementClient', autospec=True)
-@patch('chaosazure.vmss.actions.init_client', autospec=True)
-def test_stop_vmss_with_criteria_no_matches(init_client, cmclient, fetch_instances, fetch_vmss):
-    with pytest.raises(FailedActivity) as x:
-        client = MagicMock()
-        cmclient.return_value = client
-        init_client.return_value = cmclient
-
-        vmss_list = [resource_vmss]
-        fetch_vmss.return_value = vmss_list
-
-        instances_list = [resource_vmss_instance_1, resource_vmss_instance_2, resource_vmss_instance_3]
-        fetch_instances.return_value = instances_list
-
-        criteria = [{'instanceId': '6'}, {"name": "chaos-vmss-instance-6"}]
-
-        stop_vmss(None, None, criteria, None)
-
-        cmclient.virtual_machine_scale_set_vms.power_off.assert_called_with(
-            resource_vmss['resourceGroup'],
-            resource_vmss['name'],
-            resource_vmss_instance_3['instanceId'])
-    assert "No virtual machine scale set instances found for criteria" in str(x.value)
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
-@patch('chaosazure.ComputeManagementClient', autospec=True)
-@patch('chaosazure.vmss.actions.init_client', autospec=True)
-def test_stop_vmss_with_critiria_having_no_vmss_instances(init_client, cmclient, fetch_instances, fetch_vmss):
-    with pytest.raises(FailedActivity) as x:
-        client = MagicMock()
-        cmclient.return_value = client
-        init_client.return_value = cmclient
-
-        vmss_list = [resource_vmss]
-        fetch_vmss.return_value = vmss_list
-
-        instances_list = []
-        fetch_instances.return_value = instances_list
-
-        criteria = [{'instanceId': '6'}, {"name": "chaos-vmss-instance-6"}]
-
-        stop_vmss(None, None, criteria, None)
-
-    assert "No virtual machine scale set instances found" in str(x.value)
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
-@patch('chaosazure.ComputeManagementClient', autospec=True)
-@patch('chaosazure.vmss.actions.init_client', autospec=True)
-def test_stop_vmss_with_criteria_match_on_instance_id(init_client, cmclient, fetch_instances, fetch_vmss):
-    client = MagicMock()
-    cmclient.return_value = client
-    init_client.return_value = cmclient
-
-    vmss_list = [resource_vmss]
-    fetch_vmss.return_value = vmss_list
-
-    instances_list = [resource_vmss_instance_1, resource_vmss_instance_2, resource_vmss_instance_3]
-    fetch_instances.return_value = instances_list
-
-    criteria = [{'instanceId': '2'}]
-
-    stop_vmss(None, None, criteria, None)
-
-    cmclient.virtual_machine_scale_set_vms.power_off.assert_called_with(
-        resource_vmss['resourceGroup'],
-        resource_vmss['name'],
-        resource_vmss_instance_2['instanceId'])
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
-def test_stop_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
-    with pytest.raises(FailedActivity) as x:
-        vmss_list = [resource_vmss]
-        fetch_vmss.return_value = vmss_list
-
-        instances_list = []
-        fetch_instances.return_value = instances_list
-
-        stop_vmss(None, None, None, None)
-
-    assert "No virtual machine scale set instances found" in str(x.value)
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-def test_stop_vmss_having_no_vmss(fetch):
-    with pytest.raises(FailedActivity) as x:
-        resource_list = []
-        fetch.return_value = resource_list
-        stop_vmss(None, None, None, None)
-
-    assert "No virtual machine scale sets found" in str(x.value)
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_restart_vmss(client, fetch_instances, fetch_vmss):
     vmss_list = [resource_vmss]
@@ -220,33 +72,8 @@ def test_restart_vmss(client, fetch_instances, fetch_vmss):
     restart_vmss(None, None, None)
 
 
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
-def test_restart_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
-    with pytest.raises(FailedActivity) as x:
-        vmss_list = [resource_vmss]
-        fetch_vmss.return_value = vmss_list
-
-        instances_list = []
-        fetch_instances.return_value = instances_list
-
-        restart_vmss(None, None, None)
-
-    assert "No virtual machine scale set instances found" in str(x.value)
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-def test_restart_vmss_having_no_vmss(fetch):
-    with pytest.raises(FailedActivity) as x:
-        resource_list = []
-        fetch.return_value = resource_list
-        restart_vmss(None, None, None)
-
-    assert "No virtual machine scale sets found" in str(x.value)
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_delete_vmss(client, fetch_instances, fetch_vmss):
     vmss_list = [resource_vmss]
@@ -258,31 +85,6 @@ def test_delete_vmss(client, fetch_instances, fetch_vmss):
     client.return_value = MockComputeManagementClient()
 
     delete_vmss(None, None, None)
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-@patch('chaosazure.vmss.vmss_fetcher.fetch_vmss_instances', autospec=True)
-def test_delete_vmss_having_no_vmss_instances(fetch_instances, fetch_vmss):
-    with pytest.raises(FailedActivity) as x:
-        vmss_list = [resource_vmss]
-        fetch_vmss.return_value = vmss_list
-
-        instances_list = []
-        fetch_instances.return_value = instances_list
-
-        delete_vmss(None, None, None)
-
-    assert "No virtual machine scale set instances found" in str(x.value)
-
-
-@patch('chaosazure.vmss.vmss_fetcher.fetch_resources', autospec=True)
-def test_delete_vmss_having_no_vmss(fetch):
-    with pytest.raises(FailedActivity) as x:
-        resource_list = []
-        fetch.return_value = resource_list
-        delete_vmss(None, None, None)
-
-    assert "No virtual machine scale sets found" in str(x.value)
 
 
 class MockVirtualMachineScaleSetVMsOperations(object):
@@ -308,8 +110,8 @@ class MockComputeManagementClient(object):
         return self.operations
 
 
-@patch('chaosazure.vmss.actions.choose_vmss_at_random', autospec=True)
-@patch('chaosazure.vmss.actions.choose_vmss_instance_at_random', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
 @patch.object(chaosazure.common.compute.command, 'prepare', autospec=True)
 @patch.object(chaosazure.common.compute.command, 'run', autospec=True)
 def test_stress_cpu(mocked_command_run, mocked_command_prepare, fetch_instance, fetch_vmss):
@@ -317,9 +119,11 @@ def test_stress_cpu(mocked_command_run, mocked_command_prepare, fetch_instance, 
     mocked_command_prepare.return_value = 'RunShellScript', 'cpu_stress_test.sh'
 
     scale_set = vmss_provider.provide_scale_set()
+    scale_sets = [scale_set]
     instance = vmss_provider.provide_instance()
-    fetch_vmss.return_value = scale_set
-    fetch_instance.return_value = instance
+    instances = [instance]
+    fetch_vmss.return_value = scale_sets
+    fetch_instance.return_value = instances
 
     config = config_provider.provide_default_config()
     secrets = secrets_provider.provide_secrets_via_service_principal()
@@ -331,7 +135,7 @@ def test_stress_cpu(mocked_command_run, mocked_command_prepare, fetch_instance, 
 
     # assert
     fetch_vmss.assert_called_with("where name=='some_random_instance'", config, secrets)
-    fetch_instance.assert_called_with(scale_set, config, secrets)
+    fetch_instance.assert_called_with(scale_set, None, config, secrets)
     mocked_command_prepare.assert_called_with(instance, 'cpu_stress_test')
     mocked_command_run.assert_called_with(
         instance, 120,
@@ -346,18 +150,20 @@ def test_stress_cpu(mocked_command_run, mocked_command_prepare, fetch_instance, 
     )
 
 
-@patch('chaosazure.vmss.actions.choose_vmss_at_random', autospec=True)
-@patch('chaosazure.vmss.actions.choose_vmss_instance_at_random', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
 @patch.object(chaosazure.common.compute.command, 'prepare', autospec=True)
 @patch.object(chaosazure.common.compute.command, 'run', autospec=True)
-def test_network_latency(mocked_command_run, mocked_command_prepare, fetch_instance, fetch_vmss):
+def test_network_latency(mocked_command_run, mocked_command_prepare, fetch_instances, fetch_vmss):
     # arrange mocks
     mocked_command_prepare.return_value = 'RunShellScript', 'network_latency.sh'
 
     scale_set = vmss_provider.provide_scale_set()
+    scale_sets = [scale_set]
     instance = vmss_provider.provide_instance()
-    fetch_vmss.return_value = scale_set
-    fetch_instance.return_value = instance
+    instances = [instance]
+    fetch_vmss.return_value = scale_sets
+    fetch_instances.return_value = instances
 
     config = config_provider.provide_default_config()
     secrets = secrets_provider.provide_secrets_via_service_principal()
@@ -370,7 +176,7 @@ def test_network_latency(mocked_command_run, mocked_command_prepare, fetch_insta
 
     # assert
     fetch_vmss.assert_called_with("where name=='some_random_instance'", config, secrets)
-    fetch_instance.assert_called_with(scale_set, config, secrets)
+    fetch_instances.assert_called_with(scale_set, None, config, secrets)
     mocked_command_prepare.assert_called_with(instance, 'network_latency')
     mocked_command_run.assert_called_with(
         instance, 120,
@@ -387,18 +193,20 @@ def test_network_latency(mocked_command_run, mocked_command_prepare, fetch_insta
     )
 
 
-@patch('chaosazure.vmss.actions.choose_vmss_at_random', autospec=True)
-@patch('chaosazure.vmss.actions.choose_vmss_instance_at_random', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
 @patch.object(chaosazure.common.compute.command, 'prepare', autospec=True)
 @patch.object(chaosazure.common.compute.command, 'run', autospec=True)
-def test_burn_io(mocked_command_run, mocked_command_prepare, fetch_instance, fetch_vmss):
+def test_burn_io(mocked_command_run, mocked_command_prepare, fetch_instances, fetch_vmss):
     # arrange mocks
     mocked_command_prepare.return_value = 'RunShellScript', 'burn_io.sh'
 
     scale_set = vmss_provider.provide_scale_set()
+    scale_sets = [scale_set]
     instance = vmss_provider.provide_instance()
-    fetch_vmss.return_value = scale_set
-    fetch_instance.return_value = instance
+    instances = [instance]
+    fetch_vmss.return_value = scale_sets
+    fetch_instances.return_value = instances
 
     config = config_provider.provide_default_config()
     secrets = secrets_provider.provide_secrets_via_service_principal()
@@ -409,7 +217,7 @@ def test_burn_io(mocked_command_run, mocked_command_prepare, fetch_instance, fet
 
     # assert
     fetch_vmss.assert_called_with("where name=='some_random_instance'", config, secrets)
-    fetch_instance.assert_called_with(scale_set, config, secrets)
+    fetch_instances.assert_called_with(scale_set, None, config, secrets)
     mocked_command_run.assert_called_with(
         instance, 120,
         {
@@ -423,21 +231,23 @@ def test_burn_io(mocked_command_run, mocked_command_prepare, fetch_instance, fet
     )
 
 
-@patch('chaosazure.vmss.actions.choose_vmss_at_random', autospec=True)
-@patch('chaosazure.vmss.actions.choose_vmss_instance_at_random', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
+@patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
 @patch.object(chaosazure.common.compute.command, 'prepare_path', autospec=True)
 @patch.object(chaosazure.common.compute.command, 'prepare', autospec=True)
 @patch.object(chaosazure.common.compute.command, 'run', autospec=True)
 def test_fill_disk(mocked_command_run, mocked_command_prepare,
-                   mocked_command_prepare_path, fetch_instance, fetch_vmss):
+                   mocked_command_prepare_path, fetch_instances, fetch_vmss):
     # arrange mocks
     mocked_command_prepare.return_value = 'RunShellScript', 'fill_disk.sh'
     mocked_command_prepare_path.return_value = '/root/burn/hard'
 
     scale_set = vmss_provider.provide_scale_set()
+    scale_sets = [scale_set]
     instance = vmss_provider.provide_instance()
-    fetch_vmss.return_value = scale_set
-    fetch_instance.return_value = instance
+    instances = [instance]
+    fetch_vmss.return_value = scale_sets
+    fetch_instances.return_value = instances
 
     config = config_provider.provide_default_config()
     secrets = secrets_provider.provide_secrets_via_service_principal()
@@ -449,7 +259,7 @@ def test_fill_disk(mocked_command_run, mocked_command_prepare,
 
     # assert
     fetch_vmss.assert_called_with("where name=='some_random_instance'", config, secrets)
-    fetch_instance.assert_called_with(scale_set, config, secrets)
+    fetch_instances.assert_called_with(scale_set, None, config, secrets)
     mocked_command_run.assert_called_with(
         instance, 120,
         {

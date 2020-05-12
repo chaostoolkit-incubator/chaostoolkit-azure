@@ -7,7 +7,7 @@ from logzero import logger
 from chaosazure.aks.constants import RES_TYPE_AKS
 from chaosazure.machine.actions import delete_machines, stop_machines, \
     restart_machines
-from chaosazure.rgraph.resource_graph import fetch_resources
+from chaosazure.common.resources.graph import fetch_resources
 
 __all__ = ["delete_node", "stop_node", "restart_node"]
 
