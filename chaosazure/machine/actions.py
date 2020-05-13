@@ -5,13 +5,16 @@ from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
 from chaosazure import init_client
+from chaosazure.common import cleanse
 from chaosazure.common.compute import command
-from chaosazure.machine.constants import RES_TYPE_VM, OS_LINUX, OS_WINDOWS
+from chaosazure.machine.constants import RES_TYPE_VM
 from chaosazure.common.resources.graph import fetch_resources
 
 __all__ = ["delete_machines", "stop_machines", "restart_machines",
            "start_machines", "stress_cpu", "fill_disk", "network_latency",
            "burn_io"]
+
+from chaosazure.vmss.records import Records
 
 
 def delete_machines(filter: str = None,
@@ -49,11 +52,15 @@ def delete_machines(filter: str = None,
 
     machines = __fetch_machines(filter, configuration, secrets)
     client = __compute_mgmt_client(secrets, configuration)
+    machine_records = Records()
     for m in machines:
         group = m['resourceGroup']
         name = m['name']
         logger.debug("Deleting machine: {}".format(name))
         client.virtual_machines.delete(group, name)
+        machine_records.add(cleanse.machine(m))
+
+    return machine_records.output_as_dict('resources')
 
 
 def stop_machines(filter: str = None,
@@ -88,11 +95,16 @@ def stop_machines(filter: str = None,
 
     machines = __fetch_machines(filter, configuration, secrets)
     client = __compute_mgmt_client(secrets, configuration)
+
+    machine_records = Records()
     for m in machines:
         group = m['resourceGroup']
         name = m['name']
         logger.debug("Stopping machine: {}".format(name))
         client.virtual_machines.power_off(group, name)
+        machine_records.add(cleanse.machine(m))
+
+    return machine_records.output_as_dict('resources')
 
 
 def restart_machines(filter: str = None,
@@ -127,11 +139,15 @@ def restart_machines(filter: str = None,
 
     machines = __fetch_machines(filter, configuration, secrets)
     client = __compute_mgmt_client(secrets, configuration)
+    machine_records = Records()
     for m in machines:
         group = m['resourceGroup']
         name = m['name']
         logger.debug("Restarting machine: {}".format(name))
         client.virtual_machines.restart(group, name)
+        machine_records.add(cleanse.machine(m))
+
+    return machine_records.output_as_dict('resources')
 
 
 def start_machines(filter: str = None,
@@ -168,7 +184,16 @@ def start_machines(filter: str = None,
     machines = __fetch_machines(filter, configuration, secrets)
     client = __compute_mgmt_client(secrets, configuration)
     stopped_machines = __fetch_all_stopped_machines(client, machines)
-    __start_stopped_machines(client, stopped_machines)
+
+    machine_records = Records()
+    for machine in stopped_machines:
+        logger.debug("Starting machine: {}".format(machine['name']))
+        client.virtual_machines.start(machine['resourceGroup'],
+                                      machine['name'])
+
+        machine_records.add(cleanse.machine(machine))
+
+    return machine_records.output_as_dict('resources')
 
 
 def stress_cpu(filter: str = None,
@@ -216,6 +241,7 @@ def stress_cpu(filter: str = None,
 
     machines = __fetch_machines(filter, configuration, secrets)
 
+    machine_records = Records()
     for machine in machines:
         command_id, script_content = command \
             .prepare(machine, 'cpu_stress_test')
@@ -231,7 +257,11 @@ def stress_cpu(filter: str = None,
         logger.debug("Stressing CPU of machine: '{}'".format(machine['name']))
         _timeout = duration + timeout
         command.run(
-            machine, _timeout, parameters, secrets, configuration)
+            machine['resourceGroup'], machine, _timeout, parameters,
+            secrets, configuration)
+        machine_records.add(cleanse.machine(machine))
+
+    return machine_records.output_as_dict('resources')
 
 
 def fill_disk(filter: str = None,
@@ -287,6 +317,7 @@ def fill_disk(filter: str = None,
 
     machines = __fetch_machines(filter, configuration, secrets)
 
+    machine_records = Records()
     for machine in machines:
         command_id, script_content = command.prepare(machine, 'fill_disk')
         fill_path = command.prepare_path(machine, path)
@@ -303,7 +334,12 @@ def fill_disk(filter: str = None,
 
         logger.debug("Filling disk of machine: {}".format(machine['name']))
         _timeout = duration + timeout
-        command.run(machine, _timeout, parameters, secrets, configuration)
+        command.run(
+            machine['resourceGroup'], machine, _timeout, parameters,
+            secrets, configuration)
+        machine_records.add(cleanse.machine(machine))
+
+    return machine_records.output_as_dict('resources')
 
 
 def network_latency(filter: str = None,
@@ -358,6 +394,7 @@ def network_latency(filter: str = None,
 
     machines = __fetch_machines(filter, configuration, secrets)
 
+    machine_records = Records()
     for machine in machines:
         command_id, script_content = command \
             .prepare(machine, 'network_latency')
@@ -376,7 +413,12 @@ def network_latency(filter: str = None,
         logger.debug("Increasing the latency of machine: {}"
                      .format(machine['name']))
         _timeout = duration + timeout
-        command.run(machine, _timeout, parameters, secrets, configuration)
+        command.run(
+            machine['resourceGroup'], machine, _timeout, parameters,
+            secrets, configuration)
+        machine_records.add(cleanse.machine(machine))
+
+    return machine_records.output_as_dict('resources')
 
 
 def burn_io(filter: str = None,
@@ -425,6 +467,7 @@ def burn_io(filter: str = None,
 
     machines = __fetch_machines(filter, configuration, secrets)
 
+    machine_records = Records()
     for machine in machines:
         command_id, script_content = command.prepare(machine, 'burn_io')
 
@@ -438,17 +481,17 @@ def burn_io(filter: str = None,
 
         logger.debug("Burning IO of machine: '{}'".format(machine['name']))
         _timeout = duration + timeout
-        command.run(machine, _timeout, parameters, secrets, configuration)
+        command.run(
+            machine['resourceGroup'], machine, _timeout, parameters,
+            secrets, configuration)
+        machine_records.add(cleanse.machine(machine))
+
+    return machine_records.output_as_dict('resources')
 
 
 ###############################################################################
 # Private helper functions
 ###############################################################################
-def __start_stopped_machines(client, stopped_machines):
-    for machine in stopped_machines:
-        logger.debug("Starting machine: {}".format(machine['name']))
-        client.virtual_machines.start(machine['resourceGroup'],
-                                      machine['name'])
 
 
 def __fetch_all_stopped_machines(client, machines) -> []:
@@ -475,15 +518,6 @@ def __fetch_machines(filter, configuration, secrets) -> []:
             "Fetched virtual machines: {}".format(
                 [x['name'] for x in machines]))
     return machines
-
-
-def __get_os_type(machine):
-    os_type = machine['properties']['storageProfile']['osDisk']['osType'] \
-        .lower()
-    if os_type not in (OS_LINUX, OS_WINDOWS):
-        raise FailedActivity("Unknown OS Type: %s" % os_type)
-
-    return os_type
 
 
 def __compute_mgmt_client(secrets, configuration):

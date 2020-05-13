@@ -20,42 +20,42 @@ def prepare_path(machine: dict, path: str):
     return result
 
 
-def prepare(machine: dict, script: str):
-    _os_type = __get_os_type(machine)
-    if _os_type == OS_LINUX:
-        _command_id = 'RunShellScript'
-        _script_name = "{}.sh".format(script)
+def prepare(compute: dict, script: str):
+    os_type = __get_os_type(compute)
+    if os_type == OS_LINUX:
+        command_id = 'RunShellScript'
+        script_name = "{}.sh".format(script)
     else:
         if script in UNSUPPORTED_WINDOWS_SCRIPTS:
             raise InterruptExecution("'{}' is not supported for os '{}'"
                                      .format(script, OS_WINDOWS))
-        _command_id = 'RunPowerShellScript'
-        _script_name = "{}.ps1".format(script)
+        command_id = 'RunPowerShellScript'
+        script_name = "{}.ps1".format(script)
 
-    _file_path = os.path.join(
-        os.path.dirname(__file__), "../scripts", _script_name)
-    with open(_file_path) as _file_path:
-        _script_content = _file_path.read()
-        return _command_id, _script_content
+    file_path = os.path.join(
+        os.path.dirname(__file__), "../scripts", script_name)
+    with open(file_path) as file_path:
+        script_content = file_path.read()
+        return command_id, script_content
 
 
-def run(machine: dict, timeout: int, parameters: dict,
+def run(resource_group: str, compute: dict, timeout: int, parameters: dict,
         secrets, configuration):
     client = init_client(secrets, configuration)
 
-    machine_type = machine.get('type').lower()
-    if machine_type == RES_TYPE_VMSS_VM.lower():
+    compute_type = compute.get('type').lower()
+    if compute_type == RES_TYPE_VMSS_VM.lower():
         poller = client.virtual_machine_scale_set_vms.run_command(
-            machine['resourceGroup'], machine['name'],
-            machine['instanceId'], parameters)
+            resource_group, compute['scale_set'],
+            compute['instance_id'], parameters)
 
-    elif machine_type == RES_TYPE_VM.lower():
+    elif compute_type == RES_TYPE_VM.lower():
         poller = client.virtual_machines.run_command(
-            machine['resourceGroup'], machine['name'], parameters)
+            resource_group, compute['name'], parameters)
 
     else:
         msg = "Trying to run a command for the unknown resource type '{}'" \
-            .format(machine.get('type'))
+            .format(compute.get('type'))
         raise InterruptExecution(msg)
 
     result = poller.result(timeout)  # Blocking till executed
@@ -69,18 +69,18 @@ def run(machine: dict, timeout: int, parameters: dict,
 #####################
 # HELPER FUNCTIONS
 ####################
-def __get_os_type(machine):
-    machine_type = machine['type'].lower()
+def __get_os_type(compute):
+    compute_type = compute['type'].lower()
 
-    if machine_type == RES_TYPE_VMSS_VM.lower():
-        os_type = machine['osType']
+    if compute_type == RES_TYPE_VMSS_VM.lower():
+        os_type = compute['storage_profile']['os_disk']['os_type']
 
-    elif machine_type == RES_TYPE_VM.lower():
-        os_type = machine['properties']['storageProfile']['osDisk']['osType']
+    elif compute_type == RES_TYPE_VM.lower():
+        os_type = compute['properties']['storageProfile']['osDisk']['osType']
 
     else:
         msg = "Trying to run a command for the unknown resource type '{}'" \
-            .format(machine.get('type'))
+            .format(compute.get('type'))
         raise InterruptExecution(msg)
 
     if os_type.lower() not in (OS_LINUX, OS_WINDOWS):

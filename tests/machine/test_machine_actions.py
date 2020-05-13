@@ -229,7 +229,7 @@ def test_stress_cpu(mocked_command_run, mocked_command_prepare, fetch):
         "where name=='some_linux_machine'", RES_TYPE_VM, secrets, config)
     mocked_command_prepare.assert_called_with(machine, 'cpu_stress_test')
     mocked_command_run.assert_called_with(
-        machine, 120,
+        machine['resourceGroup'], machine, 120,
         {
             'command_id': 'RunShellScript',
             'script': ['cpu_stress_test.sh'],
@@ -268,7 +268,7 @@ def test_fill_disk(mocked_command_run, mocked_command_prepare_path,
         "where name=='some_linux_machine'", RES_TYPE_VM, secrets, config)
     mocked_command_prepare.assert_called_with(machine, 'fill_disk')
     mocked_command_run.assert_called_with(
-        machine, 120,
+        machine['resourceGroup'], machine, 120,
         {
             'command_id': 'RunShellScript',
             'script': ['fill_disk.sh'],
@@ -306,7 +306,7 @@ def test_network_latency(mocked_command_run, mocked_command_prepare, fetch):
         "where name=='some_linux_machine'", RES_TYPE_VM, secrets, config)
     mocked_command_prepare.assert_called_with(machine, 'network_latency')
     mocked_command_run.assert_called_with(
-        machine, 120,
+        machine['resourceGroup'], machine, 120,
         {
             'command_id': 'RunShellScript',
             'script': ['network_latency.sh'],
@@ -343,7 +343,7 @@ def test_burn_io(mocked_command_run, mocked_command_prepare, fetch):
         "where name=='some_linux_machine'", RES_TYPE_VM, secrets, config)
     mocked_command_prepare.assert_called_with(machine, 'burn_io')
     mocked_command_run.assert_called_with(
-        machine, 120,
+        machine['resourceGroup'], machine, 120,
         {
             'command_id': 'RunShellScript',
             'script': ['burn_io.sh'],

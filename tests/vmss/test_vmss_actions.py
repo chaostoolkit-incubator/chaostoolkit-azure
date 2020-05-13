@@ -1,28 +1,9 @@
-from unittest.mock import MagicMock, patch
-
-import pytest
-from chaoslib.exceptions import FailedActivity
+from unittest.mock import patch
 
 import chaosazure
 from chaosazure.vmss.actions import delete_vmss, restart_vmss, stop_vmss, \
     deallocate_vmss, stress_vmss_instance_cpu, network_latency, burn_io, fill_disk
 from tests.data import config_provider, secrets_provider, vmss_provider
-
-resource_vmss = {
-    'name': 'chaos-vmss',
-    'resourceGroup': 'rg'}
-
-resource_vmss_instance_1 = {
-    'name': 'chaos-vmss-instance',
-    'instanceId': '1'}
-
-resource_vmss_instance_2 = {
-    'name': 'chaos-vmss-instance-2',
-    'instanceId': '2'}
-
-resource_vmss_instance_3 = {
-    'name': 'chaos-vmss-instance-3',
-    'instanceId': '3'}
 
 
 @patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
@@ -46,11 +27,12 @@ def test_deallocate_vmss(client, fetch_instances, fetch_vmss):
 @patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_stop_vmss(client, fetch_instances, fetch_vmss):
-    vmss_list = [resource_vmss]
-    fetch_vmss.return_value = vmss_list
-
-    instances_list = [resource_vmss_instance_1]
-    fetch_instances.return_value = instances_list
+    scale_set = vmss_provider.provide_scale_set()
+    scale_sets = [scale_set]
+    instance = vmss_provider.provide_instance()
+    instances = [instance]
+    fetch_vmss.return_value = scale_sets
+    fetch_instances.return_value = instances
 
     client.return_value = MockComputeManagementClient()
 
@@ -61,11 +43,12 @@ def test_stop_vmss(client, fetch_instances, fetch_vmss):
 @patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_restart_vmss(client, fetch_instances, fetch_vmss):
-    vmss_list = [resource_vmss]
-    fetch_vmss.return_value = vmss_list
-
-    instances_list = [resource_vmss_instance_1]
-    fetch_instances.return_value = instances_list
+    scale_set = vmss_provider.provide_scale_set()
+    scale_sets = [scale_set]
+    instance = vmss_provider.provide_instance()
+    instances = [instance]
+    fetch_vmss.return_value = scale_sets
+    fetch_instances.return_value = instances
 
     client.return_value = MockComputeManagementClient()
 
@@ -76,11 +59,12 @@ def test_restart_vmss(client, fetch_instances, fetch_vmss):
 @patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
 @patch('chaosazure.vmss.actions.init_client', autospec=True)
 def test_delete_vmss(client, fetch_instances, fetch_vmss):
-    vmss_list = [resource_vmss]
-    fetch_vmss.return_value = vmss_list
-
-    instances_list = [resource_vmss_instance_1]
-    fetch_instances.return_value = instances_list
+    scale_set = vmss_provider.provide_scale_set()
+    scale_sets = [scale_set]
+    instance = vmss_provider.provide_instance()
+    instances = [instance]
+    fetch_vmss.return_value = scale_sets
+    fetch_instances.return_value = instances
 
     client.return_value = MockComputeManagementClient()
 
@@ -138,7 +122,7 @@ def test_stress_cpu(mocked_command_run, mocked_command_prepare, fetch_instance, 
     fetch_instance.assert_called_with(scale_set, None, config, secrets)
     mocked_command_prepare.assert_called_with(instance, 'cpu_stress_test')
     mocked_command_run.assert_called_with(
-        instance, 120,
+        scale_set['resourceGroup'], instance, 120,
         {
             'command_id': 'RunShellScript',
             'script': ['cpu_stress_test.sh'],
@@ -179,7 +163,7 @@ def test_network_latency(mocked_command_run, mocked_command_prepare, fetch_insta
     fetch_instances.assert_called_with(scale_set, None, config, secrets)
     mocked_command_prepare.assert_called_with(instance, 'network_latency')
     mocked_command_run.assert_called_with(
-        instance, 120,
+        scale_set['resourceGroup'], instance, 120,
         {
             'command_id': 'RunShellScript',
             'script': ['network_latency.sh'],
@@ -219,7 +203,7 @@ def test_burn_io(mocked_command_run, mocked_command_prepare, fetch_instances, fe
     fetch_vmss.assert_called_with("where name=='some_random_instance'", config, secrets)
     fetch_instances.assert_called_with(scale_set, None, config, secrets)
     mocked_command_run.assert_called_with(
-        instance, 120,
+        scale_set['resourceGroup'], instance, 120,
         {
             'command_id': 'RunShellScript',
             'script': ['burn_io.sh'],
@@ -261,7 +245,7 @@ def test_fill_disk(mocked_command_run, mocked_command_prepare,
     fetch_vmss.assert_called_with("where name=='some_random_instance'", config, secrets)
     fetch_instances.assert_called_with(scale_set, None, config, secrets)
     mocked_command_run.assert_called_with(
-        instance, 120,
+        scale_set['resourceGroup'], instance, 120,
         {
             'command_id': 'RunShellScript',
             'script': ['fill_disk.sh'],

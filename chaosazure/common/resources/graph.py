@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from azure.mgmt.resourcegraph.models \
     import QueryRequest, ErrorResponseException
@@ -25,7 +26,6 @@ def fetch_resources(input_query: str, resource_type: str,
         if e.inner_exception.error.details:
             for d in e.inner_exception.error.details:
                 msg += ": " + str(d)
-        logger.error(msg)
         raise InterruptExecution(msg)
 
     # prepare results
@@ -52,7 +52,7 @@ def __query_from(resource_type, query) -> str:
     return "Resources | {}".format(result)
 
 
-def __to_dicts(table, version):
+def __to_dicts(table, version) -> List[dict]:
     results = []
     version_date = datetime.strptime(version, '%Y-%m-%d').date()
 

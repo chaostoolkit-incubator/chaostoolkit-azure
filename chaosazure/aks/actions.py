@@ -34,7 +34,7 @@ def delete_node(filter: str = None,
             configuration, filter))
 
     query = node_resource_group_query(filter, configuration, secrets)
-    delete_machines(query, configuration, secrets)
+    return delete_machines(query, configuration, secrets)
 
 
 def stop_node(filter: str = None,
@@ -56,7 +56,7 @@ def stop_node(filter: str = None,
             configuration, filter))
 
     query = node_resource_group_query(filter, configuration, secrets)
-    stop_machines(query, configuration, secrets)
+    return stop_machines(query, configuration, secrets)
 
 
 def restart_node(filter: str = None,
@@ -78,7 +78,7 @@ def restart_node(filter: str = None,
             configuration, filter))
 
     query = node_resource_group_query(filter, configuration, secrets)
-    restart_machines(query, configuration, secrets)
+    return restart_machines(query, configuration, secrets)
 
 
 ###############################################################################
