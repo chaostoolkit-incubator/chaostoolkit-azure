@@ -114,12 +114,7 @@ def __is_criteria_matched(instance: dict,
 def __parse_vmss_instances_result(instances, vmss: dict) -> List[Dict]:
     results = []
     for instance in instances:
-        m = {
-            'name': vmss['name'],
-            'resourceGroup': vmss['resourceGroup'],
-            'instanceId': instance.instance_id,
-            'osType': instance.storage_profile.os_disk.os_type.lower(),
-            'type': instance.type
-        }
-        results.append(m)
+        instance_as_dict = instance.as_dict()
+        instance_as_dict['scale_set'] = vmss['name']
+        results.append(instance_as_dict)
     return results
