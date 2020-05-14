@@ -37,6 +37,8 @@ license = 'Apache License Version 2.0'
 packages = [
     'chaosazure',
     'chaosazure.aks',
+    'chaosazure.auth',
+    'chaosazure.common',
     'chaosazure.machine',
     'chaosazure.webapp',
     'chaosazure.vmss'

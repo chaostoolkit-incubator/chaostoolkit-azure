@@ -3,10 +3,15 @@
 ## [Unreleased][]
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.8.0...HEAD
 
+### Added
+
+-   Expose the `auth` and `common` packages on building the top-level package
+
 ## [0.8.0][] - 2020-05-14
 
 [0.8.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.7.0...0.8.0
 
+### Added
 - Return output from activities
 - Allow user to load more than one VMSS instance for VMSS actions
 - Update list of unsupported scripts for Windows VM
