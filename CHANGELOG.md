@@ -3,6 +3,10 @@
 ## [Unreleased][]
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.8.2...HEAD
 
+### Added
+
+-   Missing init module files
+
 ## [0.8.2][] - 2020-05-14
 
 [0.8.2]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.8.1...0.8.2
