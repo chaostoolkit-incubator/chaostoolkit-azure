@@ -34,15 +34,7 @@ author = "chaostoolkit Team"
 author_email = 'contact@chaostoolkit.org'
 url = 'https://chaostoolkit.org'
 license = 'Apache License Version 2.0'
-packages = [
-    'chaosazure',
-    'chaosazure.aks',
-    'chaosazure.auth',
-    'chaosazure.common',
-    'chaosazure.machine',
-    'chaosazure.webapp',
-    'chaosazure.vmss'
-]
+packages = setuptools.find_packages(exclude=['tests'])
 
 needs_pytest = set(['pytest', 'test']).intersection(sys.argv)
 pytest_runner = ['pytest_runner'] if needs_pytest else []
