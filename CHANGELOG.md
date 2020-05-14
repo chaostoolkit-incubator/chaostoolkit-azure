@@ -1,7 +1,11 @@
 # Changelog
 
 ## [Unreleased][]
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.7.0...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.8.0...HEAD
+
+## [0.8.0][] - 2020-05-14
+
+[0.8.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.7.0...0.8.0
 
 - Return output from activities
 - Allow user to load more than one VMSS instance for VMSS actions
