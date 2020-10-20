@@ -4,7 +4,7 @@ from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
-from chaosazure import init_client
+from chaosazure import init_compute_management_client
 from chaosazure.common import cleanse
 from chaosazure.common.compute import command
 from chaosazure.machine.constants import RES_TYPE_VM
@@ -521,4 +521,4 @@ def __fetch_machines(filter, configuration, secrets) -> []:
 
 
 def __compute_mgmt_client(secrets, configuration):
-    return init_client(secrets, configuration)
+    return init_compute_management_client(secrets, configuration)

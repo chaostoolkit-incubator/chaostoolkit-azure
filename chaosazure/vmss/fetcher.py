@@ -5,7 +5,7 @@ from chaoslib import Configuration, Secrets
 from chaoslib.exceptions import FailedActivity
 from logzero import logger
 
-from chaosazure import init_client
+from chaosazure import init_compute_management_client
 from chaosazure.common.resources.graph import fetch_resources
 from chaosazure.vmss.constants import RES_TYPE_VMSS
 
@@ -62,7 +62,7 @@ def fetch_vmss(filter, configuration, secrets) -> List[dict]:
 #############################################################################
 def __fetch_vmss_instances(choice, configuration, secrets) -> List[Dict]:
     vmss_instances = []
-    client = init_client(secrets, configuration)
+    client = init_compute_management_client(secrets, configuration)
     pages = client.virtual_machine_scale_set_vms.list(
         choice['resourceGroup'], choice['name'])
     first_page = pages.advance_page()

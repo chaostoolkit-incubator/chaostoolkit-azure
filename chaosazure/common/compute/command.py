@@ -3,7 +3,7 @@ import os
 from chaoslib.exceptions import FailedActivity, InterruptExecution
 from logzero import logger
 
-from chaosazure import init_client
+from chaosazure import init_compute_management_client
 from chaosazure.machine.constants import OS_LINUX, OS_WINDOWS, RES_TYPE_VM
 from chaosazure.vmss.constants import RES_TYPE_VMSS_VM
 
@@ -41,7 +41,7 @@ def prepare(compute: dict, script: str):
 
 def run(resource_group: str, compute: dict, timeout: int, parameters: dict,
         secrets, configuration):
-    client = init_client(secrets, configuration)
+    client = init_compute_management_client(secrets, configuration)
 
     compute_type = compute.get('type').lower()
     if compute_type == RES_TYPE_VMSS_VM.lower():

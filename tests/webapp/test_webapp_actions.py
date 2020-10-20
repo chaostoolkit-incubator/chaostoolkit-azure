@@ -21,7 +21,7 @@ resource = {
 
 
 @patch('chaosazure.webapp.actions.fetch_webapps', autospec=True)
-@patch('chaosazure.webapp.actions.init_client', autospec=True)
+@patch('chaosazure.webapp.actions.init_website_management_client', autospec=True)
 def test_stop_webapp(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -37,7 +37,7 @@ def test_stop_webapp(init, fetch):
 
 
 @patch('chaosazure.webapp.actions.fetch_webapps', autospec=True)
-@patch('chaosazure.webapp.actions.init_client', autospec=True)
+@patch('chaosazure.webapp.actions.init_website_management_client', autospec=True)
 def test_restart_webapp(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -53,7 +53,7 @@ def test_restart_webapp(init, fetch):
 
 
 @patch('chaosazure.webapp.actions.fetch_webapps', autospec=True)
-@patch('chaosazure.webapp.actions.init_client', autospec=True)
+@patch('chaosazure.webapp.actions.init_website_management_client', autospec=True)
 def test_start_webapp(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -69,7 +69,7 @@ def test_start_webapp(init, fetch):
 
 
 @patch('chaosazure.webapp.actions.fetch_webapps', autospec=True)
-@patch('chaosazure.webapp.actions.init_client', autospec=True)
+@patch('chaosazure.webapp.actions.init_website_management_client', autospec=True)
 def test_delete_webapp(init, fetch):
     client = MagicMock()
     init.return_value = client

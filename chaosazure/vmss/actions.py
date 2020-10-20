@@ -3,7 +3,7 @@ from typing import Iterable, Mapping
 from chaoslib import Configuration, Secrets
 from logzero import logger
 
-from chaosazure import init_client
+from chaosazure import init_compute_management_client
 from chaosazure.common import cleanse
 from chaosazure.common.compute import command
 from chaosazure.vmss.fetcher import fetch_vmss, fetch_instances
@@ -48,7 +48,7 @@ def delete_vmss(filter: str = None,
         for instance in instances:
             logger.debug(
                 "Deleting instance: {}".format(instance['name']))
-            client = init_client(secrets, configuration)
+            client = init_compute_management_client(secrets, configuration)
             client.virtual_machine_scale_set_vms.delete(
                 scale_set['resourceGroup'],
                 scale_set['name'],
@@ -90,7 +90,7 @@ def restart_vmss(filter: str = None,
         for instance in instances:
             logger.debug(
                 "Restarting instance: {}".format(instance['name']))
-            client = init_client(secrets, configuration)
+            client = init_compute_management_client(secrets, configuration)
             client.virtual_machine_scale_set_vms.restart(
                 scale_set['resourceGroup'],
                 scale_set['name'],
@@ -154,7 +154,7 @@ def stop_vmss(filter: str = None,
         for instance in instances:
             logger.debug(
                 "Stopping instance: {}".format(instance['name']))
-            client = init_client(secrets, configuration)
+            client = init_compute_management_client(secrets, configuration)
             client.virtual_machine_scale_set_vms.power_off(
                 scale_set['resourceGroup'],
                 scale_set['name'],
@@ -196,7 +196,7 @@ def deallocate_vmss(filter: str = None,
         for instance in instances:
             logger.debug(
                 "Deallocating instance: {}".format(instance['name']))
-            client = init_client(secrets, configuration)
+            client = init_compute_management_client(secrets, configuration)
             client.virtual_machine_scale_set_vms.deallocate(
                 scale_set['resourceGroup'],
                 scale_set['name'],

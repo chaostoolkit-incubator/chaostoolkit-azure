@@ -8,7 +8,7 @@ from tests.data import config_provider, secrets_provider, vmss_provider
 
 @patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
 @patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
-@patch('chaosazure.vmss.actions.init_client', autospec=True)
+@patch('chaosazure.vmss.actions.init_compute_management_client', autospec=True)
 def test_deallocate_vmss(client, fetch_instances, fetch_vmss):
     scale_set = vmss_provider.provide_scale_set()
     scale_sets = [scale_set]
@@ -25,7 +25,7 @@ def test_deallocate_vmss(client, fetch_instances, fetch_vmss):
 
 @patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
 @patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
-@patch('chaosazure.vmss.actions.init_client', autospec=True)
+@patch('chaosazure.vmss.actions.init_compute_management_client', autospec=True)
 def test_stop_vmss(client, fetch_instances, fetch_vmss):
     scale_set = vmss_provider.provide_scale_set()
     scale_sets = [scale_set]
@@ -41,7 +41,7 @@ def test_stop_vmss(client, fetch_instances, fetch_vmss):
 
 @patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
 @patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
-@patch('chaosazure.vmss.actions.init_client', autospec=True)
+@patch('chaosazure.vmss.actions.init_compute_management_client', autospec=True)
 def test_restart_vmss(client, fetch_instances, fetch_vmss):
     scale_set = vmss_provider.provide_scale_set()
     scale_sets = [scale_set]
@@ -57,7 +57,7 @@ def test_restart_vmss(client, fetch_instances, fetch_vmss):
 
 @patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)
 @patch('chaosazure.vmss.actions.fetch_instances', autospec=True)
-@patch('chaosazure.vmss.actions.init_client', autospec=True)
+@patch('chaosazure.vmss.actions.init_compute_management_client', autospec=True)
 def test_delete_vmss(client, fetch_instances, fetch_vmss):
     scale_set = vmss_provider.provide_scale_set()
     scale_sets = [scale_set]

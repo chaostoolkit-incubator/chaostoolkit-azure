@@ -4,7 +4,7 @@ from chaoslib import Secrets, Configuration
 from chaoslib.exceptions import FailedActivity
 from logzero import logger
 
-from chaosazure import init_client
+from chaosazure import init_website_management_client
 from chaosazure.common.resources.graph import fetch_resources
 from chaosazure.webapp.constants import RES_TYPE_WEBAPP
 
@@ -33,7 +33,7 @@ def stop_webapp(filter: str = None,
     choice = __fetch_webapp_at_random(filter, configuration, secrets)
 
     logger.debug("Stopping web app: {}".format(choice['name']))
-    client = init_client(secrets, configuration)
+    client = init_website_management_client(secrets, configuration)
     client.web_apps.stop(choice['resourceGroup'], choice['name'])
 
 
@@ -58,7 +58,7 @@ def restart_webapp(filter: str = None,
     choice = __fetch_webapp_at_random(filter, configuration, secrets)
 
     logger.debug("Restarting web app: {}".format(choice['name']))
-    client = init_client(secrets, configuration)
+    client = init_website_management_client(secrets, configuration)
     client.web_apps.restart(choice['resourceGroup'], choice['name'])
 
 
@@ -83,7 +83,7 @@ def start_webapp(filter: str = None,
     choice = __fetch_webapp_at_random(filter, configuration, secrets)
 
     logger.debug("Starting web app: {}".format(choice['name']))
-    client = init_client(secrets, configuration)
+    client = init_website_management_client(secrets, configuration)
     client.web_apps.start(choice['resourceGroup'], choice['name'])
 
 
@@ -111,7 +111,7 @@ def delete_webapp(filter: str = None,
     choice = __fetch_webapp_at_random(filter, configuration, secrets)
 
     logger.debug("Deleting web app: {}".format(choice['name']))
-    client = init_client(secrets, configuration)
+    client = init_website_management_client(secrets, configuration)
     client.web_apps.delete(choice['resourceGroup'], choice['name'])
 
 
