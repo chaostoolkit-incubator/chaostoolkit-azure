@@ -82,7 +82,7 @@ def init_resource_graph_client(
     with auth(secrets) as authentication:
         base_url = secrets.get('cloud').endpoints.resource_manager
         client = ResourceGraphClient(
-            credentials=authentication,
+            credential=authentication,
             base_url=base_url)
 
         return client

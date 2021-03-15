@@ -11,6 +11,7 @@
 
 -   Moved to support new Microsoft Azure python package dependencies. Now importt
     the msrestazure package.
+-   Renamed `credentials` to `credential` for the `ResourceGraphClient` call
 
 ### Removed
 
