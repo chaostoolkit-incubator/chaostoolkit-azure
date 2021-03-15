@@ -7,6 +7,11 @@
 
 -   Individual Azure managemnt clients for website and compute resources
 
+### Changed
+
+-   Moved to support new Microsoft Azure python package dependencies. Now importt
+    the msrestazure package.
+
 ### Removed
 
 -   Removed common init_client

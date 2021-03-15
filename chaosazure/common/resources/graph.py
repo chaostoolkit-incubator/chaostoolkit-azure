@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import List
 
-from azure.mgmt.resourcegraph.models \
-    import QueryRequest, ErrorResponseException
+from azure.core.exceptions import HttpResponseError
+from azure.mgmt.resourcegraph.models import QueryRequest
 from chaoslib.exceptions import InterruptExecution
 from chaoslib.types import Secrets, Configuration
 from logzero import logger
@@ -21,10 +21,10 @@ def fetch_resources(input_query: str, resource_type: str,
     try:
         client = init_resource_graph_client(secrets)
         resources = client.resources(_query_request)
-    except ErrorResponseException as e:
-        msg = e.inner_exception.error.code
-        if e.inner_exception.error.details:
-            for d in e.inner_exception.error.details:
+    except HttpResponseError as e:
+        msg = e.error.code
+        if e.error.details:
+            for d in e.error.details:
                 msg += ": " + str(d)
         raise InterruptExecution(msg)
 
