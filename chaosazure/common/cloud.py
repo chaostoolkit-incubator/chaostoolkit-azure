@@ -14,7 +14,7 @@ def get_or_raise(value: str = "AZURE_PUBLIC_CLOUD") -> azure_cloud.Cloud:
 
     if not value:
         logger.warning("Azure cloud not provided. Using"
-                    " AZURE_PUBLIC_CLOUD as default")
+                       " AZURE_PUBLIC_CLOUD as default")
         return azure_cloud.AZURE_PUBLIC_CLOUD
 
     cloud = value.strip().upper()

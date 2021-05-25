@@ -189,7 +189,7 @@ def start_machines(filter: str = None,
     for machine in stopped_machines:
         logger.debug("Starting machine: {}".format(machine['name']))
         client.virtual_machines.begin_start(machine['resourceGroup'],
-                                      machine['name'])
+                                            machine['name'])
 
         machine_records.add(cleanse.machine(machine))
 

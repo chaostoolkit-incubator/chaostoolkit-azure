@@ -30,7 +30,6 @@ def fetch_resources(input_query: str, resource_type: str,
         raise InterruptExecution(msg)
 
     # prepare results
-    #results = __to_dicts(resources.data, client.api_version)
     results = __to_dicts(resources.data, "2021-03-01")
     return results
 

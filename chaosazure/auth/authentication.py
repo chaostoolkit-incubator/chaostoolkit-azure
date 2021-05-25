@@ -7,6 +7,7 @@ from msrestazure.azure_active_directory import (AADMixin, AADTokenCredentials,
                                                 ServicePrincipalCredentials)
 from azure.identity import ClientSecretCredential
 
+
 class Auth(metaclass=ABCMeta):
 
     @abstractmethod
