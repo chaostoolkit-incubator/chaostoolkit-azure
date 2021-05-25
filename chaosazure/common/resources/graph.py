@@ -9,6 +9,7 @@ from logzero import logger
 
 from chaosazure import init_resource_graph_client
 from chaosazure.common.config import load_configuration
+import azure.mgmt.resourcegraph as arg
 
 
 def fetch_resources(input_query: str, resource_type: str,
@@ -29,15 +30,18 @@ def fetch_resources(input_query: str, resource_type: str,
         raise InterruptExecution(msg)
 
     # prepare results
-    results = __to_dicts(resources.data, client.api_version)
+    #results = __to_dicts(resources.data, client.api_version)
+    results = __to_dicts(resources.data, "2021-03-01")
     return results
 
 
 def __query_request_from(query, experiment_configuration: Configuration):
     configuration = load_configuration(experiment_configuration)
+    argQueryOptions = arg.models.QueryRequestOptions(result_format="table")
     result = QueryRequest(
         query=query,
-        subscriptions=[configuration.get('subscription_id')]
+        subscriptions=[configuration.get('subscription_id')],
+        options=argQueryOptions
     )
     return result
 

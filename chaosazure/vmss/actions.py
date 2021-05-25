@@ -49,7 +49,7 @@ def delete_vmss(filter: str = None,
             logger.debug(
                 "Deleting instance: {}".format(instance['name']))
             client = init_compute_management_client(secrets, configuration)
-            client.virtual_machine_scale_set_vms.delete(
+            client.virtual_machine_scale_set_vms.begin_delete(
                 scale_set['resourceGroup'],
                 scale_set['name'],
                 instance['instance_id'])
@@ -91,7 +91,7 @@ def restart_vmss(filter: str = None,
             logger.debug(
                 "Restarting instance: {}".format(instance['name']))
             client = init_compute_management_client(secrets, configuration)
-            client.virtual_machine_scale_set_vms.restart(
+            client.virtual_machine_scale_set_vms.begin_restart(
                 scale_set['resourceGroup'],
                 scale_set['name'],
                 instance['instance_id'])
@@ -155,7 +155,7 @@ def stop_vmss(filter: str = None,
             logger.debug(
                 "Stopping instance: {}".format(instance['name']))
             client = init_compute_management_client(secrets, configuration)
-            client.virtual_machine_scale_set_vms.power_off(
+            client.virtual_machine_scale_set_vms.begin_power_off(
                 scale_set['resourceGroup'],
                 scale_set['name'],
                 instance['instance_id'])
@@ -197,7 +197,7 @@ def deallocate_vmss(filter: str = None,
             logger.debug(
                 "Deallocating instance: {}".format(instance['name']))
             client = init_compute_management_client(secrets, configuration)
-            client.virtual_machine_scale_set_vms.deallocate(
+            client.virtual_machine_scale_set_vms.begin_deallocate(
                 scale_set['resourceGroup'],
                 scale_set['name'],
                 instance['instance_id'])
@@ -216,7 +216,7 @@ def stress_vmss_instance_cpu(
         instance_criteria: Iterable[Mapping[str, any]] = None,
         configuration: Configuration = None,
         secrets: Secrets = None):
-    logger.warn(
+    logger.warning(
         "Deprecated usage of activity 'stress_vmss_instance_cpu'."
         " Please use activity 'stress_cpu' in favor since this"
         " activity will be removed in a future release.")
