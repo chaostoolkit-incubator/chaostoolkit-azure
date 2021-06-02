@@ -2,6 +2,8 @@
 
 """Top-level package for chaostoolkit-azure."""
 
+__version__ = '0.9.0'
+
 from typing import List
 
 from azure.mgmt.compute import ComputeManagementClient
@@ -20,7 +22,6 @@ __all__ = [
     "discover", "__version__", "init_compute_management_client",
     "init_website_management_client", "init_resource_graph_client"
 ]
-__version__ = '0.9.0'
 
 
 def discover(discover_system: bool = True) -> Discovery:
