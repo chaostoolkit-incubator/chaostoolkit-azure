@@ -1,17 +1,31 @@
 #!/usr/bin/env python
 """chaostoolkit-azure extension builder and installer"""
-
+import os
 import sys
-
 import io
+
 import setuptools
+
+
+def get_version_from_package() -> str:
+    """
+    Read the package version from the source without importing it.
+    """
+    path = os.path.join(os.path.dirname(__file__), "chaosazure/__init__.py")
+    path = os.path.normpath(os.path.abspath(path))
+    with open(path) as f:
+        for line in f:
+            if line.startswith("__version__"):
+                token, version = line.split(" = ", 1)
+                version = version.replace("'", "").strip()
+                return version
+
 
 sys.path.insert(0, ".")
 sys.path.remove(".")
 
 name = 'chaostoolkit-azure'
 desc = 'Chaos Toolkit Extension for Microsoft Azure'
-version = '0.9.0'
 
 with io.open('README.md', encoding='utf-8') as strm:
     long_desc = strm.read()
@@ -49,7 +63,7 @@ with io.open('requirements.txt') as f:
 
 setup_params = dict(
     name=name,
-    version=version,
+    version=get_version_from_package(),
     description=desc,
     long_description=long_desc,
     long_description_content_type='text/markdown',

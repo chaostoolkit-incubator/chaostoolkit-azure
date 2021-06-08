@@ -17,7 +17,7 @@ class Auth(metaclass=ABCMeta):
 
 class ServicePrincipalAuth(Auth):
 
-    def create(self, secrets: Dict) -> ServicePrincipalCredentials:
+    def create(self, secrets: Dict) -> ClientSecretCredential:
         result = ClientSecretCredential(
             client_id=secrets.get('client_id'),
             client_secret=secrets.get('client_secret'),

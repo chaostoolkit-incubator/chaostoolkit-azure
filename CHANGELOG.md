@@ -1,7 +1,23 @@
 # Changelog
 
 ## [Unreleased][]
+
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.9.0...HEAD
+
+### Added
+
+-  Adding new function attribute `arg_query_options` to make result as table, which is not the default option now
+-  added an utility method to load version in setup.py
+-  adding versions to azure libraries with a compatible release operator
+
+### Changed
+
+-  Renamed `credentials` to `credential` for the `ComputeManagementClient` and `WebSiteManagementClient` call
+-  Replacing `ServicePrincipalCredentials` with `ClientSecretCredential` for service_principal authentication method
+-  Using `logger.warning` instead of deprecated `logger.warn`
+-  Stopped checking api version to generate dicts in `__to_dicts` function
+-  changed function names to match new version of libraries:
+`delete, restart, poweroff, deallocate` -> `begin_delete, begin_restart, begin_poweroff, begin_deallocate`
 
 ## [0.9.0][] - 2021-03-15
 

@@ -1,9 +1,9 @@
 chaostoolkit-lib>==1.1.2
-azure-mgmt-compute===20.0.0
-azure-mgmt-resourcegraph===8.0.0
-azure-mgmt-web===3.0.0
-azure-identity===1.6.0
+azure-mgmt-compute~=20.0
+azure-mgmt-resourcegraph~=8.0
+azure-mgmt-web~=3.0
+azure-identity~=1.6
 dateparser
 logzero
 requests
-msrestazure===0.6.4
+msrestazure~=0.6
