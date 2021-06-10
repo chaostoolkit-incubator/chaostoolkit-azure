@@ -3,8 +3,7 @@ from typing import Dict
 
 from chaoslib import Secrets
 from chaoslib.exceptions import InterruptExecution
-from msrestazure.azure_active_directory import (AADMixin, AADTokenCredentials,
-                                                ServicePrincipalCredentials)
+from msrestazure.azure_active_directory import AADMixin, AADTokenCredentials
 from azure.identity import ClientSecretCredential
 
 
