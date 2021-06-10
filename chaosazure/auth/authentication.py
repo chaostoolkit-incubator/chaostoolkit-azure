@@ -5,6 +5,7 @@ from chaoslib import Secrets
 from chaoslib.exceptions import InterruptExecution
 from msrestazure.azure_active_directory import (AADMixin, AADTokenCredentials,
                                                 ServicePrincipalCredentials)
+from azure.identity import ClientSecretCredential
 
 
 class Auth(metaclass=ABCMeta):
@@ -16,11 +17,11 @@ class Auth(metaclass=ABCMeta):
 
 class ServicePrincipalAuth(Auth):
 
-    def create(self, secrets: Dict) -> ServicePrincipalCredentials:
-        result = ServicePrincipalCredentials(
+    def create(self, secrets: Dict) -> ClientSecretCredential:
+        result = ClientSecretCredential(
             client_id=secrets.get('client_id'),
-            secret=secrets.get('client_secret'),
-            tenant=secrets.get('tenant_id'),
+            client_secret=secrets.get('client_secret'),
+            tenant_id=secrets.get('tenant_id'),
             cloud_environment=secrets.get('cloud')
         )
         return result

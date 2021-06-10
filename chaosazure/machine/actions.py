@@ -57,7 +57,7 @@ def delete_machines(filter: str = None,
         group = m['resourceGroup']
         name = m['name']
         logger.debug("Deleting machine: {}".format(name))
-        client.virtual_machines.delete(group, name)
+        client.virtual_machines.begin_delete(group, name)
         machine_records.add(cleanse.machine(m))
 
     return machine_records.output_as_dict('resources')
@@ -101,7 +101,7 @@ def stop_machines(filter: str = None,
         group = m['resourceGroup']
         name = m['name']
         logger.debug("Stopping machine: {}".format(name))
-        client.virtual_machines.power_off(group, name)
+        client.virtual_machines.begin_power_off(group, name)
         machine_records.add(cleanse.machine(m))
 
     return machine_records.output_as_dict('resources')
@@ -144,7 +144,7 @@ def restart_machines(filter: str = None,
         group = m['resourceGroup']
         name = m['name']
         logger.debug("Restarting machine: {}".format(name))
-        client.virtual_machines.restart(group, name)
+        client.virtual_machines.begin_restart(group, name)
         machine_records.add(cleanse.machine(m))
 
     return machine_records.output_as_dict('resources')
@@ -188,8 +188,8 @@ def start_machines(filter: str = None,
     machine_records = Records()
     for machine in stopped_machines:
         logger.debug("Starting machine: {}".format(machine['name']))
-        client.virtual_machines.start(machine['resourceGroup'],
-                                      machine['name'])
+        client.virtual_machines.begin_start(machine['resourceGroup'],
+                                            machine['name'])
 
         machine_records.add(cleanse.machine(machine))
 

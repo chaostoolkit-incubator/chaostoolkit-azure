@@ -58,7 +58,7 @@ def test_delete_one_machine(init, fetch):
     delete_machines(f, CONFIG, SECRETS)
 
     fetch.assert_called_with(f, CONFIG, SECRETS)
-    assert client.virtual_machines.delete.call_count == 1
+    assert client.virtual_machines.begin_delete.call_count == 1
 
 
 @patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
@@ -74,7 +74,7 @@ def test_delete_one_machine_china(init, fetch):
     delete_machines(f, CONFIG, SECRETS_CHINA)
 
     fetch.assert_called_with(f, CONFIG, SECRETS_CHINA)
-    assert client.virtual_machines.delete.call_count == 1
+    assert client.virtual_machines.begin_delete.call_count == 1
 
 
 @patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
@@ -90,7 +90,7 @@ def test_delete_two_machines(init, fetch):
     delete_machines(f, CONFIG, SECRETS)
 
     fetch.assert_called_with(f, CONFIG, SECRETS)
-    assert client.virtual_machines.delete.call_count == 2
+    assert client.virtual_machines.begin_delete.call_count == 2
 
 
 @patch('chaosazure.machine.actions.fetch_resources', autospec=True)
@@ -126,7 +126,7 @@ def test_stop_one_machine(init, fetch):
     stop_machines(f, CONFIG, SECRETS)
 
     fetch.assert_called_with(f, CONFIG, SECRETS)
-    assert client.virtual_machines.power_off.call_count == 1
+    assert client.virtual_machines.begin_power_off.call_count == 1
 
 
 @patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
@@ -142,7 +142,7 @@ def test_stop_two_machines(init, fetch):
     stop_machines(f, CONFIG, SECRETS)
 
     fetch.assert_called_with(f, CONFIG, SECRETS)
-    assert client.virtual_machines.power_off.call_count == 2
+    assert client.virtual_machines.begin_power_off.call_count == 2
 
 
 @patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
@@ -158,7 +158,7 @@ def test_restart_one_machine(init, fetch):
     restart_machines(f, CONFIG, SECRETS)
 
     fetch.assert_called_with(f, CONFIG, SECRETS)
-    assert client.virtual_machines.restart.call_count == 1
+    assert client.virtual_machines.begin_restart.call_count == 1
 
 
 @patch('chaosazure.machine.actions.__fetch_machines', autospec=True)
@@ -174,7 +174,7 @@ def test_restart_two_machines(init, fetch):
     restart_machines(f, CONFIG, SECRETS)
 
     fetch.assert_called_with(f, CONFIG, SECRETS)
-    assert client.virtual_machines.restart.call_count == 2
+    assert client.virtual_machines.begin_restart.call_count == 2
 
 
 @patch('chaosazure.machine.actions.fetch_resources', autospec=True)

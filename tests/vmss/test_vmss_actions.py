@@ -72,16 +72,16 @@ def test_delete_vmss(client, fetch_instances, fetch_vmss):
 
 
 class MockVirtualMachineScaleSetVMsOperations(object):
-    def power_off(self, resource_group_name, scale_set_name, instance_id):
+    def begin_power_off(self, resource_group_name, scale_set_name, instance_id):
         pass
 
-    def delete(self, resource_group_name, scale_set_name, instance_id):
+    def begin_delete(self, resource_group_name, scale_set_name, instance_id):
         pass
 
-    def restart(self, resource_group_name, scale_set_name, instance_id):
+    def begin_restart(self, resource_group_name, scale_set_name, instance_id):
         pass
 
-    def deallocate(self, resource_group_name, scale_set_name, instance_id):
+    def begin_deallocate(self, resource_group_name, scale_set_name, instance_id):
         pass
 
 

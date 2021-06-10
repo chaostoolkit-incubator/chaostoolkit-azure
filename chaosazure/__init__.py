@@ -47,7 +47,7 @@ def init_compute_management_client(
     with auth(secrets) as authentication:
         base_url = secrets.get('cloud').endpoints.resource_manager
         client = ComputeManagementClient(
-            credentials=authentication,
+            credential=authentication,
             subscription_id=configuration.get('subscription_id'),
             base_url=base_url)
 
@@ -66,7 +66,7 @@ def init_website_management_client(
     with auth(secrets) as authentication:
         base_url = secrets.get('cloud').endpoints.resource_manager
         client = WebSiteManagementClient(
-            credentials=authentication,
+            credential=authentication,
             subscription_id=configuration.get('subscription_id'),
             base_url=base_url)
 
