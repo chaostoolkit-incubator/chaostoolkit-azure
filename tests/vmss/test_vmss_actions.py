@@ -3,7 +3,7 @@ from unittest.mock import patch
 import chaosazure
 from chaosazure.vmss.actions import delete_vmss, restart_vmss, stop_vmss, \
     deallocate_vmss, stress_vmss_instance_cpu, network_latency, burn_io, fill_disk
-from tests.data import config_provider, secrets_provider, vmss_provider
+from data import config_provider, secrets_provider, vmss_provider
 
 
 @patch('chaosazure.vmss.actions.fetch_vmss', autospec=True)

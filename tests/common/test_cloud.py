@@ -4,7 +4,7 @@ from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD, \
     AZURE_US_GOV_CLOUD, AZURE_GERMAN_CLOUD, AZURE_CHINA_CLOUD
 
 from chaosazure.common import cloud
-from tests.data import secrets_provider
+from data import secrets_provider
 
 CONFIG = {
     "azure": {

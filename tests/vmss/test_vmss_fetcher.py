@@ -6,7 +6,7 @@ from chaoslib.exceptions import FailedActivity
 import chaosazure
 from chaosazure.vmss.actions import delete_vmss
 from chaosazure.vmss.fetcher import fetch_vmss, fetch_instances
-from tests.data import vmss_provider
+from data import vmss_provider
 
 
 @patch('chaosazure.vmss.fetcher.fetch_resources', autospec=True)

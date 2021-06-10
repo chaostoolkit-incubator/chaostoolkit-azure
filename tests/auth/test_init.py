@@ -4,7 +4,7 @@ import pytest
 from chaoslib.exceptions import InterruptExecution
 from msrest.exceptions import AuthenticationError
 from chaosazure.auth import auth, authentication
-from tests.data import secrets_provider
+from data import secrets_provider
 
 
 def test_violate_authentication_type():

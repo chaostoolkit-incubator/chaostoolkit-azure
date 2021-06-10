@@ -10,7 +10,7 @@ from chaosazure.machine.actions import restart_machines, stop_machines, \
     delete_machines, start_machines, stress_cpu, fill_disk, network_latency, \
     burn_io
 from chaosazure.machine.constants import RES_TYPE_VM
-from tests.data import machine_provider, config_provider, secrets_provider
+from data import machine_provider, config_provider, secrets_provider
 
 CONFIG = {
     "azure": {
