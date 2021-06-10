@@ -2,7 +2,11 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.9.0...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.10.0...HEAD
+
+## [0.10.0][] - 2021-06-10
+
+[0.10.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.9.0...0.10.0
 
 ### Added
 
@@ -18,6 +22,7 @@
 -  Stopped checking api version to generate dicts in `__to_dicts` function
 -  changed function names to match new version of libraries:
 `delete, restart, poweroff, deallocate` -> `begin_delete, begin_restart, begin_poweroff, begin_deallocate`
+-  Switched from Travis to GitHub actions for building and releasing
 
 ## [0.9.0][] - 2021-03-15
 
