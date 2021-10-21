@@ -45,12 +45,12 @@ def run(resource_group: str, compute: dict, timeout: int, parameters: dict,
 
     compute_type = compute.get('type').lower()
     if compute_type == RES_TYPE_VMSS_VM.lower():
-        poller = client.virtual_machine_scale_set_vms.run_command(
+        poller = client.virtual_machine_scale_set_vms.begin_run_command(
             resource_group, compute['scale_set'],
             compute['instance_id'], parameters)
 
     elif compute_type == RES_TYPE_VM.lower():
-        poller = client.virtual_machines.run_command(
+        poller = client.virtual_machines.begin_run_command(
             resource_group, compute['name'], parameters)
 
     else:
