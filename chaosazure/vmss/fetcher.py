@@ -61,20 +61,9 @@ def fetch_vmss(filter, configuration, secrets) -> List[dict]:
 # Private helper functions
 #############################################################################
 def __fetch_vmss_instances(choice, configuration, secrets) -> List[Dict]:
-    vmss_instances = []
     client = init_compute_management_client(secrets, configuration)
-    pages = client.virtual_machine_scale_set_vms.list(
+    vmss_instances = client.virtual_machine_scale_set_vms.list(
         choice['resourceGroup'], choice['name'])
-    first_page = pages.advance_page()
-    vmss_instances.extend(list(first_page))
-
-    while True:
-        try:
-            page = pages.advance_page()
-            vmss_instances.extend(list(page))
-        except StopIteration:
-            break
-
     results = __parse_vmss_instances_result(vmss_instances, choice)
     return results
 
