@@ -4,6 +4,12 @@
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.10.0...HEAD
 
+### Changed
+
+-  Fix VM Scale Set Fetch and Commands [#134][134]
+
+[134]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/pull/134
+
 ## [0.10.0][] - 2021-06-10
 
 [0.10.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.9.0...0.10.0
