@@ -7,6 +7,8 @@
 ### Changed
 
 -  Fix VM Scale Set Fetch and Commands [#134][134]
+-  Requires Python 3.7 as Chaos Toolkit itself
+-  Builds for Python 3.10 as well
 
 [134]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/pull/134
 
