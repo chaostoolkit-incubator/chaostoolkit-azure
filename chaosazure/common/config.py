@@ -73,7 +73,7 @@ def load_secrets(experiment_secrets: Secrets):
             'client_secret': experiment_secrets.get('client_secret'),
             'tenant_id': experiment_secrets.get('tenant_id'),
             # load cloud object
-            'cloud': experiment_secrets('azure_cloud'),
+            'cloud': experiment_secrets.get('azure_cloud'),
             'access_token': experiment_secrets.get('access_token'),
         }
 
