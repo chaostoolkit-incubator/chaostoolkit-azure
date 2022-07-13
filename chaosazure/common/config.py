@@ -5,9 +5,6 @@ import os
 
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
-from msrestazure import azure_cloud
-
-from chaosazure.common import cloud
 
 
 def load_secrets(experiment_secrets: Secrets):
@@ -23,9 +20,6 @@ def load_secrets(experiment_secrets: Secrets):
     Function returns following dictionary object:
     ```python
     {
-        # always available
-        "cloud": "variable contains msrest cloud object"
-
         # optional - available if user authenticate with service principal
         "client_id": "variable contains client id",
         "client_secret": "variable contains client secret",
@@ -33,6 +27,7 @@ def load_secrets(experiment_secrets: Secrets):
 
         # optional - available if user authenticate with existing token
         "access_token": "variable contains access token",
+        "cloud": "AZURE_RESOURCE_MANAGER_ENDPOINT"
     }
     ```
 
@@ -78,20 +73,19 @@ def load_secrets(experiment_secrets: Secrets):
             'client_secret': experiment_secrets.get('client_secret'),
             'tenant_id': experiment_secrets.get('tenant_id'),
             # load cloud object
-            'cloud': cloud.get_or_raise(experiment_secrets.get('azure_cloud')),
+            'cloud': experiment_secrets.get('azure_cloud'),
             'access_token': experiment_secrets.get('access_token'),
         }
 
     # 2: lookup for credentials in azure auth file
     az_auth_file = _load_azure_auth_file()
     if az_auth_file:
-        rm_endpoint = az_auth_file.get('resourceManagerEndpointUrl')
         return {
             'client_id': az_auth_file.get('clientId'),
             'client_secret': az_auth_file.get('clientSecret'),
             'tenant_id': az_auth_file.get('tenantId'),
             # load cloud object
-            'cloud': azure_cloud.get_cloud_from_metadata_endpoint(rm_endpoint),
+            'cloud': az_auth_file.get('resourceManagerEndpointUrl'),
             # access token is not supported for credential files
             'access_token': None,
         }
