@@ -45,10 +45,12 @@ def init_compute_management_client(
     secrets = load_secrets(experiment_secrets)
     configuration = load_configuration(experiment_configuration)
     with auth(secrets) as authentication:
-        base_url = secrets.get('cloud').endpoints.resource_manager
+        base_url = secrets.get('cloud')
+        scopes = ("{}{}".format(base_url, "/.default"),) if base_url else ("https://management.azure.com/.default",)
         client = ComputeManagementClient(
             credential=authentication,
             subscription_id=configuration.get('subscription_id'),
+            credential_scopes=scopes,
             base_url=base_url)
 
         return client
@@ -64,10 +66,12 @@ def init_website_management_client(
     secrets = load_secrets(experiment_secrets)
     configuration = load_configuration(experiment_configuration)
     with auth(secrets) as authentication:
-        base_url = secrets.get('cloud').endpoints.resource_manager
+        base_url = secrets.get('cloud')
+        scopes = ("{}{}".format(base_url, "/.default"),) if base_url else ("https://management.azure.com/.default",)
         client = WebSiteManagementClient(
             credential=authentication,
             subscription_id=configuration.get('subscription_id'),
+            credential_scopes=scopes,
             base_url=base_url)
 
         return client
@@ -80,9 +84,11 @@ def init_resource_graph_client(
     """
     secrets = load_secrets(experiment_secrets)
     with auth(secrets) as authentication:
-        base_url = secrets.get('cloud').endpoints.resource_manager
+        base_url = secrets.get('cloud')
+        scopes = ("{}{}".format(base_url, "/.default"),) if base_url else ("https://management.azure.com/.default",)
         client = ResourceGraphClient(
             credential=authentication,
+            credential_scopes=scopes,
             base_url=base_url)
 
         return client

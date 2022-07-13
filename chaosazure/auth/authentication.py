@@ -21,7 +21,6 @@ class ServicePrincipalAuth(Auth):
             client_id=secrets.get('client_id'),
             client_secret=secrets.get('client_secret'),
             tenant_id=secrets.get('tenant_id'),
-            cloud_environment=secrets.get('cloud')
         )
         return result
 
@@ -31,7 +30,6 @@ class TokenAuth(Auth):
     def create(self, secrets: Dict) -> AADTokenCredentials:
         result = AADTokenCredentials(
             token={"accessToken": secrets['access_token']},
-            client_id=secrets.get('client_id'),
-            cloud_environment=secrets.get('cloud'))
+            client_id=secrets.get('client_id'))
 
         return result
