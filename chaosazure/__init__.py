@@ -16,6 +16,7 @@ from logzero import logger
 from chaosazure.auth import auth
 from chaosazure.common.config import load_configuration, load_secrets
 
+
 __all__ = [
     "discover", "__version__", "init_compute_management_client",
     "init_website_management_client", "init_resource_graph_client"
@@ -46,8 +47,10 @@ def init_compute_management_client(
     configuration = load_configuration(experiment_configuration)
     with auth(secrets) as authentication:
         base_url = secrets.get('cloud').endpoints.resource_manager
+        scopes = [base_url + "/.default"]
         client = ComputeManagementClient(
             credential=authentication,
+            credential_scopes=scopes,
             subscription_id=configuration.get('subscription_id'),
             base_url=base_url)
 
@@ -65,8 +68,10 @@ def init_website_management_client(
     configuration = load_configuration(experiment_configuration)
     with auth(secrets) as authentication:
         base_url = secrets.get('cloud').endpoints.resource_manager
+        scopes = [base_url + "/.default"]
         client = WebSiteManagementClient(
             credential=authentication,
+            credential_scopes=scopes,
             subscription_id=configuration.get('subscription_id'),
             base_url=base_url)
 
@@ -81,8 +86,10 @@ def init_resource_graph_client(
     secrets = load_secrets(experiment_secrets)
     with auth(secrets) as authentication:
         base_url = secrets.get('cloud').endpoints.resource_manager
+        scopes = [base_url + "/.default"]
         client = ResourceGraphClient(
             credential=authentication,
+            credential_scopes=scopes,
             base_url=base_url)
 
         return client
