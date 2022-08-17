@@ -5,6 +5,10 @@
 from typing import List
 
 from azure.mgmt.compute import ComputeManagementClient
+from azure.mgmt.rdbms.postgresql_flexibleservers import (
+    PostgreSQLManagementClient as PostgreSQLFlexibleManagementClient
+)
+from azure.mgmt.rdbms.postgresql import PostgreSQLManagementClient
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.resourcegraph import ResourceGraphClient
 from chaoslib.discovery import (discover_actions, discover_probes,
@@ -51,6 +55,44 @@ def init_compute_management_client(
         client = ComputeManagementClient(
             credential=authentication,
             credential_scopes=scopes,
+            subscription_id=configuration.get('subscription_id'),
+            base_url=base_url)
+
+        return client
+
+
+def init_postgresql_flexible_management_client(
+        experiment_secrets: Secrets,
+        experiment_configuration: Configuration) -> PostgreSQLFlexibleManagementClient:
+    """
+    Initializes Relational Database management client for postgresql_flexible,
+    resources under Azure Resource manager.
+    """
+    secrets = load_secrets(experiment_secrets)
+    configuration = load_configuration(experiment_configuration)
+    with auth(secrets) as authentication:
+        base_url = secrets.get('cloud').endpoints.resource_manager
+        client = PostgreSQLFlexibleManagementClient(
+            credential=authentication,
+            subscription_id=configuration.get('subscription_id'),
+            base_url=base_url)
+
+        return client
+
+
+def init_postgresql_management_client(
+        experiment_secrets: Secrets,
+        experiment_configuration: Configuration) -> PostgreSQLManagementClient:
+    """
+    Initializes Relational Database management client for postgresql,
+    resources under Azure Resource manager.
+    """
+    secrets = load_secrets(experiment_secrets)
+    configuration = load_configuration(experiment_configuration)
+    with auth(secrets) as authentication:
+        base_url = secrets.get('cloud').endpoints.resource_manager
+        client = PostgreSQLManagementClient(
+            credential=authentication,
             subscription_id=configuration.get('subscription_id'),
             base_url=base_url)
 
@@ -109,4 +151,8 @@ def __load_exported_activities() -> List[DiscoveredActivities]:
     activities.extend(discover_actions("chaosazure.vmss.actions"))
     activities.extend(discover_actions("chaosazure.webapp.actions"))
     activities.extend(discover_probes("chaosazure.webapp.probes"))
+    activities.extend(discover_actions("chaosazure.postgresql_flexible.actions"))
+    activities.extend(discover_probes("chaosazure.postgresql_flexible.probes"))
+    activities.extend(discover_actions("chaosazure.postgresql.actions"))
+    activities.extend(discover_probes("chaosazure.postgresql.probes"))
     return activities
