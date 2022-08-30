@@ -4,6 +4,11 @@
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.11.0...HEAD
 
+### Added
+
+-  Introduce actions for Azure Database for PostgreSQL flexible, like starting, stoping, restarting and deleting servers
+-  Introduce actions for Azure Database for PostgreSQL single, like restarting and deleting servers
+
 ## [0.11.0][] - 2022-06-14
 
 [0.11.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.10.0...0.11.0
