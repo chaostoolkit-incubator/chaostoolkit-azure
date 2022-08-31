@@ -72,8 +72,10 @@ def init_postgresql_flexible_management_client(
     configuration = load_configuration(experiment_configuration)
     with auth(secrets) as authentication:
         base_url = secrets.get('cloud').endpoints.resource_manager
+        scopes = [base_url + "/.default"]
         client = PostgreSQLFlexibleManagementClient(
             credential=authentication,
+            credential_scopes=scopes,
             subscription_id=configuration.get('subscription_id'),
             base_url=base_url)
 
@@ -91,8 +93,10 @@ def init_postgresql_management_client(
     configuration = load_configuration(experiment_configuration)
     with auth(secrets) as authentication:
         base_url = secrets.get('cloud').endpoints.resource_manager
+        scopes = [base_url + "/.default"]
         client = PostgreSQLManagementClient(
             credential=authentication,
+            credential_scopes=scopes,
             subscription_id=configuration.get('subscription_id'),
             base_url=base_url)
 
