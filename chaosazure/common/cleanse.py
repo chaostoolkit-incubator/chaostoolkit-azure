@@ -54,6 +54,17 @@ def vmss_instance(resource: dict) -> dict:
     return __cleanse(cleanse, resource)
 
 
+def redis(resource: dict) -> dict:
+    """
+    Free the redis dictionary from unwanted keys listed below.
+    """
+    cleanse = [
+        "properties"
+    ]
+
+    return __cleanse(cleanse, resource)
+
+
 def __cleanse(cleanse_list: [], resource: dict) -> dict:
     for key in cleanse_list:
         if key in resource:
