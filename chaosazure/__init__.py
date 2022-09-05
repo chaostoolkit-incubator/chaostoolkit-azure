@@ -91,7 +91,7 @@ def init_resource_graph_client(
 
 
 def init_redis_client(
-        experiment_secrets: Secrets) -> ResourceGraphClient:
+        experiment_secrets: Secrets) -> RedisManagementClient:
     """
     Initializes Resource Graph client.
     """
@@ -99,7 +99,7 @@ def init_redis_client(
 
 
 def init_eventhub_client(
-        experiment_secrets: Secrets) -> ResourceGraphClient:
+        experiment_secrets: Secrets) -> EventHubManagementClient:
     """
     Initializes Resource Graph client.
     """

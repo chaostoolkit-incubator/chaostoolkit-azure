@@ -45,7 +45,6 @@ def reboot_redis(filter: str = None,
         group = s['resourceGroup']
         name = s['name']
         logger.debug("Deleting server: {}".format(name))
-        client = RedisManagementClient()
         client.redis.force_reboot(group, name)
 
         redis_records.add(cleanse.redis(s))
