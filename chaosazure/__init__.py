@@ -5,6 +5,8 @@
 from typing import List
 
 from azure.mgmt.compute import ComputeManagementClient
+from azure.mgmt.redis import RedisManagementClient
+from azure.mgmt.eventhub import EventHubManagementClient
 from azure.mgmt.rdbms.postgresql_flexibleservers import (
     PostgreSQLManagementClient as PostgreSQLFlexibleManagementClient
 )
@@ -47,18 +49,7 @@ def init_compute_management_client(
     Initializes Compute management client for virtual machine,
     and virtual machine scale sets resources under Azure Resource manager.
     """
-    secrets = load_secrets(experiment_secrets)
-    configuration = load_configuration(experiment_configuration)
-    with auth(secrets) as authentication:
-        base_url = secrets.get('cloud').endpoints.resource_manager
-        scopes = [base_url + "/.default"]
-        client = ComputeManagementClient(
-            credential=authentication,
-            credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id'),
-            base_url=base_url)
-
-        return client
+    return __azure_client_factory("ComputeManagementClient", Secrets)
 
 
 def init_postgresql_flexible_management_client(
@@ -68,18 +59,7 @@ def init_postgresql_flexible_management_client(
     Initializes Relational Database management client for postgresql_flexible,
     resources under Azure Resource manager.
     """
-    secrets = load_secrets(experiment_secrets)
-    configuration = load_configuration(experiment_configuration)
-    with auth(secrets) as authentication:
-        base_url = secrets.get('cloud').endpoints.resource_manager
-        scopes = [base_url + "/.default"]
-        client = PostgreSQLFlexibleManagementClient(
-            credential=authentication,
-            credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id'),
-            base_url=base_url)
-
-        return client
+    return __azure_client_factory("PostgreSQLFlexibleManagementClient", Secrets)
 
 
 def init_postgresql_management_client(
@@ -89,18 +69,7 @@ def init_postgresql_management_client(
     Initializes Relational Database management client for postgresql,
     resources under Azure Resource manager.
     """
-    secrets = load_secrets(experiment_secrets)
-    configuration = load_configuration(experiment_configuration)
-    with auth(secrets) as authentication:
-        base_url = secrets.get('cloud').endpoints.resource_manager
-        scopes = [base_url + "/.default"]
-        client = PostgreSQLManagementClient(
-            credential=authentication,
-            credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id'),
-            base_url=base_url)
-
-        return client
+    return __azure_client_factory("PostgreSQLManagementClient", Secrets)
 
 
 def init_website_management_client(
@@ -110,18 +79,7 @@ def init_website_management_client(
     Initializes Website management client for webapp resource under Azure
     Resource manager.
     """
-    secrets = load_secrets(experiment_secrets)
-    configuration = load_configuration(experiment_configuration)
-    with auth(secrets) as authentication:
-        base_url = secrets.get('cloud').endpoints.resource_manager
-        scopes = [base_url + "/.default"]
-        client = WebSiteManagementClient(
-            credential=authentication,
-            credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id'),
-            base_url=base_url)
-
-        return client
+    return __azure_client_factory("WebSiteManagementClient", Secrets)
 
 
 def init_resource_graph_client(
@@ -129,16 +87,23 @@ def init_resource_graph_client(
     """
     Initializes Resource Graph client.
     """
-    secrets = load_secrets(experiment_secrets)
-    with auth(secrets) as authentication:
-        base_url = secrets.get('cloud').endpoints.resource_manager
-        scopes = [base_url + "/.default"]
-        client = ResourceGraphClient(
-            credential=authentication,
-            credential_scopes=scopes,
-            base_url=base_url)
+    return __azure_client_factory("ResourceGraphClient", Secrets)
 
-        return client
+
+def init_redis_client(
+        experiment_secrets: Secrets) -> RedisManagementClient:
+    """
+    Initializes Resource Graph client.
+    """
+    return __azure_client_factory("RedisManagementClient", Secrets)
+
+
+def init_eventhub_client(
+        experiment_secrets: Secrets) -> EventHubManagementClient:
+    """
+    Initializes Resource Graph client.
+    """
+    return __azure_client_factory("EventHubManagementClient", Secrets)
 
 
 ###############################################################################
@@ -159,4 +124,24 @@ def __load_exported_activities() -> List[DiscoveredActivities]:
     activities.extend(discover_probes("chaosazure.postgresql_flexible.probes"))
     activities.extend(discover_actions("chaosazure.postgresql.actions"))
     activities.extend(discover_probes("chaosazure.postgresql.probes"))
+    activities.extend(discover_actions("chaosazure.redis.actions"))
+    activities.extend(discover_probes("chaosazure.redis.probes"))
+    activities.extend(discover_actions("chaosazure.eventhub.actions"))
+    activities.extend(discover_probes("chaosazure.eventhub.probes"))
     return activities
+
+
+def __azure_client_factory(experiment_secrets: Secrets, client_name: str) -> object:
+    """
+    Simple factory for *Clients in azure.mgmt
+    """
+    secrets = load_secrets(experiment_secrets)
+    with auth(secrets) as authentication:
+        base_url = secrets.get('cloud').endpoints.resource_manager
+        scopes = [base_url + "/.default"]
+        client = eval(client_name)(
+            credential=authentication,
+            credential_scopes=scopes,
+            base_url=base_url)
+
+        return client
