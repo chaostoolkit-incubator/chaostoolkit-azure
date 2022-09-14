@@ -9,6 +9,7 @@ from azure.mgmt.rdbms.postgresql_flexibleservers import (
     PostgreSQLManagementClient as PostgreSQLFlexibleManagementClient
 )
 from azure.mgmt.rdbms.postgresql import PostgreSQLManagementClient
+from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.resourcegraph import ResourceGraphClient
 from chaoslib.discovery import (discover_actions, discover_probes,
@@ -22,7 +23,7 @@ from chaosazure.common.config import load_configuration, load_secrets
 
 
 __all__ = [
-    "discover", "__version__", "init_compute_management_client",
+    "discover", "__version__", "init_compute_management_client", "init_network_management_client",
     "init_website_management_client", "init_resource_graph_client"
 ]
 __version__ = '0.11.0'
@@ -102,6 +103,25 @@ def init_postgresql_management_client(
 
         return client
 
+def init_network_management_client(
+        experiment_secrets: Secrets,
+        experiment_configuration: Configuration) -> NetworkManagementClient:
+    """
+    Initializes Network management client for application gateway,
+    resources under Azure Resource manager.
+    """
+    secrets = load_secrets(experiment_secrets)
+    configuration = load_configuration(experiment_configuration)
+    with auth(secrets) as authentication:
+        base_url = secrets.get('cloud').endpoints.resource_manager
+        scopes = [base_url + "/.default"]
+        client = NetworkManagementClient(
+            credential=authentication,
+            credential_scopes=scopes,
+            subscription_id=configuration.get('subscription_id'),
+            base_url=base_url)
+
+        return client
 
 def init_website_management_client(
         experiment_secrets: Secrets,
@@ -157,6 +177,8 @@ def __load_exported_activities() -> List[DiscoveredActivities]:
     activities.extend(discover_probes("chaosazure.webapp.probes"))
     activities.extend(discover_actions("chaosazure.postgresql_flexible.actions"))
     activities.extend(discover_probes("chaosazure.postgresql_flexible.probes"))
+    activities.extend(discover_actions("chaosazure.application_gateway.actions"))
+    activities.extend(discover_probes("chaosazure.application_gateway.probes"))
     activities.extend(discover_actions("chaosazure.postgresql.actions"))
     activities.extend(discover_probes("chaosazure.postgresql.probes"))
     return activities
