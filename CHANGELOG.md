@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.11.0...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.11.1...HEAD
+
+## [0.11.1][] - 2023-02-26
+
+[0.11.1]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.11.0...0.11.1
+
+### Fixed
+
+- Format of minimal Python version as per https://github.com/pypa/packaging/issues/673
 
 ### Added
 
