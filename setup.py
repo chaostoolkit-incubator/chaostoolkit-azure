@@ -78,7 +78,7 @@ setup_params = dict(
     install_requires=install_require,
     tests_require=test_require,
     setup_requires=pytest_runner,
-    python_requires='>=3.7.*'
+    python_requires='>=3.7'
 )
 
 
