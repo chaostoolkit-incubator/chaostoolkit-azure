@@ -26,7 +26,7 @@ __all__ = [
     "discover", "__version__", "init_compute_management_client", "init_network_management_client",
     "init_website_management_client", "init_resource_graph_client"
 ]
-__version__ = '0.11.0'
+__version__ = '0.11.1'
 
 
 def discover(discover_system: bool = True) -> Discovery:
