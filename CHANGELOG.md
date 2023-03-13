@@ -14,18 +14,6 @@
 
 ### Added
 
--  Introduce actions for Azure Netapp Files, like deleting netapp volumes
-
-## [0.11.1][] - 2023-02-26
-
-[0.11.1]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.11.0...0.11.1
-
-### Fixed
-
-- Format of minimal Python version as per https://github.com/pypa/packaging/issues/673
-
-### Added
-
 -  Introduce actions for Azure Application Gateway, like starting, stopping, deleting application gateways and deleting routes
 -  Introduce actions for Azure Database for PostgreSQL flexible, like starting, stoping, restarting and deleting servers
 -  Introduce actions for Azure Database for PostgreSQL single, like restarting and deleting servers
