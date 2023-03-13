@@ -103,6 +103,7 @@ def init_postgresql_management_client(
 
         return client
 
+
 def init_network_management_client(
         experiment_secrets: Secrets,
         experiment_configuration: Configuration) -> NetworkManagementClient:
@@ -122,6 +123,7 @@ def init_network_management_client(
             base_url=base_url)
 
         return client
+
 
 def init_website_management_client(
         experiment_secrets: Secrets,
