@@ -25,7 +25,11 @@ from chaosazure.common.config import load_configuration, load_secrets
 
 __all__ = [
     "discover", "__version__", "init_compute_management_client", "init_network_management_client",
+<<<<<<< HEAD
     "init_website_management_client", "init_resource_graph_client", "init_netapp_management_client"
+=======
+    "init_website_management_client", "init_resource_graph_client"
+>>>>>>> Add Azure Application Gateway actions (#145)
 ]
 __version__ = '0.11.1'
 
