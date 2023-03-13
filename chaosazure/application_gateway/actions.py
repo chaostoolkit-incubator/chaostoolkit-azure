@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import re
-from chaosazure.common.cleanse import application_gateway
 
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
@@ -11,14 +10,15 @@ from chaosazure.common import cleanse
 from chaosazure.application_gateway.constants import RES_TYPE_SRV_AG
 from chaosazure.common.resources.graph import fetch_resources
 
-__all__ = ["delete_application_gateways", "start_application_gateways", "stop_application_gateways", "delete_routes"]
+__all__ = ["delete_application_gateways", "start_application_gateways", 
+           "stop_application_gateways", "delete_routes"]
 
 from chaosazure.vmss.records import Records
 
 
 def delete_application_gateways(filter: str = None,
-                   configuration: Configuration = None,
-                   secrets: Secrets = None):
+                                configuration: Configuration = None,
+                                secrets: Secrets = None):
     """
     Delete application gateways at random.
 
@@ -63,8 +63,8 @@ def delete_application_gateways(filter: str = None,
 
 
 def start_application_gateways(filter: str = None,
-                    configuration: Configuration = None,
-                    secrets: Secrets = None):
+                               configuration: Configuration = None,
+                               secrets: Secrets = None):
     """
     Start application gateway at random.
 
@@ -106,8 +106,8 @@ def start_application_gateways(filter: str = None,
 
 
 def stop_application_gateways(filter: str = None,
-                     configuration: Configuration = None,
-                     secrets: Secrets = None):
+                              configuration: Configuration = None,
+                              secrets: Secrets = None):
     """
     Stop application gateways at random.
 
@@ -147,10 +147,11 @@ def stop_application_gateways(filter: str = None,
 
     return application_gateway_records.output_as_dict('resources')
 
+
 def delete_routes(filter: str = None,
-                     name_pattern: str = None,
-                     configuration: Configuration = None,
-                     secrets: Secrets = None):
+                  name_pattern: str = None,
+                  configuration: Configuration = None,
+                  secrets: Secrets = None):
     """
     Delete routes at random.
     **Be aware**: Deleting a route is an invasive action. You will not be
@@ -195,19 +196,20 @@ def delete_routes(filter: str = None,
         app_gw = client.application_gateways.get(group, application_gateway_name)
         route_to_keep = app_gw.request_routing_rules[0]
 
-        for r in app_gw.request_routing_rules[:]: 
+        for r in app_gw.request_routing_rules[:]:
             name = r.name
             if pattern is None or pattern.search(name):
                 app_gw.request_routing_rules.remove(r)
                 route_records.add(r.as_dict())
                 logger.debug("Deleting route: {}/{}".format(application_gateway_name, name))
-        
+
         if not app_gw.request_routing_rules:
             app_gw.request_routing_rules.append(route_to_keep)
-            logger.debug("Routes cannot be empty added back: {}/{}".format(application_gateway_name, route_to_keep.name))
+            logger.debug("Routes cannot be empty added back: {}/{}".format(application_gateway_name, 
+                                                                           route_to_keep.name))
 
         client.application_gateways.begin_create_or_update(group, application_gateway_name, app_gw)
-        
+
     return route_records.output_as_dict('resources')
 
 

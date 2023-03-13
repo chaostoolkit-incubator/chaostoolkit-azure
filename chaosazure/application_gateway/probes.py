@@ -12,8 +12,8 @@ __all__ = ["describe_application_gateways", "count_application_gateways", "descr
 
 
 def describe_application_gateways(filter: str = None,
-                     configuration: Configuration = None,
-                     secrets: Secrets = None):
+                                  configuration: Configuration = None,
+                                  secrets: Secrets = None):
     """
     Describe Azure application gateways.
 
@@ -34,8 +34,8 @@ def describe_application_gateways(filter: str = None,
 
 
 def count_application_gateways(filter: str = None,
-                  configuration: Configuration = None,
-                  secrets: Secrets = None) -> int:
+                               configuration: Configuration = None,
+                               secrets: Secrets = None) -> int:
     """
     Return count of Azure application gateways.
 
@@ -56,9 +56,9 @@ def count_application_gateways(filter: str = None,
 
 
 def describe_routes(filter: str = None,
-                       name_pattern: str = None,
-                       configuration: Configuration = None,
-                       secrets: Secrets = None):
+                    name_pattern: str = None,
+                    configuration: Configuration = None,
+                    secrets: Secrets = None):
     """
     Describe Azure application gateways routes.
 
