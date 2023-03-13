@@ -41,6 +41,7 @@ def application_gateway(resource: dict) -> dict:
 
     return __cleanse(cleanse, resource)
 
+<<<<<<< HEAD
 def netapp_volume(resource: dict) -> dict:
     """
     Free the database dictionary from unwanted keys listed below.
@@ -53,6 +54,8 @@ def netapp_volume(resource: dict) -> dict:
 
     return __cleanse(cleanse, resource)
 
+=======
+>>>>>>> Add Azure Application Gateway actions (#145)
 
 def vmss(resource: dict) -> dict:
     """
