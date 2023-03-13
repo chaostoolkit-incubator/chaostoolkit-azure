@@ -10,7 +10,7 @@ from chaosazure.common import cleanse
 from chaosazure.application_gateway.constants import RES_TYPE_SRV_AG
 from chaosazure.common.resources.graph import fetch_resources
 
-__all__ = ["delete_application_gateways", "start_application_gateways", 
+__all__ = ["delete_application_gateways", "start_application_gateways",
            "stop_application_gateways", "delete_routes"]
 
 from chaosazure.vmss.records import Records
@@ -205,7 +205,7 @@ def delete_routes(filter: str = None,
 
         if not app_gw.request_routing_rules:
             app_gw.request_routing_rules.append(route_to_keep)
-            logger.debug("Routes cannot be empty added back: {}/{}".format(application_gateway_name, 
+            logger.debug("Routes cannot be empty added back: {}/{}".format(application_gateway_name,
                                                                            route_to_keep.name))
 
         client.application_gateways.begin_create_or_update(group, application_gateway_name, app_gw)
