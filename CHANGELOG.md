@@ -14,6 +14,7 @@
 
 ### Added
 
+-  Introduce actions for Azure Application Gateway, like starting, stopping, deleting application gateways and deleting routes
 -  Introduce actions for Azure Database for PostgreSQL flexible, like starting, stoping, restarting and deleting servers
 -  Introduce actions for Azure Database for PostgreSQL single, like restarting and deleting servers
 

@@ -31,6 +31,17 @@ def database_database(resource: dict) -> dict:
     return __cleanse(cleanse, resource)
 
 
+def application_gateway(resource: dict) -> dict:
+    """
+    Free the database dictionary from unwanted keys listed below.
+    """
+    cleanse = [
+        "properties"
+    ]
+
+    return __cleanse(cleanse, resource)
+
+
 def vmss(resource: dict) -> dict:
     """
     Free the VMSS dictionary from unwanted keys listed below.
