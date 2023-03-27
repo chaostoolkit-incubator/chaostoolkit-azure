@@ -186,6 +186,7 @@ def init_netapp_management_client(
         return client
 
 
+<<<<<<< HEAD
 def init_storage_management_client(
         experiment_secrets: Secrets,
         experiment_configuration: Configuration) -> StorageManagementClient:
@@ -206,6 +207,8 @@ def init_storage_management_client(
         return client
 
 
+=======
+>>>>>>> Add Azure Netapp Files actions and probes (#146)
 ###############################################################################
 # Private functions
 ###############################################################################
@@ -228,6 +231,9 @@ def __load_exported_activities() -> List[DiscoveredActivities]:
     activities.extend(discover_probes("chaosazure.postgresql.probes"))
     activities.extend(discover_actions("chaosazure.netapp.actions"))
     activities.extend(discover_probes("chaosazure.netapp.probes"))
+<<<<<<< HEAD
     activities.extend(discover_actions("chaosazure.storage.actions"))
     activities.extend(discover_probes("chaosazure.storage.probes"))
+=======
+>>>>>>> Add Azure Netapp Files actions and probes (#146)
     return activities
