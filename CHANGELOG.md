@@ -4,6 +4,10 @@
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.11.1...HEAD
 
+### Added
+
+-  Introduce actions for Azure Netapp Files, like deleting netapp volumes
+
 ## [0.11.1][] - 2023-02-26
 
 [0.11.1]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.11.0...0.11.1
