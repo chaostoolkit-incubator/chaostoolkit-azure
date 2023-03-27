@@ -55,9 +55,9 @@ def delete_netapp_volumes(filter: str = None,
     for nv in netapp_volumes:
         group = nv['resourceGroup']
         full_name = nv['name']
-        account_name = re.search("^([^\/]*)\/", full_name).group(1)
-        pool_name = re.search("\/([^\/]*)\/", full_name).group(1)
-        volume_name = re.search("\/([^\/]*)$", full_name).group(1)
+        account_name = re.search(r"^([^\/]*)\/", full_name).group(1)
+        pool_name = re.search(r"\/([^\/]*)\/", full_name).group(1)
+        volume_name = re.search(r"\/([^\/]*)$", full_name).group(1)
         client.volumes.begin_delete(group, account_name, pool_name, volume_name)
         netapp_volumes_records.add(cleanse.netapp_volume(nv))
 
