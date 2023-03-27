@@ -9,8 +9,8 @@ __all__ = ["describe_netapp_volumes", "count_netapp_volumes", "describe_routes"]
 
 
 def describe_netapp_volumes(filter: str = None,
-                                  configuration: Configuration = None,
-                                  secrets: Secrets = None):
+                            configuration: Configuration = None,
+                            secrets: Secrets = None):
     """
     Describe Azure netapp volumes.
 
@@ -31,8 +31,8 @@ def describe_netapp_volumes(filter: str = None,
 
 
 def count_netapp_volumes(filter: str = None,
-                               configuration: Configuration = None,
-                               secrets: Secrets = None) -> int:
+                         configuration: Configuration = None,
+                         secrets: Secrets = None) -> int:
     """
     Return count of Azure netapp volumes.
 
