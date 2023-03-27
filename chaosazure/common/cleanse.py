@@ -42,6 +42,19 @@ def application_gateway(resource: dict) -> dict:
     return __cleanse(cleanse, resource)
 
 
+def netapp_volume(resource: dict) -> dict:
+    """
+    Free the database dictionary from unwanted keys listed below.
+    """
+    cleanse = [
+        "properties", "tags", "managedBy", "sku", "identity",
+        "performed_at", "kind", "plan", "performed_at",
+        "extendedLocation"
+    ]
+
+    return __cleanse(cleanse, resource)
+
+
 def vmss(resource: dict) -> dict:
     """
     Free the VMSS dictionary from unwanted keys listed below.
