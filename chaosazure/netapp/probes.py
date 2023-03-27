@@ -5,7 +5,7 @@ from logzero import logger
 from chaosazure.netapp.constants import RES_TYPE_SRV_NV
 from chaosazure.common.resources.graph import fetch_resources
 
-__all__ = ["describe_netapp_volumes", "count_netapp_volumes", "describe_routes"]
+__all__ = ["describe_netapp_volumes", "count_netapp_volumes"]
 
 
 def describe_netapp_volumes(filter: str = None,
