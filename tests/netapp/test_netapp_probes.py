@@ -39,6 +39,3 @@ def test_describe_application_gateways(fetch):
 
     assert description[0]['name'] == resource['name']
     assert description[0]['resourceGroup'] == resource['resourceGroup']
-
-
-
