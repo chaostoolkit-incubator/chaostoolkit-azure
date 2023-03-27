@@ -7,9 +7,6 @@
 ### Added
 
 -  Introduce actions for Azure Netapp Files, like deleting netapp volumes
--  Introduce actions and probes for Azure Storage, like deleting storage accounts and blob containers
--  Introduce actions and probes for Azure Kubernetes Service, like deleting or stopping managed clusters
--  Introduce action to deleting for a specific table or several random tables on databases.
 
 ## [0.11.1][] - 2023-02-26
 

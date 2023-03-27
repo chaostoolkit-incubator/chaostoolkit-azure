@@ -1,35 +1,41 @@
 from unittest.mock import MagicMock, patch, mock_open
 
 
-from chaosazure.netapp.probes import count_netapp_volumes, describe_netapp_volumes
-from data import netapp_provider
+from chaosazure.application_gateway.probes import count_application_gateways, describe_application_gateways, describe_routes
+from data import application_gateway_provider
 from logzero import logger
 
 
-NETAPP_VOLUME_ALPHA = {
-    'name': 'NetAppAccount/NetAppPoolName/NetAppVolumeAlpha',
-    'resourceGroup': 'group'}
+resource = {
+    'name': 'chaos-application_gateway',
+    'resourceGroup': 'rg'}
 
-NETAPP_VOLUME_BETA = {
-    'name': 'NetAppAccount/NetAppPoolName/NetAppVolumeBeta',
-    'resourceGroup': 'group'}
+route_resource = {
+    "name": "appgwrule",
+    "id": "/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.Network/applicationGateways/appgw/requestRoutingRules/appgwrule",
+    "properties": {
+        "provisioningState": "Succeeded",
+        "ruleType": "Basic"
+    }
+}
 
-@patch('chaosazure.netapp.probes.fetch_resources', autospec=True)
-def test_count_netapp_volumes(fetch):
-    resource_list = [NETAPP_VOLUME_ALPHA, NETAPP_VOLUME_BETA]
+
+@patch('chaosazure.application_gateway.probes.fetch_resources', autospec=True)
+def test_count_application_gateways(fetch):
+    resource_list = [resource]
     fetch.return_value = resource_list
 
-    count = count_netapp_volumes(None, None)
+    count = count_application_gateways(None, None)
 
-    assert count == 2
+    assert count == 1
 
 
-@patch('chaosazure.netapp.probes.fetch_resources', autospec=True)
-def test_describe_netapp_volumes(fetch):
-    resource_list = [NETAPP_VOLUME_ALPHA]
+@patch('chaosazure.application_gateway.probes.fetch_resources', autospec=True)
+def test_describe_application_gateways(fetch):
+    resource_list = [resource]
     fetch.return_value = resource_list
 
-    description = describe_netapp_volumes(None, None)
+    description = describe_application_gateways(None, None)
 
-    assert description[0]['name'] == resource_list[0]['name']
-    assert description[0]['resourceGroup'] == resource_list[0]['resourceGroup']
+    assert description[0]['name'] == resource['name']
+    assert description[0]['resourceGroup'] == resource['resourceGroup']
