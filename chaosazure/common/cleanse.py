@@ -54,6 +54,28 @@ def netapp_volume(resource: dict) -> dict:
 
     return __cleanse(cleanse, resource)
 
+def storage_account(resource: dict) -> dict:
+    """
+    Free the database dictionary from unwanted keys listed below.
+    """
+    cleanse = [
+        "properties", "tags", "managedBy", "sku", "identity",
+        "performed_at", "kind", "plan", "performed_at",
+        "extendedLocation"
+    ]
+
+    return __cleanse(cleanse, resource)
+
+def blob_storage(resource: dict) -> dict:
+    """
+    Free the database dictionary from unwanted keys listed below.
+    """
+    cleanse = [
+        "immutable_storage_with_versioning", "enable_nfs_v3_all_squash",
+        "enable_nfs_v3_root_squash", "additional_properties"
+    ]
+
+    return __cleanse(cleanse, resource)
 
 def vmss(resource: dict) -> dict:
     """
