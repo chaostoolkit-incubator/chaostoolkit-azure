@@ -120,6 +120,7 @@ def test_delete_one_container(init, fetch):
     fetch.assert_called_with(f, CONFIG, SECRETS)
     assert client.blob_containers.delete.call_count == 1
 
+
 @patch('chaosazure.storage.actions.__fetch_storage_accounts', autospec=True)
 @patch('chaosazure.storage.actions.__storage_mgmt_client', autospec=True)
 def test_delete_two_container(init, fetch):
@@ -135,6 +136,7 @@ def test_delete_two_container(init, fetch):
 
     fetch.assert_called_with(f, CONFIG, SECRETS)
     assert client.blob_containers.delete.call_count == 2
+
 
 @patch('chaosazure.storage.actions.__fetch_storage_accounts', autospec=True)
 @patch('chaosazure.storage.actions.__storage_mgmt_client', autospec=True)
@@ -152,4 +154,3 @@ def test_delete_blob_container_with_no_blob_containers(init, fetch):
 
         fetch.assert_called_with(f, CONFIG, SECRETS)
     assert "No blob containers to target found" in str(x.value)
-

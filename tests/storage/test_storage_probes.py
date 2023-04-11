@@ -30,6 +30,7 @@ SECRETS = {
     "tenant_id": "***REMOVED***"
 }
 
+
 @patch('chaosazure.storage.probes.fetch_resources', autospec=True)
 def test_count_storage_accounts(fetch):
     resource_list = [STORAGE_ACCOUNT_ALPHA, STORAGE_ACCOUNT_BETA]

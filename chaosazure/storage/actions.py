@@ -64,10 +64,10 @@ def delete_storage_accounts(filter: str = None,
 
 
 def delete_blob_containers(filter: str = None,
-                          name_pattern: str = None,
-                          number: int = None,
-                          configuration: Configuration = None,
-                          secrets: Secrets = None):
+                           name_pattern: str = None,
+                           number: int = None,
+                           configuration: Configuration = None,
+                           secrets: Secrets = None):
     """
     Delete blob containers at random.
 
@@ -144,6 +144,7 @@ def delete_blob_containers(filter: str = None,
         client.blob_containers.delete(container['group'], container['storage_name'], container['container_name'])
         blob_storage_records.add(container)
     return blob_storage_records.output_as_dict('resources')
+
 
 ###############################################################################
 # Private helper functions
