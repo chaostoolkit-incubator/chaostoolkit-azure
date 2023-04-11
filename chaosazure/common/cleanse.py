@@ -54,6 +54,7 @@ def netapp_volume(resource: dict) -> dict:
 
     return __cleanse(cleanse, resource)
 
+
 def storage_account(resource: dict) -> dict:
     """
     Free the database dictionary from unwanted keys listed below.
@@ -66,6 +67,7 @@ def storage_account(resource: dict) -> dict:
 
     return __cleanse(cleanse, resource)
 
+
 def blob_storage(resource: dict) -> dict:
     """
     Free the database dictionary from unwanted keys listed below.
@@ -76,6 +78,7 @@ def blob_storage(resource: dict) -> dict:
     ]
 
     return __cleanse(cleanse, resource)
+
 
 def vmss(resource: dict) -> dict:
     """

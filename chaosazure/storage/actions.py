@@ -50,7 +50,7 @@ def delete_storage_accounts(filter: str = None,
         "configuration='{}', filter='{}'".format(configuration, filter))
 
     storage_accounts = __fetch_storage_accounts(filter, configuration, secrets)
-    
+
     client = __storage_mgmt_client(secrets, configuration)
     storage_accounts_records = Records()
 
@@ -80,13 +80,13 @@ def delete_blob_containers(filter: str = None,
         Filter the storage account. If the filter is omitted all storage accounts in
         the subscription will have their blob containers selected as potential chaos candidates.
     name_pattern : str, optional
-        Filter the blob containers. If the filter is omitted all blob containers will be selected 
+        Filter the blob containers. If the filter is omitted all blob containers will be selected
         for the probe.
         Pattern example:
         'container[0-9]{3}'
     number : int, optional
-        Pick the number of blob containers matching the two filters that will be deleted. If the 
-        number is omitted all blob containers in the list will be deleted.    
+        Pick the number of blob containers matching the two filters that will be deleted. If the
+        number is omitted all blob containers in the list will be deleted.
 
     Examples
     --------
@@ -109,7 +109,7 @@ def delete_blob_containers(filter: str = None,
         "Start delete_blob_containers: "
         "configuration='{}', filter='{}'".format(configuration, filter))
 
-    if number==0:
+    if number == 0:
         raise FailedActivity("Cannot target 0 volumes")
 
     pattern = None
@@ -117,7 +117,7 @@ def delete_blob_containers(filter: str = None,
         pattern = re.compile(name_pattern)
 
     storage_accounts = __fetch_storage_accounts(filter, configuration, secrets)
-    
+
     client = __storage_mgmt_client(secrets, configuration)
     blob_storage_records = Records()
 
@@ -126,22 +126,24 @@ def delete_blob_containers(filter: str = None,
     for sa in storage_accounts:
         group = sa['resourceGroup']
         name = sa['name']
-        containers = client.blob_containers.list(group,name)
+        containers = client.blob_containers.list(group, name)
         for container in containers:
             if pattern is None or pattern.search(container.name):
-                containers_to_target.append({"group": group,"storage_name": name,"container_name": container.name})
+                containers_to_target.append({"group": group, "storage_name": name, "container_name": container.name})
 
     if not containers_to_target:
         raise FailedActivity("No blob containers to target found")
 
-    if not number or number>len(containers_to_target): 
-        containers_to_delete = containers_to_target      
+    if not number or number > len(containers_to_target):
+        containers_to_delete = containers_to_target
     else:
         containers_to_delete = random.sample(containers_to_target, number)
 
     for container in containers_to_delete:
-        logger.debug("Deleting container: {}/{}".format(container['storage_name'], container['container_name']))
-        client.blob_containers.delete(container['group'], container['storage_name'], container['container_name'])
+        logger.debug("Deleting container: {}/{}".format(container['storage_name'],
+                     container['container_name']))
+        client.blob_containers.delete(container['group'], container['storage_name'],
+                                      container['container_name'])
         blob_storage_records.add(container)
     return blob_storage_records.output_as_dict('resources')
 
