@@ -13,7 +13,10 @@ from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.resourcegraph import ResourceGraphClient
 from azure.mgmt.netapp import NetAppManagementClient
+<<<<<<< HEAD
 from azure.mgmt.storage import StorageManagementClient
+=======
+>>>>>>> eb80fa34f36e195bc5db0025a19f917133c9d533
 from chaoslib.discovery import (discover_actions, discover_probes,
                                 initialize_discovery_result)
 from chaoslib.types import (Configuration, DiscoveredActivities, Discovery,
@@ -26,8 +29,12 @@ from chaosazure.common.config import load_configuration, load_secrets
 
 __all__ = [
     "discover", "__version__", "init_compute_management_client", "init_network_management_client",
+<<<<<<< HEAD
     "init_website_management_client", "init_resource_graph_client", "init_netapp_management_client",
     "init_storage_management_client"
+=======
+    "init_website_management_client", "init_resource_graph_client", "init_netapp_management_client"
+>>>>>>> eb80fa34f36e195bc5db0025a19f917133c9d533
 ]
 __version__ = '0.11.1'
 
