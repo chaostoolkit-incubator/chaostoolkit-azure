@@ -12,7 +12,8 @@ from chaosazure.machine.actions import delete_machines, stop_machines, \
 from chaosazure.common.resources.graph import fetch_resources
 from chaosazure.vmss.records import Records
 
-__all__ = ["delete_node", "stop_node", "restart_node", "start_managed_clusters", "delete_managed_clusters", "stop_managed_clusters"]
+__all__ = ["delete_node", "stop_node", "restart_node", "start_managed_clusters",
+           "delete_managed_clusters", "stop_managed_clusters"]
 
 
 def delete_node(filter: str = None,
