@@ -54,6 +54,17 @@ def netapp_volume(resource: dict) -> dict:
 
     return __cleanse(cleanse, resource)
 
+def managed_cluster(resource: dict) -> dict:
+    """
+    Free the database dictionary from unwanted keys listed below.
+    """
+    cleanse = [
+        "properties", "tags", "managedBy", "sku", "identity",
+        "performed_at", "kind", "plan", "performed_at",
+        "extendedLocation"
+    ]
+
+    return __cleanse(cleanse, resource)
 
 def storage_account(resource: dict) -> dict:
     """
