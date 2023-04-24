@@ -13,6 +13,7 @@ from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.resourcegraph import ResourceGraphClient
 from azure.mgmt.netapp import NetAppManagementClient
+from azure.mgmt.storage import StorageManagementClient
 from chaoslib.discovery import (discover_actions, discover_probes,
                                 initialize_discovery_result)
 from chaoslib.types import (Configuration, DiscoveredActivities, Discovery,
@@ -25,7 +26,8 @@ from chaosazure.common.config import load_configuration, load_secrets
 
 __all__ = [
     "discover", "__version__", "init_compute_management_client", "init_network_management_client",
-    "init_website_management_client", "init_resource_graph_client", "init_netapp_management_client"
+    "init_website_management_client", "init_resource_graph_client", "init_netapp_management_client",
+    "init_storage_management_client"
 ]
 __version__ = '0.11.1'
 
@@ -184,6 +186,26 @@ def init_netapp_management_client(
         return client
 
 
+def init_storage_management_client(
+        experiment_secrets: Secrets,
+        experiment_configuration: Configuration) -> StorageManagementClient:
+    """
+    Initializes Storage management client.
+    """
+    secrets = load_secrets(experiment_secrets)
+    configuration = load_configuration(experiment_configuration)
+    with auth(secrets) as authentication:
+        base_url = secrets.get('cloud').endpoints.resource_manager
+        scopes = [base_url + "/.default"]
+        client = StorageManagementClient(
+            credential=authentication,
+            credential_scopes=scopes,
+            subscription_id=configuration.get('subscription_id'),
+            base_url=base_url)
+
+        return client
+
+
 ###############################################################################
 # Private functions
 ###############################################################################
@@ -206,4 +228,6 @@ def __load_exported_activities() -> List[DiscoveredActivities]:
     activities.extend(discover_probes("chaosazure.postgresql.probes"))
     activities.extend(discover_actions("chaosazure.netapp.actions"))
     activities.extend(discover_probes("chaosazure.netapp.probes"))
+    activities.extend(discover_actions("chaosazure.storage.actions"))
+    activities.extend(discover_probes("chaosazure.storage.probes"))
     return activities
