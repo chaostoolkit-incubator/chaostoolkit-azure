@@ -24,7 +24,7 @@ def describe_managed_clusters(filter: str = None,
     """
     logger.debug(
         "Start describe_managed_clusters: configuration='{}', filter='{}'".format(
-        configuration, filter))
+            configuration, filter))
 
     managed_clusters = fetch_resources(filter, RES_TYPE_AKS, secrets, configuration)
     return managed_clusters
