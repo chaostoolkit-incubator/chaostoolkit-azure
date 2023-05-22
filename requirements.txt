@@ -10,3 +10,5 @@ dateparser
 logzero
 requests
 msrestazure~=0.6
+psycopg2
+azure-keyvault-secrets
