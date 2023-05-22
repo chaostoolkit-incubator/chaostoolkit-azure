@@ -321,8 +321,8 @@ def test_delete_tables_existing_table(conn_mock, secret_client_mock, init_mock, 
     cursor_mock.execute.assert_any_call("SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = %s)", (table_name,))
 
     # Verify that the correct functions were called the right number of times
-    assert secret_client_mock.call_count == 1 # Check that the SecretClient method is called once.
+    assert secret_client_mock.call_count == 1  # Check that the SecretClient method is called once.
     assert conn_mock.call_count == 1  # No connection should be made
-    assert cursor_mock.execute.call_count == 2  # Check table existence
-    assert cursor_mock.fetchone.call_count == 1  # Fetch table existence result
-    assert client_mock.servers.begin_delete.call_count == 1  # No table deleted
+    assert cursor_mock.execute.call_count == 2  # Check table existence and table deletion
+    assert cursor_mock.execute.call_args_list[0][0][0] == "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = %s)"
+    assert cursor_mock.execute.call_args_list[1][0][0] == f"DROP TABLE {table_name} CASCADE"
