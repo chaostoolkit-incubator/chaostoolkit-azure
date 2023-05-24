@@ -255,10 +255,19 @@ def test_delete_tables_unknown_table(conn_mock, secret_client_mock, init_mock, f
     # Verify calls to different functions with appropriate arguments
     fetch_servers_mock.assert_called_with(f, CONFIG, SECRETS["azure"])
     assert client_mock.servers.get.call_count == 1
+
     # Verify the correct connection parameters were used
-    conn_mock.assert_called_once_with(f"host='{server_alpha.fully_qualified_domain_name}' dbname='mydatabase' user='{server_alpha.administrator_login}' password='secret_value' sslmode='require'")
+    host = server_alpha.fully_qualified_domain_name
+    login = server_alpha.administrator_login
+    params = f"host='{host}' dbname='mydatabase' user='{login}' password='secret_value' sslmode='require'"
+    conn_mock.assert_called_once_with(params)
+
     # Verify the table existence check query was executed
-    cursor_mock.execute.assert_any_call("SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = %s)", (table_name,))
+    query = (
+        "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
+        "WHERE table_schema = 'public' AND table_name = %s)"
+    )
+    cursor_mock.execute.assert_any_call(query, (table_name,))
 
     # Verify that the correct functions were called the right number of times
     assert secret_client_mock.call_count == 1 # Check that the SecretClient method is called once.
@@ -315,14 +324,30 @@ def test_delete_tables_existing_table(conn_mock, secret_client_mock, init_mock, 
     # Verify calls to different functions with appropriate arguments
     fetch_servers_mock.assert_called_with(f, CONFIG, SECRETS["azure"])
     assert client_mock.servers.get.call_count == 1
+   
     # Verify the correct connection parameters were used
-    conn_mock.assert_called_once_with(f"host='{server_alpha.fully_qualified_domain_name}' dbname='mydatabase' user='{server_alpha.administrator_login}' password='secret_value' sslmode='require'")
+    host = server_alpha.fully_qualified_domain_name
+    login = server_alpha.administrator_login
+    params = f"host='{host}' dbname='mydatabase' user='{login}' password='secret_value' sslmode='require'"
+    conn_mock.assert_called_once_with(params)
+    
     # Verify the table existence check query was executed
-    cursor_mock.execute.assert_any_call("SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = %s)", (table_name,))
+    query = (
+        "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
+        "WHERE table_schema = 'public' AND table_name = %s)"
+    )
+    cursor_mock.execute.assert_any_call(query, (table_name,))
 
-    # Verify that the correct functions were called the right number of times
-    assert secret_client_mock.call_count == 1  # Check that the SecretClient method is called once.
+    # Check that the SecretClient method is called once.
+    assert secret_client_mock.call_count == 1
+    # No connection should be made
     assert conn_mock.call_count == 1  # No connection should be made
-    assert cursor_mock.execute.call_count == 2  # Check table existence and table deletion
-    assert cursor_mock.execute.call_args_list[0][0][0] == "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = %s)"
+    # Check table existence and table deletion
+    assert cursor_mock.execute.call_count == 2
+    # Verify that we are checking the existence of the table
+    assert cursor_mock.execute.call_args_list[0][0][0] == (
+        "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
+        "WHERE table_schema = 'public' AND table_name = %s)"
+    )
+    # Verify that we are sending a command to drop the table
     assert cursor_mock.execute.call_args_list[1][0][0] == f"DROP TABLE {table_name} CASCADE"

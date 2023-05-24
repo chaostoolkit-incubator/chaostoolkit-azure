@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+
 import random
 import psycopg2
 
@@ -349,41 +350,38 @@ def delete_tables(filter: str = None,
     Deletes the table 'orders' from two random servers in the resource group 'rg'
     """
     # Retrieve the Azure secrets from the plan
-    azure_subscription_id = configuration["azure_subscription_id"]
-    azure_secrets = secrets
-    credential = ClientSecretCredential(
-        tenant_id=azure_secrets["tenant_id"],
-        client_id=azure_secrets["client_id"],
-        client_secret=azure_secrets["client_secret"]
+    sub_id = configuration["azure_subscription_id"]
+    az_secrets = secrets
+    cred = ClientSecretCredential(
+        tenant_id=az_secrets["tenant_id"],
+        client_id=az_secrets["client_id"],
+        client_secret=az_secrets["client_secret"]
     )
 
     # Fetch the servers matching the filter
-    servers = __fetch_servers(filter, configuration, secrets)
-    if not servers:
+    srvs = __fetch_servers(filter, configuration, secrets)
+    if not srvs:
         logger.warning("No servers found")
         raise FailedActivity("No servers found")
 
-    server_records = Records()
-    for server in servers:
+    srv_records = Records()
+    for srv in srvs:
         # Get the PostgreSQL server properties
-        server_name = server["name"]
-        resource_group_name = server["resourceGroup"]
-        postgresql_client = __postgresql_flexible_mgmt_client(secrets, configuration)
-        pg_server = postgresql_client.servers.get(
-            resource_group_name=resource_group_name,
-            server_name=server_name
-        )
+        srv_name = srv["name"]
+        resource_group = srv["resourceGroup"]
+        pg_client = __postgresql_flexible_mgmt_client(secrets, configuration)
+        pg_srv = pg_client.servers.get(resource_group, srv_name)
 
         # Construct the name of the secret containing the password
-        secret_name = f"database-admin-password-{pg_server.name}"
+        secret_name = f"database-admin-password-{pg_srv.name}"
 
         # Retrieve the password from the Azure Key Vault secret
-        client = SecretClient(vault_url=key_vault_url, credential=credential)
+        client = SecretClient(vault_url=key_vault_url, credential=cred)
         secret_value = client.get_secret(secret_name).value
 
         # Retrieve all databases for the current server
         db_client = __postgresql_flexible_mgmt_client(secrets, configuration)
-        db_list = db_client.databases.list_by_server(resource_group_name, server_name)
+        db_list = db_client.databases.list_by_server(resource_group, srv_name)
 
         # Iterate through each database and delete the table(s)
         for db in db_list:
@@ -391,32 +389,43 @@ def delete_tables(filter: str = None,
 
             # Connect to the PostgreSQL server
             try:
-                conn_str = f"host='{pg_server.fully_qualified_domain_name}' dbname='{dbname}' user='{pg_server.administrator_login}' password='{secret_value}' sslmode='require'"
+                conn_str = f"host='{pg_srv.fully_qualified_domain_name}' "\
+                           f"dbname='{dbname}' "\
+                           f"user='{pg_srv.administrator_login}' "\
+                           f"password='{secret_value}' "\
+                           f"sslmode='require'"
                 conn = psycopg2.connect(conn_str)
                 cursor = conn.cursor()
 
                 try:
                     # If a table name is provided, check if the table exists and delete it
                     if table_name is not None:
-                        cursor.execute("SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = %s)", (table_name,))
+                        cursor.execute(
+                            "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
+                            "WHERE table_schema = 'public' AND table_name = %s)",
+                            (table_name,)
+                        )
                         exists = cursor.fetchone()[0]
                         if exists:
                             cursor.execute(f"DROP TABLE {table_name} CASCADE")
-                            deleted_tables = {server_name: table_name}
+                            deleted_tables = {srv_name: table_name}
                         else:
                             logger.debug(f"Table '{table_name}' does not exist on database '{dbname}'")
                             deleted_tables = {}
                     # Otherwise, generate a random table name and delete it    
                     else:
-                        cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema='public'")
+                        cursor.execute(
+                            "SELECT table_name FROM information_schema.tables "
+                            "WHERE table_type='BASE TABLE' AND table_schema='public'"
+                        )
                         tables = cursor.fetchall()
                         if len(tables) > 0:
                             random_table = random.choice(tables)[0]
                             cursor.execute(f"DROP TABLE IF EXISTS {random_table} CASCADE")
-                            deleted_tables = {server_name: random_table}
-                            logger.debug(f"Deleted table '{random_table}' on server '{server_name}'")
+                            deleted_tables = {srv_name: random_table}
+                            logger.debug(f"Deleted table '{random_table}' on server '{srv_name}'")
                         else:
-                            logger.debug(f"No tables to delete on server '{server_name}'")
+                            logger.debug(f"No tables to delete on server '{srv_name}'")
                             deleted_tables = {}
 
                     # Commit the transaction and close the connection
@@ -424,11 +433,11 @@ def delete_tables(filter: str = None,
                     cursor.close()
                     conn.close()
 
-                    server_records.add(cleanse.database_server(server))
-                    logger.debug(f"Deleted tables on server '{server_name}'")
+                    srv_records.add(cleanse.database_server(srv))
+                    logger.debug(f"Deleted tables on server '{srv_name}'")
                 except Exception as e:
                     logger.exception(
-                        f"Failed to delete tables on server '{server_name}'")
+                        f"Failed to delete tables on server '{srv_name}'")
                     if cursor:
                         cursor.close()
                     if conn:
@@ -436,10 +445,10 @@ def delete_tables(filter: str = None,
                         conn.close()
             except Exception as e:
                 logger.exception(
-                    f"Failed to connect to database '{dbname}' on server '{server_name}'")
+                    f"Failed to connect to database '{dbname}' on server '{srv_name}'")
                 continue
 
-    return server_records.output_as_dict('resources')        
+    return srv_records.output_as_dict('resources')        
 
 
 ###############################################################################
