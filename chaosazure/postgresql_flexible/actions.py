@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 import re
 
+import random
+import psycopg2
+
+from azure.identity import ClientSecretCredential
+from azure.mgmt.rdbms.postgresql_flexibleservers import PostgreSQLManagementClient
+from azure.keyvault.secrets import SecretClient
+
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
 from logzero import logger
@@ -12,7 +19,7 @@ from azure.mgmt.rdbms.postgresql_flexibleservers.models import Database
 from chaosazure.common.resources.graph import fetch_resources
 
 __all__ = ["delete_servers", "stop_servers", "restart_servers",
-           "start_servers", "delete_databases", "create_databases"]
+           "start_servers", "delete_databases", "create_databases", "delete_tables"]
 
 from chaosazure.vmss.records import Records
 
@@ -302,6 +309,146 @@ def create_databases(filter: str = None,
         server_name = s['name']
 
         client.databases.begin_create(group, server_name, name, database_parameters)
+
+def delete_tables(filter: str = None,
+                  table_name: str = None,
+                  configuration: Configuration = None,
+                  secrets: Secrets = None,
+                  key_vault_url: str = None):
+    """
+    Delete a table randomly from all servers matching the filter. Could be used to introduce random failures for resilience testing.
+
+    Parameters
+    ----------
+    filter : str, optional
+        Filter the servers. If the filter is omitted, all servers in
+        the subscription will be considered for potential table deletion.
+
+    table_name : str, optional
+        Specific table name to delete. If this is omitted, a table will be selected randomly for deletion.
+
+    configuration : Configuration, optional
+        Azure configuration information.
+
+    secrets : Secrets, optional
+        Azure secret information for authentication.
+
+    key_vault_url : str, optional
+        The URL to the Azure Key Vault where the secrets are stored.
+
+    Examples
+    --------
+    Here are some examples of calling `delete_tables`. 
+
+    >>> delete_tables("where resourceGroup=='rg'", "users", c, s, "https://myvault.vault.azure.net/")
+    Deletes the table 'users' from all servers in the resource group 'rg'
+
+    >>> delete_tables("where resourceGroup=='rg' and name='name'", None, c, s, "https://myvault.vault.azure.net/")
+    Deletes a random table from the server named 'name' in the resource group 'rg'
+
+    >>> delete_tables("where resourceGroup=='rg' | sample 2", "orders", c, s, "https://myvault.vault.azure.net/")
+    Deletes the table 'orders' from two random servers in the resource group 'rg'
+    """
+    # Retrieve the Azure secrets from the plan
+    sub_id = configuration["azure_subscription_id"]
+    az_secrets = secrets
+    cred = ClientSecretCredential(
+        tenant_id=az_secrets["tenant_id"],
+        client_id=az_secrets["client_id"],
+        client_secret=az_secrets["client_secret"]
+    )
+
+    # Fetch the servers matching the filter
+    srvs = __fetch_servers(filter, configuration, secrets)
+    if not srvs:
+        logger.warning("No servers found")
+        raise FailedActivity("No servers found")
+
+    srv_records = Records()
+    for srv in srvs:
+        # Get the PostgreSQL server properties
+        srv_name = srv["name"]
+        resource_group = srv["resourceGroup"]
+        pg_client = __postgresql_flexible_mgmt_client(secrets, configuration)
+        pg_srv = pg_client.servers.get(resource_group, srv_name)
+
+        # Construct the name of the secret containing the password
+        secret_name = f"database-admin-password-{pg_srv.name}"
+
+        # Retrieve the password from the Azure Key Vault secret
+        client = SecretClient(vault_url=key_vault_url, credential=cred)
+        secret_value = client.get_secret(secret_name).value
+
+        # Retrieve all databases for the current server
+        db_client = __postgresql_flexible_mgmt_client(secrets, configuration)
+        db_list = db_client.databases.list_by_server(resource_group, srv_name)
+
+        # Iterate through each database and delete the table(s)
+        for db in db_list:
+            dbname = db.name
+
+            # Connect to the PostgreSQL server
+            try:
+                conn_str = f"host='{pg_srv.fully_qualified_domain_name}' "\
+                           f"dbname='{dbname}' "\
+                           f"user='{pg_srv.administrator_login}' "\
+                           f"password='{secret_value}' "\
+                           f"sslmode='require'"
+                conn = psycopg2.connect(conn_str)
+                cursor = conn.cursor()
+
+                try:
+                    # If a table name is provided, check if the table exists and delete it
+                    if table_name is not None:
+                        cursor.execute(
+                            "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
+                            "WHERE table_schema = 'public' AND table_name = %s)",
+                            (table_name,)
+                        )
+                        exists = cursor.fetchone()[0]
+                        if exists:
+                            cursor.execute(f"DROP TABLE {table_name} CASCADE")
+                            deleted_tables = {srv_name: table_name}
+                        else:
+                            logger.debug(f"Table '{table_name}' does not exist on database '{dbname}'")
+                            deleted_tables = {}
+                    # Otherwise, generate a random table name and delete it    
+                    else:
+                        cursor.execute(
+                            "SELECT table_name FROM information_schema.tables "
+                            "WHERE table_type='BASE TABLE' AND table_schema='public'"
+                        )
+                        tables = cursor.fetchall()
+                        if len(tables) > 0:
+                            random_table = random.choice(tables)[0]
+                            cursor.execute(f"DROP TABLE IF EXISTS {random_table} CASCADE")
+                            deleted_tables = {srv_name: random_table}
+                            logger.debug(f"Deleted table '{random_table}' on server '{srv_name}'")
+                        else:
+                            logger.debug(f"No tables to delete on server '{srv_name}'")
+                            deleted_tables = {}
+
+                    # Commit the transaction and close the connection
+                    conn.commit()
+                    cursor.close()
+                    conn.close()
+
+                    srv_records.add(cleanse.database_server(srv))
+                    logger.debug(f"Deleted tables on server '{srv_name}'")
+                except Exception as e:
+                    logger.exception(
+                        f"Failed to delete tables on server '{srv_name}'")
+                    if cursor:
+                        cursor.close()
+                    if conn:
+                        conn.rollback()
+                        conn.close()
+            except Exception as e:
+                logger.exception(
+                    f"Failed to connect to database '{dbname}' on server '{srv_name}'")
+                continue
+
+    return srv_records.output_as_dict('resources')        
 
 
 ###############################################################################
