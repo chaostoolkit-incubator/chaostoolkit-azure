@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
+import random
 import re
 
-import random
 import psycopg2
-
 from azure.identity import ClientSecretCredential
-from azure.mgmt.rdbms.postgresql_flexibleservers import PostgreSQLManagementClient
 from azure.keyvault.secrets import SecretClient
 
 from chaoslib.exceptions import FailedActivity
@@ -295,7 +293,8 @@ def create_databases(filter: str = None,
     Creating database named 'chaos-test' in all servers from the group 'rg'
 
     >>> create_databases("where resourceGroup=='rg' and name='name'", 'chaos-test', c, s)
-    Creating database named 'chaos-test' the server from the group 'rg' having the name 'name'
+    Creating database named 'chaos-test' the server from the group 'rg' having
+    the name 'name'
     """
     logger.debug(
         "Start create_databases: "
@@ -310,13 +309,15 @@ def create_databases(filter: str = None,
 
         client.databases.begin_create(group, server_name, name, database_parameters)
 
-def delete_tables(filter: str = None,
+
+def delete_tables(filter: str = None,  # noqa C901
                   table_name: str = None,
                   configuration: Configuration = None,
                   secrets: Secrets = None,
                   key_vault_url: str = None):
     """
-    Delete a table randomly from all servers matching the filter. Could be used to introduce random failures for resilience testing.
+    Delete a table randomly from all servers matching the filter. Could be used
+    to introduce random failures for resilience testing.
 
     Parameters
     ----------
@@ -325,7 +326,8 @@ def delete_tables(filter: str = None,
         the subscription will be considered for potential table deletion.
 
     table_name : str, optional
-        Specific table name to delete. If this is omitted, a table will be selected randomly for deletion.
+        Specific table name to delete. If this is omitted, a table will be
+        selected randomly for deletion.
 
     configuration : Configuration, optional
         Azure configuration information.
@@ -348,9 +350,8 @@ def delete_tables(filter: str = None,
 
     >>> delete_tables("where resourceGroup=='rg' | sample 2", "orders", c, s, "https://myvault.vault.azure.net/")
     Deletes the table 'orders' from two random servers in the resource group 'rg'
-    """
+    """  # noqa E501
     # Retrieve the Azure secrets from the plan
-    sub_id = configuration["azure_subscription_id"]
     az_secrets = secrets
     cred = ClientSecretCredential(
         tenant_id=az_secrets["tenant_id"],
@@ -398,7 +399,8 @@ def delete_tables(filter: str = None,
                 cursor = conn.cursor()
 
                 try:
-                    # If a table name is provided, check if the table exists and delete it
+                    # If a table name is provided, check if the table exists
+                    # and delete it
                     if table_name is not None:
                         cursor.execute(
                             "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
@@ -408,11 +410,12 @@ def delete_tables(filter: str = None,
                         exists = cursor.fetchone()[0]
                         if exists:
                             cursor.execute(f"DROP TABLE {table_name} CASCADE")
-                            deleted_tables = {srv_name: table_name}
                         else:
-                            logger.debug(f"Table '{table_name}' does not exist on database '{dbname}'")
-                            deleted_tables = {}
-                    # Otherwise, generate a random table name and delete it    
+                            logger.debug(
+                                f"Table '{table_name}' does not exist on "
+                                f"database '{dbname}'"
+                            )
+                    # Otherwise, generate a random table name and delete it
                     else:
                         cursor.execute(
                             "SELECT table_name FROM information_schema.tables "
@@ -421,12 +424,14 @@ def delete_tables(filter: str = None,
                         tables = cursor.fetchall()
                         if len(tables) > 0:
                             random_table = random.choice(tables)[0]
-                            cursor.execute(f"DROP TABLE IF EXISTS {random_table} CASCADE")
-                            deleted_tables = {srv_name: random_table}
-                            logger.debug(f"Deleted table '{random_table}' on server '{srv_name}'")
+                            cursor.execute(
+                                f"DROP TABLE IF EXISTS {random_table} CASCADE")
+                            logger.debug(
+                                f"Deleted table '{random_table}' on server "
+                                f"'{srv_name}'")
                         else:
-                            logger.debug(f"No tables to delete on server '{srv_name}'")
-                            deleted_tables = {}
+                            logger.debug(
+                                f"No tables to delete on server '{srv_name}'")
 
                     # Commit the transaction and close the connection
                     conn.commit()
@@ -435,7 +440,7 @@ def delete_tables(filter: str = None,
 
                     srv_records.add(cleanse.database_server(srv))
                     logger.debug(f"Deleted tables on server '{srv_name}'")
-                except Exception as e:
+                except Exception:
                     logger.exception(
                         f"Failed to delete tables on server '{srv_name}'")
                     if cursor:
@@ -443,12 +448,13 @@ def delete_tables(filter: str = None,
                     if conn:
                         conn.rollback()
                         conn.close()
-            except Exception as e:
+            except Exception:
                 logger.exception(
-                    f"Failed to connect to database '{dbname}' on server '{srv_name}'")
+                    f"Failed to connect to database '{dbname}' on server "
+                    f"'{srv_name}'")
                 continue
 
-    return srv_records.output_as_dict('resources')        
+    return srv_records.output_as_dict('resources')
 
 
 ###############################################################################
