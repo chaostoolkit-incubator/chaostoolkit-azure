@@ -1,6 +1,6 @@
 # Chaos Toolkit Extension for Azure
 
-[![Build Status](https://travis-ci.org/chaostoolkit-incubator/chaostoolkit-azure.svg?branch=master)](https://travis-ci.org/chaostoolkit-incubator/chaostoolkit-azure)
+[![Build](https://github.com/chaostoolkit-incubator/chaostoolkit-azure/actions/workflows/build.yaml/badge.svg)](https://github.com/chaostoolkit-incubator/chaostoolkit-azure/actions/workflows/build.yaml)
 [![Python versions](https://img.shields.io/pypi/pyversions/chaostoolkit-azure.svg)](https://www.python.org/)
 
 This project is a collection of [actions][] and [probes][], gathered as an
