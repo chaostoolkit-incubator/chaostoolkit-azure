@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.1...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.2...HEAD
+
+## [0.15.2][] - 2023-07-11
+
+[0.15.2]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.1...0.15.2
+
+### Added
+
+* Load secrets from env variables as well
 
 ## [0.15.1][] - 2023-07-11
 

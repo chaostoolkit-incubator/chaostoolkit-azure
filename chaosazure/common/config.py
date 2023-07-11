@@ -74,12 +74,17 @@ def load_secrets(experiment_secrets: Secrets):
     # 1: lookup for secrets in experiment  file
     if experiment_secrets:
         return {
-            'client_id': experiment_secrets.get('client_id'),
-            'client_secret': experiment_secrets.get('client_secret'),
-            'tenant_id': experiment_secrets.get('tenant_id'),
+            'client_id': experiment_secrets.get(
+                'client_id', os.getenv("AZURE_CLIENT_ID")),
+            'client_secret': experiment_secrets.get(
+                'client_secret', os.getenv("AZURE_CLIENT_SECRET")),
+            'tenant_id': experiment_secrets.get(
+                'tenant_id', os.getenv("AZURE_TENANT_ID")),
             # load cloud object
-            'cloud': cloud.get_or_raise(experiment_secrets.get('azure_cloud')),
-            'access_token': experiment_secrets.get('access_token'),
+            'cloud': cloud.get_or_raise(
+                experiment_secrets.get('azure_cloud', os.getenv("AZURE_CLOUD"))),
+            'access_token': experiment_secrets.get(
+                'access_token', os.getenv("AZURE_ACCESS_TOKEN")),
         }
 
     # 2: lookup for credentials in azure auth file
