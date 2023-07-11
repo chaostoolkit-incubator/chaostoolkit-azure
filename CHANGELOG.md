@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.3...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.4...HEAD
+
+## [0.15.4][] - 2023-07-11
+
+[0.15.4]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.3...0.15.4
+
+### Fixed
+
+* HTTP error response may not have its `error` field set in the graph client
 
 ## [0.15.3][] - 2023-07-11
 

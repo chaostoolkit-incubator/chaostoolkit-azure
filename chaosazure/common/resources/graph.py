@@ -22,10 +22,14 @@ def fetch_resources(input_query: str, resource_type: str,
         client = init_resource_graph_client(secrets)
         resources = client.resources(_query_request)
     except HttpResponseError as e:
-        msg = e.error.code
-        if e.error.details:
-            for d in e.error.details:
-                msg += ": " + str(d)
+        if e.error:
+            msg = e.error.code
+            if e.error.details:
+                for d in e.error.details:
+                    msg += ": " + str(d)
+        else:
+            msg = e.message
+
         raise InterruptExecution(msg)
 
     # prepare results
