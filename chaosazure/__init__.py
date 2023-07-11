@@ -60,7 +60,8 @@ def init_compute_management_client(
         client = ComputeManagementClient(
             credential=authentication,
             credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
+            subscription_id=configuration.get(
+                'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
             base_url=base_url)
 
         return client
@@ -81,7 +82,8 @@ def init_containerservice_management_client(
         client = ContainerServiceClient(
             credential=authentication,
             credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
+            subscription_id=configuration.get(
+                'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
             base_url=base_url)
 
         return client
@@ -102,7 +104,8 @@ def init_postgresql_flexible_management_client(
         client = PostgreSQLFlexibleManagementClient(
             credential=authentication,
             credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
+            subscription_id=configuration.get(
+                'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
             base_url=base_url)
 
         return client
@@ -123,7 +126,8 @@ def init_postgresql_management_client(
         client = PostgreSQLManagementClient(
             credential=authentication,
             credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
+            subscription_id=configuration.get(
+                'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
             base_url=base_url)
 
         return client
@@ -144,7 +148,8 @@ def init_network_management_client(
         client = NetworkManagementClient(
             credential=authentication,
             credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
+            subscription_id=configuration.get(
+                'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
             base_url=base_url)
 
         return client
@@ -165,7 +170,8 @@ def init_website_management_client(
         client = WebSiteManagementClient(
             credential=authentication,
             credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
+            subscription_id=configuration.get(
+                'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
             base_url=base_url)
 
         return client
@@ -202,7 +208,8 @@ def init_netapp_management_client(
         client = NetAppManagementClient(
             credential=authentication,
             credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
+            subscription_id=configuration.get(
+                'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
             base_url=base_url)
 
         return client
@@ -222,7 +229,8 @@ def init_storage_management_client(
         client = StorageManagementClient(
             credential=authentication,
             credential_scopes=scopes,
-            subscription_id=configuration.get('subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
+            subscription_id=configuration.get(
+                'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
             base_url=base_url)
 
         return client

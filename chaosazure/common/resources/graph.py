@@ -39,9 +39,8 @@ def __query_request_from(query, experiment_configuration: Configuration):
     result = QueryRequest(
         query=query,
         subscriptions=[
-            configuration.get(
-                'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID"))
-            ],
+            configuration.get('subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID"))
+        ],
         options=arg_query_options
     )
     return result
