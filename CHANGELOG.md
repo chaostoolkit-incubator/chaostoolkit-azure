@@ -2,7 +2,11 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.12.0...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.13.0...HEAD
+
+## [0.13.0][] - 2023-07-11
+
+[0.13.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.12.0...0.13.0
 
 ### Changed
 
