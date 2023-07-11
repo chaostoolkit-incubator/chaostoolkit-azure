@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 from azure.core.exceptions import HttpResponseError
@@ -37,7 +38,10 @@ def __query_request_from(query, experiment_configuration: Configuration):
     arg_query_options = arg.models.QueryRequestOptions(result_format="table")
     result = QueryRequest(
         query=query,
-        subscriptions=[configuration.get('subscription_id')],
+        subscriptions=[
+            configuration.get(
+                'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID"))
+            ],
         options=arg_query_options
     )
     return result

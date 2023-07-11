@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.14.0...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.0...HEAD
+
+## [0.15.0][] - 2023-07-11
+
+[0.15.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.14.0...0.15.0
+
+### Added
+
+* Passing `AZURE_SUBSCRIPTION_ID` as environment variable is now possible
 
 ## [0.14.0][] - 2023-07-11
 

@@ -158,6 +158,10 @@ You may also pass them via the Azure credential file:
 
 Additionally you need to provide the Azure subscription id.
 
+- As an  environment variable
+  
+  - AZURE_SUBSCRIPTION_ID
+
 - Subscription id in the experiment file
 
   ```json

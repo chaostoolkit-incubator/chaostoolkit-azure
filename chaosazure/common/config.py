@@ -105,11 +105,13 @@ def load_configuration(experiment_configuration: Configuration):
     subscription_id = None
     # 1: lookup for configuration in experiment config file
     if experiment_configuration:
-        subscription_id = experiment_configuration.get("azure_subscription_id")
+        subscription_id = experiment_configuration.get(
+            "azure_subscription_id", os.getenv("AZURE_SUBSCRIPTION_ID"))
         # check legacy subscription location
         if not subscription_id:
             subscription_id = experiment_configuration\
-                .get('azure', {}).get('subscription_id')
+                .get('azure', {}).get(
+                    'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID"))
 
     if subscription_id:
         return {'subscription_id': subscription_id}
