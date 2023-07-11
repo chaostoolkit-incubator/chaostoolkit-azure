@@ -211,8 +211,8 @@ def test_start_server(init, fetch_stopped, fetch_all):
 @patch('chaosazure.postgresql_flexible.actions.__fetch_servers', autospec=True)
 @patch('chaosazure.postgresql_flexible.actions.__postgresql_flexible_mgmt_client', autospec=True)
 @patch('chaosazure.postgresql_flexible.actions.SecretClient', autospec=True)
-@patch('chaosazure.postgresql_flexible.actions.connect', autospec=True)
-def test_delete_tables_unknown_table(connect_mock, secret_client_mock, init_mock, fetch_servers_mock, ClientSecretCredential_mock):
+@patch('chaosazure.postgresql_flexible.actions.pg8000.native.Connection', autospec=True)
+def test_delete_tables_unknown_table(connect_mock: MagicMock, secret_client_mock, init_mock, fetch_servers_mock, ClientSecretCredential_mock):
     # Create a mock for the ClientSecretCredential
     ClientSecretCredential_mock.return_value = MagicMock()
 
@@ -244,11 +244,8 @@ def test_delete_tables_unknown_table(connect_mock, secret_client_mock, init_mock
 
     # Simulate a successful connection to the database
     conn = connect_mock.return_value
-    cursor_mock = MagicMock()
     # Configure the cursor mock to return False when checking table existence
-    cursor_mock.fetchone.return_value = [False]
-    conn.cursor = MagicMock(return_value=cursor_mock)
-    conn.commit = MagicMock()
+    conn.run.side_effect = [None, [False], None, None]
     conn.close = MagicMock()
 
     # Filter for the resource group and non-existent table name
@@ -274,14 +271,12 @@ def test_delete_tables_unknown_table(connect_mock, secret_client_mock, init_mock
         "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
         "WHERE table_schema = 'public' AND table_name = %s)"
     )
-    cursor_mock.execute.assert_any_call(query, (table_name,))
+    conn.run.assert_any_call(query, (table_name,))
 
     # Verify that the correct functions were called the right number of times
     assert secret_client_mock.call_count == 1 # Check that the SecretClient method is called once.
     assert connect_mock.call_count == 1  # Connection should be made once
-    assert cursor_mock.execute.call_count == 1  # Check table existence
-    assert cursor_mock.fetchone.call_count == 1  # Fetch table existence result
-    assert conn.commit.call_count == 1  # Commit should be called once
+    assert conn.run.call_count == 3  # Check table existence
     assert conn.close.call_count == 1  # Connection should be closed once
     assert client_mock.servers.begin_delete.call_count == 0  # No table deleted
 
@@ -290,8 +285,8 @@ def test_delete_tables_unknown_table(connect_mock, secret_client_mock, init_mock
 @patch('chaosazure.postgresql_flexible.actions.__fetch_servers', autospec=True)
 @patch('chaosazure.postgresql_flexible.actions.__postgresql_flexible_mgmt_client', autospec=True)
 @patch('chaosazure.postgresql_flexible.actions.SecretClient', autospec=True)
-@patch('chaosazure.postgresql_flexible.actions.connect', autospec=True)
-def test_delete_tables_existing_table(connect_mock, secret_client_mock, init_mock, fetch_servers_mock, ClientSecretCredential_mock):
+@patch('chaosazure.postgresql_flexible.actions.pg8000.native.Connection', autospec=True)
+def test_delete_tables_existing_table(connect_mock: MagicMock, secret_client_mock, init_mock, fetch_servers_mock, ClientSecretCredential_mock):
     # Create a mock for the ClientSecretCredential
     ClientSecretCredential_mock.return_value = MagicMock()
 
@@ -323,10 +318,8 @@ def test_delete_tables_existing_table(connect_mock, secret_client_mock, init_moc
 
     # Simulate a successful connection to the database
     conn = connect_mock.return_value
-    cursor_mock = MagicMock()
     # Configure the cursor mock to return True when checking table existence
-    cursor_mock.fetchone.return_value = [True]
-    conn.cursor = MagicMock(return_value=cursor_mock)
+    conn.run.side_effect = [None, [True], None, None]
 
     # Filter for the resource group and existing table name
     f = "where resourceGroup=='myresourcegroup'"
@@ -344,25 +337,25 @@ def test_delete_tables_existing_table(connect_mock, secret_client_mock, init_moc
     host = server_alpha.fully_qualified_domain_name
     login = server_alpha.administrator_login
     params = f"host='{host}' dbname='mydatabase' user='{login}' password='secret_value' sslmode='require'"
-    connect_mock.assert_called_once_with(params)
+    connect_mock.assert_any_call(params)
 
     # Verify the table existence check query was executed
     query = (
         "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
         "WHERE table_schema = 'public' AND table_name = %s)"
     )
-    cursor_mock.execute.assert_any_call(query, (table_name,))
+    conn.run.assert_any_call(query, (table_name,))
 
     # Check that the SecretClient method is called once.
     assert secret_client_mock.call_count == 1
     # No connection should be made
     assert connect_mock.call_count == 1  # No connection should be made
     # Check table existence and table deletion
-    assert cursor_mock.execute.call_count == 2
+    assert conn.run.call_count == 4
     # Verify that we are checking the existence of the table
-    assert cursor_mock.execute.call_args_list[0][0][0] == (
+    assert conn.run.call_args_list[1][0][0] == (
         "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
         "WHERE table_schema = 'public' AND table_name = %s)"
     )
     # Verify that we are sending a command to drop the table
-    assert cursor_mock.execute.call_args_list[1][0][0] == f"DROP TABLE {table_name} CASCADE"
+    assert conn.run.call_args_list[2][0][0] == f"DROP TABLE {table_name} CASCADE"

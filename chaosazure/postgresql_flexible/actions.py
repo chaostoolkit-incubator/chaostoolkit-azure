@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-import re
-
 import random
-from psycopg2 import connect
+import re
+from typing import List
 
+import pg8000.native
 from azure.identity import ClientSecretCredential
 from azure.keyvault.secrets import SecretClient
 
@@ -16,11 +16,10 @@ from chaosazure.common import cleanse
 from chaosazure.postgresql_flexible.constants import RES_TYPE_SRV_PG_FLEX
 from azure.mgmt.rdbms.postgresql_flexibleservers.models import Database
 from chaosazure.common.resources.graph import fetch_resources
+from chaosazure.vmss.records import Records
 
 __all__ = ["delete_servers", "stop_servers", "restart_servers",
            "start_servers", "delete_databases", "create_databases", "delete_tables"]
-
-from chaosazure.vmss.records import Records
 
 
 def delete_servers(filter: str = None,
@@ -393,7 +392,7 @@ def __fetch_all_stopped_servers(client, servers) -> []:
     return stopped_servers
 
 
-def __fetch_servers(filter, configuration, secrets) -> []:
+def __fetch_servers(filter, configuration, secrets) -> List:
     servers = fetch_resources(filter, RES_TYPE_SRV_PG_FLEX, secrets, configuration)
     if not servers:
         logger.warning("No servers found")
@@ -454,9 +453,8 @@ def __handle_server(srv,
                        f"user='{pg_srv.administrator_login}' "\
                        f"password='{secret_value}' "\
                        f"sslmode='require'"
-            conn = connect(conn_str)
-            cursor = conn.cursor()
-            __handle_db(cursor, dbname, srv_name, table_name, conn)
+            conn = pg8000.native.Connection(conn_str)
+            __handle_db(dbname, srv_name, table_name, conn)
 
             srv_records.add(cleanse.database_server(srv))
             logger.debug(f"Deleted tables on server '{srv_name}'")
@@ -466,42 +464,39 @@ def __handle_server(srv,
             continue
 
 
-def __handle_db(cursor, dbname, srv_name, table_name, conn):
+def __handle_db(dbname, srv_name, table_name, conn):
     try:
+        conn.run("START TRANSACTION")
         # If a table name is provided, check if the table exists and delete it
         if table_name is not None:
-            cursor.execute(
+            tables = conn.run(
                 "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
                 "WHERE table_schema = 'public' AND table_name = %s)",
                 (table_name,)
             )
-            exists = cursor.fetchone()[0]
+            exists = tables[0]
             if exists:
-                cursor.execute(f"DROP TABLE {table_name} CASCADE")
+                conn.run(f"DROP TABLE {table_name} CASCADE")
             else:
                 logger.debug(f"Table '{table_name}' does not exist on database '{dbname}'")
         # Otherwise, generate a random table name and delete it
         else:
-            cursor.execute(
+            tables = conn.run(
                 "SELECT table_name FROM information_schema.tables "
                 "WHERE table_type='BASE TABLE' AND table_schema='public'"
             )
-            tables = cursor.fetchall()
             if len(tables) > 0:
                 random_table = random.choice(tables)[0]
-                cursor.execute(f"DROP TABLE IF EXISTS {random_table} CASCADE")
+                conn.run(f"DROP TABLE IF EXISTS {random_table} CASCADE")
                 logger.debug(f"Deleted table '{random_table}' on server '{srv_name}'")
             else:
                 logger.debug(f"No tables to delete on server '{srv_name}'")
 
         # Commit the transaction and close the connection
-        conn.commit()
-        cursor.close()
+        conn.run("COMMIT")
         conn.close()
     except Exception:
         logger.exception(f"Failed to delete tables on server '{srv_name}'")
-        if cursor:
-            cursor.close()
         if conn:
-            conn.rollback()
+            conn.run("ROLLBACK")
             conn.close()

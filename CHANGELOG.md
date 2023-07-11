@@ -4,6 +4,13 @@
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.12.0...HEAD
 
+### Changed
+
+* Swapped `psycopg2` for `pg8000` for two reasons:
+  * The psycopg2 license (LGPL3) is incompatible with Apache v2
+  * It requires to be built and since the binary package is also copyleft, we
+    can't use it anyway
+
 ## [0.12.0][] - 2023-02-27
 
 [0.12.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.11.1...0.12.0
