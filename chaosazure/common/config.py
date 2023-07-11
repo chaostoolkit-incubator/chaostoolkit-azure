@@ -101,9 +101,13 @@ def load_secrets(experiment_secrets: Secrets):
             'access_token': None,
         }
 
-    # no secretes
-    logger.warn("Unable to load Azure credentials.")
-    return {}
+    return {
+        'client_id': os.getenv("AZURE_CLIENT_ID"),
+        'client_secret': os.getenv("AZURE_CLIENT_SECRET"),
+        'tenant_id': os.getenv("AZURE_TENANT_ID"),
+        'cloud': cloud.get_or_raise(os.getenv("AZURE_CLOUD")),
+        'access_token': os.getenv("AZURE_ACCESS_TOKEN"),
+    }
 
 
 def load_configuration(experiment_configuration: Configuration):

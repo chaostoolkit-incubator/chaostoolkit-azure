@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.2...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.3...HEAD
+
+## [0.15.3][] - 2023-07-11
+
+[0.15.3]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.2...0.15.3
+
+### Changed
+
+* Default to at least loading from env variables
 
 ## [0.15.2][] - 2023-07-11
 
