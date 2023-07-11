@@ -30,7 +30,7 @@ __all__ = [
     "init_website_management_client", "init_resource_graph_client", "init_netapp_management_client",
     "init_storage_management_client"
 ]
-__version__ = '0.13.0'
+__version__ = '0.14.0'
 
 
 def discover(discover_system: bool = True) -> Discovery:

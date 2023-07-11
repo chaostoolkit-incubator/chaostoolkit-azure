@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.13.0...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.14.0...HEAD
+
+## [0.14.0][] - 2023-07-11
+
+[0.14.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.13.0...0.14.0
+
+### Added
+
+* Can now read authentication from environment variables
 
 ## [0.13.0][] - 2023-07-11
 

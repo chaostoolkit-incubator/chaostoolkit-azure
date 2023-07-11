@@ -1,3 +1,4 @@
+import os
 from abc import ABCMeta, abstractmethod
 from typing import Dict
 
@@ -18,10 +19,10 @@ class ServicePrincipalAuth(Auth):
 
     def create(self, secrets: Dict) -> ClientSecretCredential:
         result = ClientSecretCredential(
-            client_id=secrets.get('client_id'),
-            client_secret=secrets.get('client_secret'),
-            tenant_id=secrets.get('tenant_id'),
-            cloud_environment=secrets.get('cloud')
+            client_id=secrets.get('client_id', os.getenv("AZURE_CLIENT_ID")),
+            client_secret=secrets.get('client_secret', os.getenv("AZURE_CLIENT_SECRET")),
+            tenant_id=secrets.get('tenant_id', os.getenv("AZURE_TENANT_ID")),
+            cloud_environment=secrets.get('cloud', os.getenv("AZURE_CLOUD"))
         )
         return result
 
@@ -30,8 +31,8 @@ class TokenAuth(Auth):
 
     def create(self, secrets: Dict) -> AADTokenCredentials:
         result = AADTokenCredentials(
-            token={"accessToken": secrets['access_token']},
-            client_id=secrets.get('client_id'),
-            cloud_environment=secrets.get('cloud'))
+            token={"accessToken": secrets.get('access_token', os.getenv("AZURE_ACCESS_TOKEN"))},
+            client_id=secrets.get('client_id', os.getenv("AZURE_CLIENT_ID")),
+            cloud_environment=secrets.get('cloud', os.getenv("AZURE_CLOUD")))
 
         return result

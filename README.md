@@ -67,7 +67,22 @@ The extension will first try to load the configuration from the `experiment file
 
 ### Credentials
 
-- Secrets in the Experiment file
+#### Environment Variables
+
+You can pass credentials via the following environment variables:
+
+- AZURE_CLIENT_ID
+- AZURE_CLIENT_SECRET
+- AZURE_TENANT_ID
+
+Or:
+
+- AZURE_CLIENT_ID
+- AZURE_ACCESS_TOKEN
+
+#### Experiment Secrets
+
+You may also pass them via the secrets block of the experiment:
 
   ```json
   {
@@ -91,7 +106,7 @@ The extension will first try to load the configuration from the `experiment file
     "client_id": "your-super-secret-client-id",
     "client_secret": "your-even-more-super-secret-client-secret",
     "tenant_id": "your-tenant-id",
-    "azure_cloud": "AZURE_CHINA_CLOUD"
+    "cloud": "AZURE_CHINA_CLOUD"
   }
   ```
 
@@ -102,11 +117,16 @@ The extension will first try to load the configuration from the `experiment file
   - AZURE_PUBLIC_CLOUD
   - AZURE_US_GOV_CLOUD
 
+  Either of these values can be passed via `AZURE_CLOUD` as well.
+
+
   [vault_secrets]: https://docs.chaostoolkit.org/reference/api/experiment/#vault-secrets
   [env_secrets]: https://docs.chaostoolkit.org/reference/api/experiment/#environment-secrets
 
 
-- Secrets in the Azure credential file
+#### Azure Credential File
+
+You may also pass them via the Azure credential file:
 
   You can retrieve a credentials file with your subscription ID already in place by signing in to Azure using the az login command followed by the az ad sp create-for-rbac command
 

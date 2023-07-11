@@ -1,4 +1,5 @@
 import contextlib
+import os
 from typing import Dict
 
 from chaoslib.exceptions import InterruptExecution
@@ -103,6 +104,12 @@ def __authentication_type(secrets: dict) -> str:
         return SERVICE_PRINCIPAL
 
     elif 'access_token' in secrets and secrets['access_token']:
+        return AAD_TOKEN
+
+    elif os.getenv("AZURE_CLIENT_SECRET"):
+        return SERVICE_PRINCIPAL
+
+    elif os.getenv("AZURE_ACCESS_TOKEN"):
         return AAD_TOKEN
 
     else:
