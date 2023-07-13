@@ -30,7 +30,7 @@ __all__ = [
     "init_website_management_client", "init_resource_graph_client", "init_netapp_management_client",
     "init_storage_management_client"
 ]
-__version__ = '0.15.4'
+__version__ = '0.16.0'
 
 
 def discover(discover_system: bool = True) -> Discovery:
@@ -209,7 +209,7 @@ def init_netapp_management_client(
             credential=authentication,
             credential_scopes=scopes,
             subscription_id=configuration.get(
-                'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID")),
+                'subscription_id', os.getenv("fi")),
             base_url=base_url)
 
         return client
