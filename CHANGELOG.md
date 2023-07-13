@@ -2,7 +2,17 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.4...HEAD
+[Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.16.0...HEAD
+
+## [0.16.0][] - 2023-07-13
+
+[0.16.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.4...0.16.0
+
+### Changed
+
+* Largely updated dependencies to get newer versions. The size of older Azure
+  packages was rather unhealthy.
+
 
 ## [0.15.4][] - 2023-07-11
 
