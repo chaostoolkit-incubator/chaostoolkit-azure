@@ -4,9 +4,6 @@ import json
 import os
 
 from chaoslib.types import Configuration, Secrets
-from msrestazure import azure_cloud
-
-from chaosazure.common import cloud
 
 logger = logging.getLogger("chaostoolkit")
 
@@ -85,33 +82,19 @@ def load_secrets(experiment_secrets: Secrets):
                 "tenant_id", os.getenv("AZURE_TENANT_ID")
             ),
             # load cloud object
-            "cloud": cloud.get_or_raise(
-                experiment_secrets.get("azure_cloud", os.getenv("AZURE_CLOUD"))
+            "cloud": experiment_secrets.get(
+                "azure_cloud", os.getenv("AZURE_CLOUD", "AZURE_PUBLIC_CLOUD")
             ),
             "access_token": experiment_secrets.get(
                 "access_token", os.getenv("AZURE_ACCESS_TOKEN")
             ),
         }
 
-    # 2: lookup for credentials in azure auth file
-    az_auth_file = _load_azure_auth_file()
-    if az_auth_file:
-        rm_endpoint = az_auth_file.get("resourceManagerEndpointUrl")
-        return {
-            "client_id": az_auth_file.get("clientId"),
-            "client_secret": az_auth_file.get("clientSecret"),
-            "tenant_id": az_auth_file.get("tenantId"),
-            # load cloud object
-            "cloud": azure_cloud.get_cloud_from_metadata_endpoint(rm_endpoint),
-            # access token is not supported for credential files
-            "access_token": None,
-        }
-
     return {
         "client_id": os.getenv("AZURE_CLIENT_ID"),
         "client_secret": os.getenv("AZURE_CLIENT_SECRET"),
         "tenant_id": os.getenv("AZURE_TENANT_ID"),
-        "cloud": cloud.get_or_raise(os.getenv("AZURE_CLOUD")),
+        "cloud": os.getenv("AZURE_CLOUD", "AZURE_PUBLIC_CLOUD"),
         "access_token": os.getenv("AZURE_ACCESS_TOKEN"),
     }
 

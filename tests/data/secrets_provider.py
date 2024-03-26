@@ -1,19 +1,16 @@
-from chaosazure.common import cloud
-
-
 def provide_secrets_via_service_principal():
     return {"client_id": "***", "client_secret": "***", "tenant_id": "***"}
 
 
 def provide_secrets_china():
     result = provide_secrets_via_service_principal()
-    result["azure_cloud"] = cloud.AZURE_CHINA_CLOUD
+    result["azure_cloud"] = "AZURE_CHINA_CLOUD"
     return result
 
 
 def provide_secrets_germany():
     result = provide_secrets_via_service_principal()
-    result["azure_cloud"] = cloud.AZURE_GERMAN_CLOUD
+    result["azure_cloud"] = "AZURE_GERMAN_CLOUD"
     return result
 
 
@@ -25,13 +22,13 @@ def provide_secrets_germany_small_letters():
 
 def provide_secrets_us_gov():
     result = provide_secrets_via_service_principal()
-    result["azure_cloud"] = cloud.AZURE_US_GOV_CLOUD
+    result["azure_cloud"] = "AZURE_US_GOV_CLOUD"
     return result
 
 
 def provide_secrets_public():
     result = provide_secrets_via_service_principal()
-    result["azure_cloud"] = cloud.AZURE_PUBLIC_CLOUD
+    result["azure_cloud"] = "AZURE_PUBLIC_CLOUD"
     return result
 
 

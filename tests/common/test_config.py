@@ -1,5 +1,6 @@
 import os
 
+from chaosazure import get_management_url_from_authority
 from chaosazure.common import config
 
 settings_dir = os.path.join(os.path.dirname(__file__), "fixtures")
@@ -21,8 +22,8 @@ def test_load_secrets_from_experiment_dict():
     assert secrets.get("client_secret") == "AZURE_CLIENT_SECRET"
     assert secrets.get("tenant_id") == "AZURE_TENANT_ID"
     assert (
-        secrets.get("cloud").endpoints.resource_manager
-        == "https://management.azure.com/"
+        get_management_url_from_authority(secrets)
+        == "https://management.azure.com"
     )
 
 
@@ -36,28 +37,8 @@ def test_load_token_from_experiment_dict():
     # assert
     assert secrets.get("access_token") == "ACCESS_TOKEN"
     assert (
-        secrets.get("cloud").endpoints.resource_manager
-        == "https://management.azure.com/"
-    )
-
-
-def test_load_secrets_from_credential_file(monkeypatch):
-    # arrange
-    experiment_secrets = None
-    monkeypatch.setenv(
-        "AZURE_AUTH_LOCATION", os.path.join(settings_dir, "credentials.json")
-    )
-
-    # act
-    secrets = config.load_secrets(experiment_secrets)
-
-    # assert
-    assert secrets.get("client_id") == "AZURE_CLIENT_ID"
-    assert secrets.get("client_secret") == "AZURE_CLIENT_SECRET"
-    assert secrets.get("tenant_id") == "AZURE_TENANT_ID"
-    assert (
-        secrets.get("cloud").endpoints.resource_manager
-        == "https://management.azure.com/"
+        get_management_url_from_authority(secrets)
+        == "https://management.azure.com"
     )
 
 
