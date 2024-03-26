@@ -4,6 +4,7 @@
 
 import logging
 import os
+from importlib.metadata import version, PackageNotFoundError
 from typing import List
 
 from azure.mgmt.compute import ComputeManagementClient
@@ -44,8 +45,12 @@ __all__ = [
     "init_netapp_management_client",
     "init_storage_management_client",
 ]
-__version__ = "0.16.0"
+
 logger = logging.getLogger("chaostoolkit")
+try:
+    __version__ = version("chaostoolkit-azure")
+except PackageNotFoundError:
+    __version__ = "unknown"
 
 
 def discover(discover_system: bool = True) -> Discovery:
