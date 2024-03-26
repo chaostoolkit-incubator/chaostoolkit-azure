@@ -41,6 +41,11 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython"
 ]
 
+[project.urls]
+Homepage = "https://chaostoolkit.org/"
+Repository = "https://github.com/chaostoolkit-incubator/chaostoolkit-azure"
+Documentation = "https://chaostoolkit.org/drivers/azure/"
+Changelog = "https://github.com/chaostoolkit-incubator/chaostoolkit-azure/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["pdm-backend"]
