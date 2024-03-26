@@ -1,8 +1,11 @@
+import logging
+
 from chaoslib import Configuration, Secrets
-from logzero import logger
 
 from chaosazure.common.resources.graph import fetch_resources
 from chaosazure.webapp.constants import RES_TYPE_WEBAPP
+
+logger = logging.getLogger("chaostoolkit")
 
 
 def describe_webapps(

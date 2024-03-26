@@ -2,6 +2,7 @@
 
 """Top-level package for chaostoolkit-azure."""
 
+import logging
 import os
 from typing import List
 
@@ -28,7 +29,6 @@ from chaoslib.types import (
     Discovery,
     Secrets,
 )
-from logzero import logger
 
 from chaosazure.auth import auth
 from chaosazure.common.config import load_configuration, load_secrets
@@ -45,6 +45,7 @@ __all__ = [
     "init_storage_management_client",
 ]
 __version__ = "0.16.0"
+logger = logging.getLogger("chaostoolkit")
 
 
 def discover(discover_system: bool = True) -> Discovery:

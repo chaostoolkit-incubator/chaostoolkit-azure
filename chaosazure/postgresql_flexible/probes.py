@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure.postgresql_flexible.constants import RES_TYPE_SRV_PG_FLEX
 from chaosazure.postgresql_flexible.actions import (
@@ -11,6 +11,7 @@ from chaosazure.postgresql_flexible.actions import (
 from chaosazure.common.resources.graph import fetch_resources
 
 __all__ = ["describe_servers", "count_servers", "describe_databases"]
+logger = logging.getLogger("chaostoolkit")
 
 
 def describe_servers(

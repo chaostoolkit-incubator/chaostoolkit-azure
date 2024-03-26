@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure.storage.constants import RES_TYPE_SRV_SA
 from chaosazure.common.resources.graph import fetch_resources
@@ -11,6 +12,7 @@ __all__ = [
     "count_storage_accounts",
     "count_blob_containers",
 ]
+logger = logging.getLogger("chaostoolkit")
 
 
 def describe_storage_accounts(

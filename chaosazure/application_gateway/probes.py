@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure.application_gateway.constants import RES_TYPE_SRV_AG
 from chaosazure.application_gateway.actions import __network_mgmt_client
@@ -13,6 +13,7 @@ __all__ = [
     "count_application_gateways",
     "describe_routes",
 ]
+logger = logging.getLogger("chaostoolkit")
 
 
 def describe_application_gateways(

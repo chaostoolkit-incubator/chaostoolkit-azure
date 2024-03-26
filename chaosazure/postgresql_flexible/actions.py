@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import random
 import re
 from typing import List
@@ -9,7 +10,6 @@ from azure.keyvault.secrets import SecretClient
 
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure import init_postgresql_flexible_management_client
 from chaosazure.common import cleanse
@@ -27,6 +27,7 @@ __all__ = [
     "create_databases",
     "delete_tables",
 ]
+logger = logging.getLogger("chaostoolkit")
 
 
 def delete_servers(

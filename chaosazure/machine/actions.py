@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
+import logging
 
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure import init_compute_management_client
 from chaosazure.common import cleanse
 from chaosazure.common.compute import command
 from chaosazure.machine.constants import RES_TYPE_VM
 from chaosazure.common.resources.graph import fetch_resources
+from chaosazure.vmss.records import Records
 
 __all__ = [
     "delete_machines",
@@ -20,8 +21,7 @@ __all__ = [
     "network_latency",
     "burn_io",
 ]
-
-from chaosazure.vmss.records import Records
+logger = logging.getLogger("chaostoolkit")
 
 
 def delete_machines(

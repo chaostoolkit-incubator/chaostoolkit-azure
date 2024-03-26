@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure.machine.constants import RES_TYPE_VM
 from chaosazure.common.resources.graph import fetch_resources
 
 __all__ = ["describe_machines", "count_machines"]
+logger = logging.getLogger("chaostoolkit")
 
 
 def describe_machines(

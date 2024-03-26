@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure import init_network_management_client
 from chaosazure.common import cleanse
 from chaosazure.application_gateway.constants import RES_TYPE_SRV_AG
 from chaosazure.common.resources.graph import fetch_resources
+from chaosazure.vmss.records import Records
 
 __all__ = [
     "delete_application_gateways",
@@ -16,8 +17,7 @@ __all__ = [
     "stop_application_gateways",
     "delete_routes",
 ]
-
-from chaosazure.vmss.records import Records
+logger = logging.getLogger("chaostoolkit")
 
 
 def delete_application_gateways(

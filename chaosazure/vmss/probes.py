@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure.common.resources.graph import fetch_resources
 from chaosazure.vmss.constants import RES_TYPE_VMSS
 
 __all__ = ["count_instances"]
+logger = logging.getLogger("chaostoolkit")
 
 
 def count_instances(

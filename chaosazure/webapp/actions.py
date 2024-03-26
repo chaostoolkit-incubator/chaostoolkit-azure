@@ -1,8 +1,8 @@
+import logging
 import random
 
 from chaoslib import Secrets, Configuration
 from chaoslib.exceptions import FailedActivity
-from logzero import logger
 
 from chaosazure import init_website_management_client
 from chaosazure.common.resources.graph import fetch_resources
@@ -10,6 +10,7 @@ from chaosazure.webapp.constants import RES_TYPE_WEBAPP
 
 
 __all__ = ["stop_webapp", "restart_webapp", "start_webapp", "delete_webapp"]
+logger = logging.getLogger("chaostoolkit")
 
 
 def stop_webapp(

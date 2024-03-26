@@ -1,13 +1,14 @@
+import logging
 import os
 
 from chaoslib.exceptions import FailedActivity, InterruptExecution
-from logzero import logger
 
 from chaosazure import init_compute_management_client
 from chaosazure.machine.constants import OS_LINUX, OS_WINDOWS, RES_TYPE_VM
 from chaosazure.vmss.constants import RES_TYPE_VMSS_VM
 
 UNSUPPORTED_WINDOWS_SCRIPTS = ["network_latency", "burn_io"]
+logger = logging.getLogger("chaostoolkit")
 
 
 def prepare_path(machine: dict, path: str):

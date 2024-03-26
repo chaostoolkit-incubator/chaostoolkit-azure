@@ -1,13 +1,15 @@
+import logging
 import random
 from typing import Any, Dict, Iterable, Mapping, List
 
 from chaoslib import Configuration, Secrets
 from chaoslib.exceptions import FailedActivity
-from logzero import logger
 
 from chaosazure import init_compute_management_client
 from chaosazure.common.resources.graph import fetch_resources
 from chaosazure.vmss.constants import RES_TYPE_VMSS
+
+logger = logging.getLogger("chaostoolkit")
 
 
 def fetch_instances(

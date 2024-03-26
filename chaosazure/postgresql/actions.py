@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure import init_postgresql_management_client
 from chaosazure.common import cleanse
 from chaosazure.postgresql.constants import RES_TYPE_SRV_PG
 from azure.mgmt.rdbms.postgresql.models import Database
 from chaosazure.common.resources.graph import fetch_resources
+from chaosazure.vmss.records import Records
 
 __all__ = [
     "delete_servers",
@@ -17,8 +18,7 @@ __all__ = [
     "delete_databases",
     "create_databases",
 ]
-
-from chaosazure.vmss.records import Records
+logger = logging.getLogger("chaostoolkit")
 
 
 def delete_servers(

@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 import random
 
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure import init_storage_management_client
 from chaosazure.common import cleanse
 from chaosazure.storage.constants import RES_TYPE_SRV_SA
 from chaosazure.common.resources.graph import fetch_resources
+from chaosazure.vmss.records import Records
 
 __all__ = ["delete_storage_accounts", "delete_blob_containers"]
-
-from chaosazure.vmss.records import Records
+logger = logging.getLogger("chaostoolkit")
 
 
 def delete_storage_accounts(

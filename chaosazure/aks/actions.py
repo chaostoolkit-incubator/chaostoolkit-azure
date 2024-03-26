@@ -1,8 +1,8 @@
+import logging
 import random
 
 from chaoslib.exceptions import FailedActivity
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure import init_containerservice_management_client
 from chaosazure.aks.constants import RES_TYPE_AKS
@@ -23,6 +23,7 @@ __all__ = [
     "delete_managed_clusters",
     "stop_managed_clusters",
 ]
+logger = logging.getLogger("chaostoolkit")
 
 
 def delete_node(

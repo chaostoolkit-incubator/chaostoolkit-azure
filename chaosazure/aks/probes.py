@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure.aks.constants import RES_TYPE_AKS
 from chaosazure.common.resources.graph import fetch_resources
 
 __all__ = ["describe_managed_clusters", "count_managed_clusters"]
+logger = logging.getLogger("chaostoolkit")
 
 
 def describe_managed_clusters(

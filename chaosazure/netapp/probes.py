@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+import logging
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 
 from chaosazure.netapp.constants import RES_TYPE_SRV_NV
 from chaosazure.common.resources.graph import fetch_resources
 
 __all__ = ["describe_netapp_volumes", "count_netapp_volumes"]
+logger = logging.getLogger("chaostoolkit")
 
 
 def describe_netapp_volumes(

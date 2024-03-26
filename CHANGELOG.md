@@ -15,6 +15,7 @@
   away from pycodestyle and pylama
 * bumped GitHub workflows to use more recent versions of each actions
 * using the Trusted publishing workflow for publishing to PyPI
+* removed dependency on logzero for logging
 
 [157]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/issues/157
 

@@ -1,12 +1,14 @@
 import io
+import logging
 import json
 import os
 
 from chaoslib.types import Configuration, Secrets
-from logzero import logger
 from msrestazure import azure_cloud
 
 from chaosazure.common import cloud
+
+logger = logging.getLogger("chaostoolkit")
 
 
 def load_secrets(experiment_secrets: Secrets):

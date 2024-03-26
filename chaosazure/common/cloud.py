@@ -1,6 +1,9 @@
+import logging
+
 from chaoslib.exceptions import InterruptExecution
-from logzero import logger
 from msrestazure import azure_cloud
+
+logger = logging.getLogger("chaostoolkit")
 
 AZURE_CHINA_CLOUD = "AZURE_CHINA_CLOUD"
 AZURE_GERMAN_CLOUD = "AZURE_GERMAN_CLOUD"

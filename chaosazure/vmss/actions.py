@@ -1,7 +1,7 @@
+import logging
 from typing import Iterable, Mapping
 
 from chaoslib import Configuration, Secrets
-from logzero import logger
 
 from chaosazure import init_compute_management_client
 from chaosazure.common import cleanse
@@ -19,6 +19,7 @@ __all__ = [
     "network_latency",
     "stress_vmss_instance_cpu",
 ]
+logger = logging.getLogger("chaostoolkit")
 
 
 def delete_vmss(
