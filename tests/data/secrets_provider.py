@@ -2,11 +2,7 @@ from chaosazure.common import cloud
 
 
 def provide_secrets_via_service_principal():
-    return {
-        "client_id": "***",
-        "client_secret": "***",
-        "tenant_id": "***"
-    }
+    return {"client_id": "***", "client_secret": "***", "tenant_id": "***"}
 
 
 def provide_secrets_china():

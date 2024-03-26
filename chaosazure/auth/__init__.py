@@ -1,29 +1,20 @@
 import contextlib
 import os
-from typing import Dict
+from typing import Dict, Generator
 
-from chaoslib.exceptions import InterruptExecution
-from msrest.exceptions import AuthenticationError
-from msrestazure.azure_active_directory import AADMixin
-
-from chaosazure.auth.authentication import ServicePrincipalAuth, TokenAuth
-
-AAD_TOKEN = "aad_token"
-SERVICE_PRINCIPAL = "service_principal"
+from azure.identity import DefaultAzureCredential
+from azure.identity._constants import AzureAuthorityHosts
 
 
 @contextlib.contextmanager
-def auth(secrets: Dict) -> AADMixin:
+def auth(secrets: Dict) -> Generator[DefaultAzureCredential, None, None]:
     """
-    Create Azure authentication client from a provided secrets.
-
-    Service principle and token based auth types are supported. Token
-    based auth do not currently support refresh token functionality.
-
-    Type of authentication client is determined based on passed secrets.
+    Create Azure authentication client from a provided secrets using
+    the `https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python`
+    class.
 
     For example, secrets that contains a `client_id`, `client_secret` and
-    `tenant_id` will create ServicePrincipalAuth client
+    `tenant_id`:
     ```python
     {
         "client_id": "AZURE_CLIENT_ID",
@@ -32,21 +23,19 @@ def auth(secrets: Dict) -> AADMixin:
     }
     ```
     If you are not working with Public Global Azure, e.g. China Cloud
-    you can provide `msrestazure.azure_cloud.Cloud` object. If omitted the
-    Public Cloud is taken as default. Please refer to msrestazure.azure_cloud
+    you can provide `"AZURE_CHINA"` string. If omitted the
+    Public Cloud is taken as default.
     ```python
     {
         "client_id": "xxxxxxx",
         "client_secret": "*******",
         "tenant_id": "@@@@@@@@@@@",
-        "cloud": "msrestazure.azure_cloud.Cloud"
+        "cloud": "AZURE_CHINA"
     }
     ```
 
-    If the `client_secret` is not provided, then token based credentials is
-    assumed and an `access_token` value must be present in `secrets` object
-    and updated when the token expires.
-    ```
+    You can also omit any configuration or secrets and let Azure cycle through
+    all the potential client candidates.
 
     Using this function goes as follows:
 
@@ -69,50 +58,33 @@ def auth(secrets: Dict) -> AADMixin:
     ```
 
     """
-
-    # No input validation needed:
-    # 1) Either no secrets are passed at all - chaostoolkit-lib
-    #    will handle it for us *or*
-    # 2) Secret arguments are partially missing or invalid - we
-    #    rely on the ms azure library
-    yield __create(secrets)
+    yield make_auth(secrets)
 
 
-##################
-# HELPER FUNCTIONS
-##################
+def make_auth(secrets: Dict) -> DefaultAzureCredential:
+    if os.getenv("AZURE_CLIENT_ID") is None:
+        os.putenv("AZURE_CLIENT_ID", secrets.get("client_id", ""))
 
-def __create(secrets: Dict) -> AADMixin:
-    _auth_type = __authentication_type(secrets)
+    if os.getenv("AZURE_CLIENT_SECRET") is None:
+        os.putenv("AZURE_CLIENT_SECRET", secrets.get("client_secret", ""))
 
-    if _auth_type == SERVICE_PRINCIPAL:
-        _authentication = ServicePrincipalAuth()
+    if os.getenv("AZURE_TENANT_ID") is None:
+        os.putenv("AZURE_TENANT_ID", secrets.get("tenant_id", ""))
 
-    elif _auth_type == AAD_TOKEN:
-        _authentication = TokenAuth()
+    authority = AzureAuthorityHosts.AZURE_PUBLIC_CLOUD
 
-    try:
-        result = _authentication.create(secrets)
-        return result
-    except AuthenticationError as e:
-        msg = e.inner_exception.error_response.get('error_description')
-        raise InterruptExecution(msg)
+    if os.getenv("AZURE_AUTHORITY_HOST") is None:
+        cloud_authority = secrets.get(
+            "cloud", os.getenv("AZURE_CLOUD", "AZURE_PUBLIC_CLOUD")
+        )
 
+        if cloud_authority == "AZURE_PUBLIC_CLOUD":
+            authority = AzureAuthorityHosts.AZURE_PUBLIC_CLOUD
+        elif cloud_authority == "AZURE_GERMAN_CLOUD":
+            authority = AzureAuthorityHosts.AZURE_GERMANY
+        elif cloud_authority == "AZURE_US_GOV_CLOUD":
+            authority = AzureAuthorityHosts.AZURE_GOVERNMENT
+        elif cloud_authority == "AZURE_CHINA_CLOUD":
+            authority = AzureAuthorityHosts.AZURE_CHINA
 
-def __authentication_type(secrets: dict) -> str:
-    if 'client_secret' in secrets and secrets['client_secret']:
-        return SERVICE_PRINCIPAL
-
-    elif 'access_token' in secrets and secrets['access_token']:
-        return AAD_TOKEN
-
-    elif os.getenv("AZURE_CLIENT_SECRET"):
-        return SERVICE_PRINCIPAL
-
-    elif os.getenv("AZURE_ACCESS_TOKEN"):
-        return AAD_TOKEN
-
-    else:
-        raise InterruptExecution(
-            "Authentication to Azure requires a"
-            " client secret or an access token")
+    return DefaultAzureCredential(authority=authority)

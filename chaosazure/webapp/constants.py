@@ -1,1 +1,1 @@
-RES_TYPE_WEBAPP = 'Microsoft.Web/sites'
+RES_TYPE_WEBAPP = "Microsoft.Web/sites"

@@ -8,12 +8,18 @@ from chaosazure.application_gateway.constants import RES_TYPE_SRV_AG
 from chaosazure.application_gateway.actions import __network_mgmt_client
 from chaosazure.common.resources.graph import fetch_resources
 
-__all__ = ["describe_application_gateways", "count_application_gateways", "describe_routes"]
+__all__ = [
+    "describe_application_gateways",
+    "count_application_gateways",
+    "describe_routes",
+]
 
 
-def describe_application_gateways(filter: str = None,
-                                  configuration: Configuration = None,
-                                  secrets: Secrets = None):
+def describe_application_gateways(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Describe Azure application gateways.
 
@@ -27,15 +33,21 @@ def describe_application_gateways(filter: str = None,
     """
     logger.debug(
         "Start describe_application_gateways: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
-    application_gateways = fetch_resources(filter, RES_TYPE_SRV_AG, secrets, configuration)
+    application_gateways = fetch_resources(
+        filter, RES_TYPE_SRV_AG, secrets, configuration
+    )
     return application_gateways
 
 
-def count_application_gateways(filter: str = None,
-                               configuration: Configuration = None,
-                               secrets: Secrets = None) -> int:
+def count_application_gateways(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+) -> int:
     """
     Return count of Azure application gateways.
 
@@ -49,16 +61,22 @@ def count_application_gateways(filter: str = None,
     """
     logger.debug(
         "Start count_application_gateways: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
-    application_gateways = fetch_resources(filter, RES_TYPE_SRV_AG, secrets, configuration)
+    application_gateways = fetch_resources(
+        filter, RES_TYPE_SRV_AG, secrets, configuration
+    )
     return len(application_gateways)
 
 
-def describe_routes(filter: str = None,
-                    name_pattern: str = None,
-                    configuration: Configuration = None,
-                    secrets: Secrets = None):
+def describe_routes(
+    filter: str = None,
+    name_pattern: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Describe Azure application gateways routes.
 
@@ -77,19 +95,25 @@ def describe_routes(filter: str = None,
     """
     logger.debug(
         "Start describe_routes: configuration='{}', filter='{}', name_pattern='{}'".format(
-            configuration, filter, name_pattern))
+            configuration, filter, name_pattern
+        )
+    )
 
     pattern = None
     if name_pattern:
         pattern = re.compile(name_pattern)
 
-    application_gateways = fetch_resources(filter, RES_TYPE_SRV_AG, secrets, configuration)
+    application_gateways = fetch_resources(
+        filter, RES_TYPE_SRV_AG, secrets, configuration
+    )
     client = __network_mgmt_client(secrets, configuration)
     routes = []
     for agw in application_gateways:
-        group = agw['resourceGroup']
-        application_gateway_name = agw['name']
-        app_gw = client.application_gateways.get(group, application_gateway_name)
+        group = agw["resourceGroup"]
+        application_gateway_name = agw["name"]
+        app_gw = client.application_gateways.get(
+            group, application_gateway_name
+        )
 
         for r in app_gw.request_routing_rules:
             name = r.name

@@ -5,15 +5,19 @@ from chaoslib.types import Configuration, Secrets
 from logzero import logger
 
 from chaosazure.postgresql_flexible.constants import RES_TYPE_SRV_PG_FLEX
-from chaosazure.postgresql_flexible.actions import __postgresql_flexible_mgmt_client
+from chaosazure.postgresql_flexible.actions import (
+    __postgresql_flexible_mgmt_client,
+)
 from chaosazure.common.resources.graph import fetch_resources
 
 __all__ = ["describe_servers", "count_servers", "describe_databases"]
 
 
-def describe_servers(filter: str = None,
-                     configuration: Configuration = None,
-                     secrets: Secrets = None):
+def describe_servers(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Describe Azure servers.
 
@@ -27,15 +31,21 @@ def describe_servers(filter: str = None,
     """
     logger.debug(
         "Start describe_servers: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
-    servers = fetch_resources(filter, RES_TYPE_SRV_PG_FLEX, secrets, configuration)
+    servers = fetch_resources(
+        filter, RES_TYPE_SRV_PG_FLEX, secrets, configuration
+    )
     return servers
 
 
-def count_servers(filter: str = None,
-                  configuration: Configuration = None,
-                  secrets: Secrets = None) -> int:
+def count_servers(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+) -> int:
     """
     Return count of Azure servers.
 
@@ -49,16 +59,22 @@ def count_servers(filter: str = None,
     """
     logger.debug(
         "Start count_servers: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
-    servers = fetch_resources(filter, RES_TYPE_SRV_PG_FLEX, secrets, configuration)
+    servers = fetch_resources(
+        filter, RES_TYPE_SRV_PG_FLEX, secrets, configuration
+    )
     return len(servers)
 
 
-def describe_databases(filter: str = None,
-                       name_pattern: str = None,
-                       configuration: Configuration = None,
-                       secrets: Secrets = None):
+def describe_databases(
+    filter: str = None,
+    name_pattern: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Describe Azure servers.
 
@@ -77,18 +93,22 @@ def describe_databases(filter: str = None,
     """
     logger.debug(
         "Start describe_databases: configuration='{}', filter='{}', name_pattern='{}'".format(
-            configuration, filter, name_pattern))
+            configuration, filter, name_pattern
+        )
+    )
 
     pattern = None
     if name_pattern:
         pattern = re.compile(name_pattern)
 
-    servers = fetch_resources(filter, RES_TYPE_SRV_PG_FLEX, secrets, configuration)
+    servers = fetch_resources(
+        filter, RES_TYPE_SRV_PG_FLEX, secrets, configuration
+    )
     client = __postgresql_flexible_mgmt_client(secrets, configuration)
     databases = []
     for s in servers:
-        group = s['resourceGroup']
-        server_name = s['name']
+        group = s["resourceGroup"]
+        server_name = s["name"]
 
         for d in client.databases.list_by_server(group, server_name):
             name = d.name

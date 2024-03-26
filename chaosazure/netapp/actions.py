@@ -15,9 +15,11 @@ __all__ = ["delete_netapp_volumes"]
 from chaosazure.vmss.records import Records
 
 
-def delete_netapp_volumes(filter: str = None,
-                          configuration: Configuration = None,
-                          secrets: Secrets = None):
+def delete_netapp_volumes(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete netapp volumes at random.
 
@@ -46,22 +48,23 @@ def delete_netapp_volumes(filter: str = None,
     """
     logger.debug(
         "Start delete_netapp_volumes: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "configuration='{}', filter='{}'".format(configuration, filter)
+    )
 
     netapp_volumes = __fetch_netapp_volumes(filter, configuration, secrets)
     client = __netapp_mgmt_client(secrets, configuration)
     netapp_volumes_records = Records()
 
     for nv in netapp_volumes:
-        group = nv['resourceGroup']
-        full_name = nv['name']
+        group = nv["resourceGroup"]
+        full_name = nv["name"]
         account_name = re.search(r"^([^\/]*)\/", full_name).group(1)
         pool_name = re.search(r"\/([^\/]*)\/", full_name).group(1)
         volume_name = re.search(r"\/([^\/]*)$", full_name).group(1)
         client.volumes.begin_delete(group, account_name, pool_name, volume_name)
         netapp_volumes_records.add(cleanse.netapp_volume(nv))
 
-    return netapp_volumes_records.output_as_dict('resources')
+    return netapp_volumes_records.output_as_dict("resources")
 
 
 ###############################################################################
@@ -70,14 +73,18 @@ def delete_netapp_volumes(filter: str = None,
 
 
 def __fetch_netapp_volumes(filter, configuration, secrets) -> []:
-    netapp_volumes = fetch_resources(filter, RES_TYPE_SRV_NV, secrets, configuration)
+    netapp_volumes = fetch_resources(
+        filter, RES_TYPE_SRV_NV, secrets, configuration
+    )
     if not netapp_volumes:
         logger.warning("No Netapp volumes found")
         raise FailedActivity("No Netapp volumes found")
     else:
         logger.debug(
             "Fetched netapp volumes: {}".format(
-                [n['name'] for n in netapp_volumes]))
+                [n["name"] for n in netapp_volumes]
+            )
+        )
     return netapp_volumes
 
 

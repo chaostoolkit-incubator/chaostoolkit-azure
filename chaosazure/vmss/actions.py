@@ -10,15 +10,23 @@ from chaosazure.vmss.fetcher import fetch_vmss, fetch_instances
 from chaosazure.vmss.records import Records
 
 __all__ = [
-    "delete_vmss", "restart_vmss", "stop_vmss", "deallocate_vmss",
-    "burn_io", "fill_disk", "network_latency", "stress_vmss_instance_cpu"
+    "delete_vmss",
+    "restart_vmss",
+    "stop_vmss",
+    "deallocate_vmss",
+    "burn_io",
+    "fill_disk",
+    "network_latency",
+    "stress_vmss_instance_cpu",
 ]
 
 
-def delete_vmss(filter: str = None,
-                instance_criteria: Iterable[Mapping[str, any]] = None,
-                configuration: Configuration = None,
-                secrets: Secrets = None):
+def delete_vmss(
+    filter: str = None,
+    instance_criteria: Iterable[Mapping[str, any]] = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete a virtual machine scale set instance at random.
 
@@ -36,35 +44,40 @@ def delete_vmss(filter: str = None,
     """
     logger.debug(
         "Starting delete_vmss: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     vmss = fetch_vmss(filter, configuration, secrets)
     vmss_records = Records()
     for scale_set in vmss:
         instances_records = Records()
-        instances = fetch_instances(scale_set, instance_criteria,
-                                    configuration, secrets)
+        instances = fetch_instances(
+            scale_set, instance_criteria, configuration, secrets
+        )
 
         for instance in instances:
-            logger.debug(
-                "Deleting instance: {}".format(instance['name']))
+            logger.debug("Deleting instance: {}".format(instance["name"]))
             client = init_compute_management_client(secrets, configuration)
             client.virtual_machine_scale_set_vms.begin_delete(
-                scale_set['resourceGroup'],
-                scale_set['name'],
-                instance['instance_id'])
+                scale_set["resourceGroup"],
+                scale_set["name"],
+                instance["instance_id"],
+            )
             instances_records.add(cleanse.vmss_instance(instance))
 
-        scale_set['virtualMachines'] = instances_records.output()
+        scale_set["virtualMachines"] = instances_records.output()
         vmss_records.add(cleanse.vmss(scale_set))
 
-    return vmss_records.output_as_dict('resources')
+    return vmss_records.output_as_dict("resources")
 
 
-def restart_vmss(filter: str = None,
-                 instance_criteria: Iterable[Mapping[str, any]] = None,
-                 configuration: Configuration = None,
-                 secrets: Secrets = None):
+def restart_vmss(
+    filter: str = None,
+    instance_criteria: Iterable[Mapping[str, any]] = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Restart a virtual machine scale set instance at random.
      Parameters
@@ -78,35 +91,40 @@ def restart_vmss(filter: str = None,
     """
     logger.debug(
         "Starting restart_vmss: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     vmss = fetch_vmss(filter, configuration, secrets)
     vmss_records = Records()
     for scale_set in vmss:
         instances_records = Records()
-        instances = fetch_instances(scale_set, instance_criteria,
-                                    configuration, secrets)
+        instances = fetch_instances(
+            scale_set, instance_criteria, configuration, secrets
+        )
 
         for instance in instances:
-            logger.debug(
-                "Restarting instance: {}".format(instance['name']))
+            logger.debug("Restarting instance: {}".format(instance["name"]))
             client = init_compute_management_client(secrets, configuration)
             client.virtual_machine_scale_set_vms.begin_restart(
-                scale_set['resourceGroup'],
-                scale_set['name'],
-                instance['instance_id'])
+                scale_set["resourceGroup"],
+                scale_set["name"],
+                instance["instance_id"],
+            )
             instances_records.add(cleanse.vmss_instance(instance))
 
-        scale_set['virtualMachines'] = instances_records.output()
+        scale_set["virtualMachines"] = instances_records.output()
         vmss_records.add(cleanse.vmss(scale_set))
 
-    return vmss_records.output_as_dict('resources')
+    return vmss_records.output_as_dict("resources")
 
 
-def stop_vmss(filter: str = None,
-              instance_criteria: Iterable[Mapping[str, any]] = None,
-              configuration: Configuration = None,
-              secrets: Secrets = None):
+def stop_vmss(
+    filter: str = None,
+    instance_criteria: Iterable[Mapping[str, any]] = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Stops instances from the filtered scale set either at random or by
      a defined instance criteria.
@@ -142,35 +160,40 @@ def stop_vmss(filter: str = None,
     """
     logger.debug(
         "Starting stop_vmss: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     vmss = fetch_vmss(filter, configuration, secrets)
     vmss_records = Records()
     for scale_set in vmss:
         instances_records = Records()
-        instances = fetch_instances(scale_set, instance_criteria,
-                                    configuration, secrets)
+        instances = fetch_instances(
+            scale_set, instance_criteria, configuration, secrets
+        )
 
         for instance in instances:
-            logger.debug(
-                "Stopping instance: {}".format(instance['name']))
+            logger.debug("Stopping instance: {}".format(instance["name"]))
             client = init_compute_management_client(secrets, configuration)
             client.virtual_machine_scale_set_vms.begin_power_off(
-                scale_set['resourceGroup'],
-                scale_set['name'],
-                instance['instance_id'])
+                scale_set["resourceGroup"],
+                scale_set["name"],
+                instance["instance_id"],
+            )
             instances_records.add(cleanse.vmss_instance(instance))
 
-        scale_set['virtualMachines'] = instances_records.output()
+        scale_set["virtualMachines"] = instances_records.output()
         vmss_records.add(cleanse.vmss(scale_set))
 
-    return vmss_records.output_as_dict('resources')
+    return vmss_records.output_as_dict("resources")
 
 
-def deallocate_vmss(filter: str = None,
-                    instance_criteria: Iterable[Mapping[str, any]] = None,
-                    configuration: Configuration = None,
-                    secrets: Secrets = None):
+def deallocate_vmss(
+    filter: str = None,
+    instance_criteria: Iterable[Mapping[str, any]] = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Deallocate a virtual machine scale set instance at random.
      Parameters
@@ -184,52 +207,60 @@ def deallocate_vmss(filter: str = None,
     """
     logger.debug(
         "Starting deallocate_vmss: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     vmss = fetch_vmss(filter, configuration, secrets)
     vmss_records = Records()
     for scale_set in vmss:
         instances_records = Records()
-        instances = fetch_instances(scale_set, instance_criteria,
-                                    configuration, secrets)
+        instances = fetch_instances(
+            scale_set, instance_criteria, configuration, secrets
+        )
 
         for instance in instances:
-            logger.debug(
-                "Deallocating instance: {}".format(instance['name']))
+            logger.debug("Deallocating instance: {}".format(instance["name"]))
             client = init_compute_management_client(secrets, configuration)
             client.virtual_machine_scale_set_vms.begin_deallocate(
-                scale_set['resourceGroup'],
-                scale_set['name'],
-                instance['instance_id'])
+                scale_set["resourceGroup"],
+                scale_set["name"],
+                instance["instance_id"],
+            )
             instances_records.add(cleanse.vmss_instance(instance))
 
-        scale_set['virtualMachines'] = instances_records.output()
+        scale_set["virtualMachines"] = instances_records.output()
         vmss_records.add(cleanse.vmss(scale_set))
 
-    return vmss_records.output_as_dict('resources')
+    return vmss_records.output_as_dict("resources")
 
 
 def stress_vmss_instance_cpu(
-        filter: str = None,
-        duration: int = 120,
-        timeout: int = 60,
-        instance_criteria: Iterable[Mapping[str, any]] = None,
-        configuration: Configuration = None,
-        secrets: Secrets = None):
+    filter: str = None,
+    duration: int = 120,
+    timeout: int = 60,
+    instance_criteria: Iterable[Mapping[str, any]] = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     logger.warning(
         "Deprecated usage of activity 'stress_vmss_instance_cpu'."
         " Please use activity 'stress_cpu' in favor since this"
-        " activity will be removed in a future release.")
+        " activity will be removed in a future release."
+    )
     return stress_cpu(
-        filter, duration, timeout, instance_criteria, configuration, secrets)
+        filter, duration, timeout, instance_criteria, configuration, secrets
+    )
 
 
-def stress_cpu(filter: str = None,
-               duration: int = 120,
-               timeout: int = 60,
-               instance_criteria: Iterable[Mapping[str, any]] = None,
-               configuration: Configuration = None,
-               secrets: Secrets = None):
+def stress_cpu(
+    filter: str = None,
+    duration: int = 120,
+    timeout: int = 60,
+    instance_criteria: Iterable[Mapping[str, any]] = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Stresses the CPU of a random VMSS instances in your selected VMSS.
     Similar to the stress_cpu action of the machine.actions module.
@@ -251,94 +282,113 @@ def stress_cpu(filter: str = None,
         "Starting stress_vmss_instance_cpu:"
         " configuration='{}', filter='{}',"
         " duration='{}', timeout='{}'".format(
-            configuration, filter, duration, timeout))
+            configuration, filter, duration, timeout
+        )
+    )
 
     vmss_records = Records()
     vmss = fetch_vmss(filter, configuration, secrets)
     for scale_set in vmss:
         instances_records = Records()
-        instances = fetch_instances(scale_set, instance_criteria,
-                                    configuration, secrets)
+        instances = fetch_instances(
+            scale_set, instance_criteria, configuration, secrets
+        )
 
         for instance in instances:
-            command_id, script_content = command.prepare(instance,
-                                                         'cpu_stress_test')
+            command_id, script_content = command.prepare(
+                instance, "cpu_stress_test"
+            )
             parameters = {
-                'command_id': command_id,
-                'script': [script_content],
-                'parameters': [
-                    {'name': "duration", 'value': duration}
-                ]
+                "command_id": command_id,
+                "script": [script_content],
+                "parameters": [{"name": "duration", "value": duration}],
             }
 
             logger.debug(
                 "Stressing CPU of VMSS instance: '{}'".format(
-                    instance['instance_id']))
+                    instance["instance_id"]
+                )
+            )
             _timeout = duration + timeout
             command.run(
-                scale_set['resourceGroup'], instance, _timeout, parameters,
-                secrets, configuration)
+                scale_set["resourceGroup"],
+                instance,
+                _timeout,
+                parameters,
+                secrets,
+                configuration,
+            )
             instances_records.add(cleanse.vmss_instance(instance))
 
-        scale_set['virtualMachines'] = instances_records.output()
+        scale_set["virtualMachines"] = instances_records.output()
         vmss_records.add(cleanse.vmss(scale_set))
 
-    return vmss_records.output_as_dict('resources')
+    return vmss_records.output_as_dict("resources")
 
 
-def burn_io(filter: str = None,
-            duration: int = 60,
-            timeout: int = 60,
-            instance_criteria: Iterable[Mapping[str, any]] = None,
-            configuration: Configuration = None,
-            secrets: Secrets = None):
+def burn_io(
+    filter: str = None,
+    duration: int = 60,
+    timeout: int = 60,
+    instance_criteria: Iterable[Mapping[str, any]] = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Increases the Disk I/O operations per second of the VMSS machine.
     Similar to the burn_io action of the machine.actions module.
     """
     logger.debug(
         "Starting burn_io: configuration='{}', filter='{}', duration='{}',"
-        " timeout='{}'".format(configuration, filter, duration, timeout))
+        " timeout='{}'".format(configuration, filter, duration, timeout)
+    )
 
     vmss = fetch_vmss(filter, configuration, secrets)
     vmss_records = Records()
     for scale_set in vmss:
         instances_records = Records()
-        instances = fetch_instances(scale_set, instance_criteria,
-                                    configuration, secrets)
+        instances = fetch_instances(
+            scale_set, instance_criteria, configuration, secrets
+        )
 
         for instance in instances:
-            command_id, script_content = command.prepare(instance, 'burn_io')
+            command_id, script_content = command.prepare(instance, "burn_io")
             parameters = {
-                'command_id': command_id,
-                'script': [script_content],
-                'parameters': [
-                    {'name': "duration", 'value': duration}
-                ]
+                "command_id": command_id,
+                "script": [script_content],
+                "parameters": [{"name": "duration", "value": duration}],
             }
 
             logger.debug(
-                "Burning IO of VMSS instance: '{}'".format(instance['name']))
+                "Burning IO of VMSS instance: '{}'".format(instance["name"])
+            )
             _timeout = duration + timeout
             command.run(
-                scale_set['resourceGroup'], instance, _timeout, parameters,
-                secrets, configuration)
+                scale_set["resourceGroup"],
+                instance,
+                _timeout,
+                parameters,
+                secrets,
+                configuration,
+            )
             instances_records.add(cleanse.vmss_instance(instance))
 
-        scale_set['virtualMachines'] = instances_records.output()
+        scale_set["virtualMachines"] = instances_records.output()
         vmss_records.add(cleanse.vmss(scale_set))
 
-    return vmss_records.output_as_dict('resources')
+    return vmss_records.output_as_dict("resources")
 
 
-def fill_disk(filter: str = None,
-              duration: int = 120,
-              timeout: int = 60,
-              size: int = 1000,
-              path: str = None,
-              instance_criteria: Iterable[Mapping[str, any]] = None,
-              configuration: Configuration = None,
-              secrets: Secrets = None):
+def fill_disk(
+    filter: str = None,
+    duration: int = 120,
+    timeout: int = 60,
+    size: int = 1000,
+    path: str = None,
+    instance_criteria: Iterable[Mapping[str, any]] = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Fill the VMSS machine disk with random data. Similar to
     the fill_disk action of the machine.actions module.
@@ -346,53 +396,62 @@ def fill_disk(filter: str = None,
     logger.debug(
         "Starting fill_disk: configuration='{}', filter='{}',"
         " duration='{}', size='{}', path='{}', timeout='{}'".format(
-            configuration, filter, duration, size, path, timeout))
+            configuration, filter, duration, size, path, timeout
+        )
+    )
 
     vmss = fetch_vmss(filter, configuration, secrets)
     vmss_records = Records()
     for scale_set in vmss:
         instances_records = Records()
-        instances = fetch_instances(scale_set, instance_criteria,
-                                    configuration, secrets)
+        instances = fetch_instances(
+            scale_set, instance_criteria, configuration, secrets
+        )
 
         for instance in instances:
-            command_id, script_content = command.prepare(instance,
-                                                         'fill_disk')
+            command_id, script_content = command.prepare(instance, "fill_disk")
             fill_path = command.prepare_path(instance, path)
 
             parameters = {
-                'command_id': command_id,
-                'script': [script_content],
-                'parameters': [
-                    {'name': "duration", 'value': duration},
-                    {'name': "size", 'value': size},
-                    {'name': "path", 'value': fill_path}
-                ]
+                "command_id": command_id,
+                "script": [script_content],
+                "parameters": [
+                    {"name": "duration", "value": duration},
+                    {"name": "size", "value": size},
+                    {"name": "path", "value": fill_path},
+                ],
             }
 
             logger.debug(
-                "Filling disk of VMSS instance: '{}'".format(
-                    instance['name']))
+                "Filling disk of VMSS instance: '{}'".format(instance["name"])
+            )
             _timeout = duration + timeout
             command.run(
-                scale_set['resourceGroup'], instance, _timeout, parameters,
-                secrets, configuration)
+                scale_set["resourceGroup"],
+                instance,
+                _timeout,
+                parameters,
+                secrets,
+                configuration,
+            )
             instances_records.add(cleanse.vmss_instance(instance))
 
-        scale_set['virtualMachines'] = instances_records.output()
+        scale_set["virtualMachines"] = instances_records.output()
         vmss_records.add(cleanse.vmss(scale_set))
 
-    return vmss_records.output_as_dict('resources')
+    return vmss_records.output_as_dict("resources")
 
 
-def network_latency(filter: str = None,
-                    duration: int = 60,
-                    delay: int = 200,
-                    jitter: int = 50,
-                    timeout: int = 60,
-                    instance_criteria: Iterable[Mapping[str, any]] = None,
-                    configuration: Configuration = None,
-                    secrets: Secrets = None):
+def network_latency(
+    filter: str = None,
+    duration: int = 60,
+    delay: int = 200,
+    jitter: int = 50,
+    timeout: int = 60,
+    instance_criteria: Iterable[Mapping[str, any]] = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Increases the response time of the virtual machine. Similar to
     the network_latency action of the machine.actions module.
@@ -400,38 +459,49 @@ def network_latency(filter: str = None,
     logger.debug(
         "Starting network_latency: configuration='{}', filter='{}',"
         " duration='{}', delay='{}', jitter='{}', timeout='{}'".format(
-            configuration, filter, duration, delay, jitter, timeout))
+            configuration, filter, duration, delay, jitter, timeout
+        )
+    )
 
     vmss = fetch_vmss(filter, configuration, secrets)
     vmss_records = Records()
     for scale_set in vmss:
         instances_records = Records()
-        instances = fetch_instances(scale_set, instance_criteria,
-                                    configuration, secrets)
+        instances = fetch_instances(
+            scale_set, instance_criteria, configuration, secrets
+        )
 
         for instance in instances:
             command_id, script_content = command.prepare(
-                instance, 'network_latency')
+                instance, "network_latency"
+            )
             parameters = {
-                'command_id': command_id,
-                'script': [script_content],
-                'parameters': [
-                    {'name': "duration", 'value': duration},
-                    {'name': "delay", 'value': delay},
-                    {'name': "jitter", 'value': jitter}
-                ]
+                "command_id": command_id,
+                "script": [script_content],
+                "parameters": [
+                    {"name": "duration", "value": duration},
+                    {"name": "delay", "value": delay},
+                    {"name": "jitter", "value": jitter},
+                ],
             }
 
             logger.debug(
                 "Increasing the latency of VMSS instance: '{}'".format(
-                    instance['name']))
+                    instance["name"]
+                )
+            )
             _timeout = duration + timeout
             command.run(
-                scale_set['resourceGroup'], instance, _timeout, parameters,
-                secrets, configuration)
+                scale_set["resourceGroup"],
+                instance,
+                _timeout,
+                parameters,
+                secrets,
+                configuration,
+            )
             instances_records.add(cleanse.vmss_instance(instance))
 
-        scale_set['virtualMachines'] = instances_records.output()
+        scale_set["virtualMachines"] = instances_records.output()
         vmss_records.add(cleanse.vmss(scale_set))
 
-    return vmss_records.output_as_dict('resources')
+    return vmss_records.output_as_dict("resources")

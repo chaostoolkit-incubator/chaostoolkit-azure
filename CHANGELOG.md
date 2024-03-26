@@ -4,6 +4,20 @@
 
 [Unreleased]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.16.0...HEAD
 
+### Changed
+
+* [LIKELY BREAKING]: removed token based authentication so that can drop
+  `mstrestazure` which is not maintained and deprecated [#157][157].
+  Please report any bugs.
+* switched to [pdm](https://pdm-project.org/latest/) for project management
+  away from setuptools
+* switched to [ruff](https://github.com/astral-sh/ruff) for code linting
+  away from pycodestyle and pylama
+* bumped GitHub workflows to use more recent versions of each actions
+* using the Trusted publishing workflow for publishing to PyPI
+
+[157]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/issues/157
+
 ## [0.16.0][] - 2023-07-13
 
 [0.16.0]: https://github.com/chaostoolkit-incubator/chaostoolkit-azure/compare/0.15.4...0.16.0

@@ -8,9 +8,11 @@ from chaosazure.common.resources.graph import fetch_resources
 __all__ = ["describe_netapp_volumes", "count_netapp_volumes"]
 
 
-def describe_netapp_volumes(filter: str = None,
-                            configuration: Configuration = None,
-                            secrets: Secrets = None):
+def describe_netapp_volumes(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Describe Azure netapp volumes.
 
@@ -24,15 +26,21 @@ def describe_netapp_volumes(filter: str = None,
     """
     logger.debug(
         "Start describe_netapp_volumes: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
-    netapp_volumes = fetch_resources(filter, RES_TYPE_SRV_NV, secrets, configuration)
+    netapp_volumes = fetch_resources(
+        filter, RES_TYPE_SRV_NV, secrets, configuration
+    )
     return netapp_volumes
 
 
-def count_netapp_volumes(filter: str = None,
-                         configuration: Configuration = None,
-                         secrets: Secrets = None) -> int:
+def count_netapp_volumes(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+) -> int:
     """
     Return count of Azure netapp volumes.
 
@@ -46,7 +54,11 @@ def count_netapp_volumes(filter: str = None,
     """
     logger.debug(
         "Start count_netapp_volumes: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
-    netapp_volumes = fetch_resources(filter, RES_TYPE_SRV_NV, secrets, configuration)
+    netapp_volumes = fetch_resources(
+        filter, RES_TYPE_SRV_NV, secrets, configuration
+    )
     return len(netapp_volumes)

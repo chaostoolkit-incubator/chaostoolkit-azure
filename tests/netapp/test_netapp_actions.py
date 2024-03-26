@@ -1,38 +1,34 @@
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, patch
 
 import pytest
 from chaoslib.exceptions import FailedActivity
 
-import chaosazure
 from chaosazure.netapp.actions import delete_netapp_volumes
-from data import netapp_provider, config_provider, secrets_provider
 
-CONFIG = {
-    "azure": {
-        "subscription_id": "***REMOVED***"
-    }
-}
+CONFIG = {"azure": {"subscription_id": "***REMOVED***"}}
 
 SECRETS = {
     "client_id": "***REMOVED***",
     "client_secret": "***REMOVED***",
-    "tenant_id": "***REMOVED***"
+    "tenant_id": "***REMOVED***",
 }
 
 SECRETS_CHINA = {
     "client_id": "***REMOVED***",
     "client_secret": "***REMOVED***",
     "tenant_id": "***REMOVED***",
-    "azure_cloud": "AZURE_CHINA_CLOUD"
+    "azure_cloud": "AZURE_CHINA_CLOUD",
 }
 
 NETAPP_VOLUME_ALPHA = {
-    'name': 'NetAppAccount/NetAppPoolName/NetAppVolumeAlpha',
-    'resourceGroup': 'group'}
+    "name": "NetAppAccount/NetAppPoolName/NetAppVolumeAlpha",
+    "resourceGroup": "group",
+}
 
 NETAPP_VOLUME_BETA = {
-    'name': 'NetAppAccount/NetAppPoolName/NetAppVolumeBeta',
-    'resourceGroup': 'group'}
+    "name": "NetAppAccount/NetAppPoolName/NetAppVolumeBeta",
+    "resourceGroup": "group",
+}
 
 
 class AnyStringWith(str):
@@ -40,8 +36,8 @@ class AnyStringWith(str):
         return self in other
 
 
-@patch('chaosazure.netapp.actions.__fetch_netapp_volumes', autospec=True)
-@patch('chaosazure.netapp.actions.__netapp_mgmt_client', autospec=True)
+@patch("chaosazure.netapp.actions.__fetch_netapp_volumes", autospec=True)
+@patch("chaosazure.netapp.actions.__netapp_mgmt_client", autospec=True)
 def test_delete_one_netapp_volume(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -56,8 +52,8 @@ def test_delete_one_netapp_volume(init, fetch):
     assert client.volumes.begin_delete.call_count == 1
 
 
-@patch('chaosazure.netapp.actions.__fetch_netapp_volumes', autospec=True)
-@patch('chaosazure.netapp.actions.__netapp_mgmt_client', autospec=True)
+@patch("chaosazure.netapp.actions.__fetch_netapp_volumes", autospec=True)
+@patch("chaosazure.netapp.actions.__netapp_mgmt_client", autospec=True)
 def test_delete_one_netapp_volume_china(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -72,8 +68,8 @@ def test_delete_one_netapp_volume_china(init, fetch):
     assert client.volumes.begin_delete.call_count == 1
 
 
-@patch('chaosazure.netapp.actions.__fetch_netapp_volumes', autospec=True)
-@patch('chaosazure.netapp.actions.__netapp_mgmt_client', autospec=True)
+@patch("chaosazure.netapp.actions.__fetch_netapp_volumes", autospec=True)
+@patch("chaosazure.netapp.actions.__netapp_mgmt_client", autospec=True)
 def test_delete_two_netapp_volumes(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -88,7 +84,7 @@ def test_delete_two_netapp_volumes(init, fetch):
     assert client.volumes.begin_delete.call_count == 2
 
 
-@patch('chaosazure.netapp.actions.fetch_resources', autospec=True)
+@patch("chaosazure.netapp.actions.fetch_resources", autospec=True)
 def test_delete_netapp_volume_with_no_netapp_volumes(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []

@@ -14,7 +14,7 @@ extension to the [Chaos Toolkit][chaostoolkit]. It targets the
 
 ## Install
 
-This package requires Python 3.5+
+This package requires Python 3.8+
 
 To be used from your experiment, this package must be installed in the Python
 environment where [chaostoolkit][] already lives.
@@ -50,35 +50,24 @@ That's it!
 
 Please explore the code to see existing probes and actions.
 
-## Configuration
-
-This extension uses the [Azure SDK][sdk] libraries under the hood. The Azure SDK library expects that you have a tenant and client identifier, as well as a client secret and subscription, that allows you to authenticate with the Azure resource management API.
-
-Configuration values for the Chaos Toolkit Extension for Azure can come from several sources:
-
-- Experiment file
-- Azure credential file
-
-The extension will first try to load the configuration from the `experiment file`. If configuration is not provided in the `experiment file`, it will try to load it from the `Azure credential file`.
-
-[creds]: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-connect-to-secure-cluster
-[requests]: http://docs.python-requests.org/en/master/
-[sdk]: https://github.com/Azure/azure-sdk-for-python
-
 ### Credentials
+
+This extension uses the [Azure SDK][sdk] under the hood.
+
+[sdk]: https://github.com/Azure/azure-sdk-for-python
 
 #### Environment Variables
 
-You can pass credentials via the following environment variables:
+The extensions uses a chained approach to locating the appropriate
+credentials, starting from the secrets in the experiment before moving to
+[environment variables](envvar) and so on as per the [Azure documentation][creds].
 
-- AZURE_CLIENT_ID
-- AZURE_CLIENT_SECRET
-- AZURE_TENANT_ID
+[creds]: https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python
+[envvar]: https://learn.microsoft.com/fr-fr/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python
 
-Or:
-
-- AZURE_CLIENT_ID
-- AZURE_ACCESS_TOKEN
+In theory, at the bare minimum you don't need to set anything explicitely 
+into the experiment and let the client figure it out based on the local
+machine settings.
 
 #### Experiment Secrets
 
@@ -119,40 +108,8 @@ You may also pass them via the secrets block of the experiment:
 
   Either of these values can be passed via `AZURE_CLOUD` as well.
 
-
   [vault_secrets]: https://docs.chaostoolkit.org/reference/api/experiment/#vault-secrets
   [env_secrets]: https://docs.chaostoolkit.org/reference/api/experiment/#environment-secrets
-
-
-#### Azure Credential File
-
-You may also pass them via the Azure credential file:
-
-  You can retrieve a credentials file with your subscription ID already in place by signing in to Azure using the az login command followed by the az ad sp create-for-rbac command
-
-  ```bash
-  az login
-  az ad sp create-for-rbac --sdk-auth > credentials.json
-  ```
-
-  credentials.json:
-
-  ```json
-  {
-    "subscriptionId": "<azure_aubscription_id>",
-    "tenantId": "<tenant_id>",
-    "clientId": "<application_id>",
-    "clientSecret": "<application_secret>",
-    "activeDirectoryEndpointUrl": "https://login.microsoftonline.com",
-    "resourceManagerEndpointUrl": "https://management.azure.com/",
-    "activeDirectoryGraphResourceId": "https://graph.windows.net/",
-    "sqlManagementEndpointUrl": "https://management.core.windows.net:8443/",
-    "galleryEndpointUrl": "https://gallery.azure.com/",
-    "managementEndpointUrl": "https://management.core.windows.net/"
-  }
-  ```
-
-  Store the path to the file in an environment variable called **AZURE_AUTH_LOCATION** and make sure that your experiment does **NOT** contain `secrets` section. 
 
 ### Subscription
 
@@ -254,7 +211,7 @@ welcome to do so. Please, fork this project, make your changes following the
 usual [PEP 8][pep8] code style, sprinkling with tests and submit a PR for
 review.
 
-[pep8]: https://pycodestyle.readthedocs.io/en/latest/
+[pep8]: https://peps.python.org/pep-0008/
 
 The Chaos Toolkit projects require all contributors must sign a
 [Developer Certificate of Origin][dco] on each commit they would like to merge
@@ -266,19 +223,10 @@ the rules of the DCO before submitting a PR.
 ### Develop
 
 If you wish to develop on this project, make sure to install the development
-dependencies. But first, [create a virtual environment][venv] and then install
-those dependencies.
-
-[venv]: http://chaostoolkit.org/reference/usage/install/#create-a-virtual-environment
+dependencies.
 
 ```console
-$ pip install -r requirements-dev.txt -r requirements.txt
-```
-
-Then, point your environment to this directory:
-
-```console
-$ python setup.py develop
+$ pdm install --dev
 ```
 
 Now, you can edit the files and they will be automatically be seen by your
@@ -289,5 +237,5 @@ environment, even when running from the `chaos` command locally.
 To run the tests for the project execute the following:
 
 ```
-$ pytest
+$ pdm run test
 ```

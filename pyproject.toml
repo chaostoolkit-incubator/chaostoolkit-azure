@@ -1,0 +1,76 @@
+[project]
+name = "chaostoolkit-azure"
+version = "0.16.0"
+description = "Chaos Toolkit Extension for Microsoft Azure"
+authors = [
+    {name = "Chaos Toolkit", email = "contact@chaostoolkit.org"},
+]
+dependencies = [
+    "chaostoolkit-lib>=1.42.1",
+    "azure-mgmt-compute>=30.6.0",
+    "azure-mgmt-containerservice>=29.1.0",
+    "azure-mgmt-rdbms>=10.1.0",
+    "azure-mgmt-network>=25.3.0",
+    "azure-mgmt-storage>=21.1.0",
+    "azure-mgmt-resourcegraph>=8.0.0",
+    "azure-mgmt-web>=7.2.0",
+    "azure-mgmt-netapp>=12.0.0",
+    "azure-identity>=1.15.0",
+    "dateparser>=1.2.0",
+    "requests>=2.31.0",
+    "pg8000>=1.30.5",
+    "azure-keyvault-secrets>=4.8.0",
+]
+requires-python = ">=3.8"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.scripts]
+lint = {composite = ["ruff check ."]}
+format = {composite = ["ruff check --fix .", "ruff format ."]}
+test = {cmd = "pytest"}
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest>=8.1.1",
+    "pytest-sugar>=1.0.0",
+    "pytest-cov>=5.0.0",
+    "coverage>=7.4.4",
+    "requests>=2.31.0",
+    "requests-mock>=1.11.0",
+    "ruff>=0.3.4",
+]
+[tool.ruff]
+line-length = 80
+exclude = [
+    ".eggs",
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "build",
+    "dist",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = "tests"
+addopts = "-v -rxs --cov chaosazure --cov-report term-missing:skip-covered -p no:warnings"

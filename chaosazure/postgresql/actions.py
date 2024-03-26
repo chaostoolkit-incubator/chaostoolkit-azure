@@ -11,14 +11,21 @@ from chaosazure.postgresql.constants import RES_TYPE_SRV_PG
 from azure.mgmt.rdbms.postgresql.models import Database
 from chaosazure.common.resources.graph import fetch_resources
 
-__all__ = ["delete_servers", "restart_servers", "delete_databases", "create_databases"]
+__all__ = [
+    "delete_servers",
+    "restart_servers",
+    "delete_databases",
+    "create_databases",
+]
 
 from chaosazure.vmss.records import Records
 
 
-def delete_servers(filter: str = None,
-                   configuration: Configuration = None,
-                   secrets: Secrets = None):
+def delete_servers(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete servers at random.
 
@@ -46,25 +53,29 @@ def delete_servers(filter: str = None,
     Delete two servers at random from the group 'rg'
     """
     logger.debug(
-        "Start delete_servers: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "Start delete_servers: " "configuration='{}', filter='{}'".format(
+            configuration, filter
+        )
+    )
 
     servers = __fetch_servers(filter, configuration, secrets)
     client = __postgresql_mgmt_client(secrets, configuration)
     server_records = Records()
     for s in servers:
-        group = s['resourceGroup']
-        name = s['name']
+        group = s["resourceGroup"]
+        name = s["name"]
         logger.debug("Deleting server: {}".format(name))
         client.servers.begin_delete(group, name)
         server_records.add(cleanse.database_server(s))
 
-    return server_records.output_as_dict('resources')
+    return server_records.output_as_dict("resources")
 
 
-def restart_servers(filter: str = None,
-                    configuration: Configuration = None,
-                    secrets: Secrets = None):
+def restart_servers(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Restart servers at random.
 
@@ -89,26 +100,30 @@ def restart_servers(filter: str = None,
     Restart two servers at random from the group 'rg'
     """
     logger.debug(
-        "Start restart_servers: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "Start restart_servers: " "configuration='{}', filter='{}'".format(
+            configuration, filter
+        )
+    )
 
     servers = __fetch_servers(filter, configuration, secrets)
     client = __postgresql_mgmt_client(secrets, configuration)
     server_records = Records()
     for s in servers:
-        group = s['resourceGroup']
-        name = s['name']
+        group = s["resourceGroup"]
+        name = s["name"]
         logger.debug("Restarting server: {}".format(name))
         client.servers.begin_restart(group, name)
         server_records.add(cleanse.database_server(s))
 
-    return server_records.output_as_dict('resources')
+    return server_records.output_as_dict("resources")
 
 
-def delete_databases(filter: str = None,
-                     name_pattern: str = None,
-                     configuration: Configuration = None,
-                     secrets: Secrets = None):
+def delete_databases(
+    filter: str = None,
+    name_pattern: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete databases at random.
 
@@ -142,7 +157,9 @@ def delete_databases(filter: str = None,
     logger.debug(
         "Start delete_databases: "
         "configuration='{}', filter='{}', name_pattern='{}'".format(
-            configuration, filter, name_pattern))
+            configuration, filter, name_pattern
+        )
+    )
 
     pattern = None
     if name_pattern:
@@ -152,8 +169,8 @@ def delete_databases(filter: str = None,
     client = __postgresql_mgmt_client(secrets, configuration)
     database_records = Records()
     for s in servers:
-        group = s['resourceGroup']
-        server_name = s['name']
+        group = s["resourceGroup"]
+        server_name = s["name"]
 
         for d in client.databases.list_by_server(group, server_name):
             name = d.name
@@ -163,15 +180,17 @@ def delete_databases(filter: str = None,
 
         logger.debug("Deleting database: {}/{}".format(server_name, name))
 
-    return database_records.output_as_dict('resources')
+    return database_records.output_as_dict("resources")
 
 
-def create_databases(filter: str = None,
-                     name: str = None,
-                     charset: str = None,
-                     collation: str = None,
-                     configuration: Configuration = None,
-                     secrets: Secrets = None):
+def create_databases(
+    filter: str = None,
+    name: str = None,
+    charset: str = None,
+    collation: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete databases at random.
 
@@ -201,16 +220,21 @@ def create_databases(filter: str = None,
     """
     logger.debug(
         "Start create_databases: "
-        "configuration='{}', filter='{}', name='{}'".format(configuration, filter, name))
+        "configuration='{}', filter='{}', name='{}'".format(
+            configuration, filter, name
+        )
+    )
 
     servers = __fetch_servers(filter, configuration, secrets)
     client = __postgresql_mgmt_client(secrets, configuration)
     database_parameters = Database(charset=charset, collation=collation)
     for s in servers:
-        group = s['resourceGroup']
-        server_name = s['name']
+        group = s["resourceGroup"]
+        server_name = s["name"]
 
-        client.databases.begin_create_or_update(group, server_name, name, database_parameters)
+        client.databases.begin_create_or_update(
+            group, server_name, name, database_parameters
+        )
 
 
 ###############################################################################
@@ -224,9 +248,7 @@ def __fetch_servers(filter, configuration, secrets) -> []:
         logger.warning("No servers found")
         raise FailedActivity("No servers found")
     else:
-        logger.debug(
-            "Fetched servers: {}".format(
-                [s['name'] for s in servers]))
+        logger.debug("Fetched servers: {}".format([s["name"] for s in servers]))
     return servers
 
 

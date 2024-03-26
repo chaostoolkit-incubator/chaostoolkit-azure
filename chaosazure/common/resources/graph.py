@@ -11,8 +11,12 @@ from chaosazure import init_resource_graph_client
 from chaosazure.common.config import load_configuration
 
 
-def fetch_resources(input_query: str, resource_type: str,
-                    secrets: Secrets, configuration: Configuration):
+def fetch_resources(
+    input_query: str,
+    resource_type: str,
+    secrets: Secrets,
+    configuration: Configuration,
+):
     # prepare query
     _query = __query_from(resource_type, input_query)
     _query_request = __query_request_from(_query, configuration)
@@ -43,9 +47,11 @@ def __query_request_from(query, experiment_configuration: Configuration):
     result = QueryRequest(
         query=query,
         subscriptions=[
-            configuration.get('subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID"))
+            configuration.get(
+                "subscription_id", os.getenv("AZURE_SUBSCRIPTION_ID")
+            )
         ],
-        options=arg_query_options
+        options=arg_query_options,
     )
     return result
 
@@ -62,10 +68,10 @@ def __query_from(resource_type, query) -> str:
 
 def __to_dicts(table) -> List[dict]:
     results = []
-    for row in table['rows']:
+    for row in table["rows"]:
         result = {}
-        for col_index in range(len(table['columns'])):
-            result[table['columns'][col_index]['name']] = row[col_index]
+        for col_index in range(len(table["columns"])):
+            result[table["columns"][col_index]["name"]] = row[col_index]
         results.append(result)
 
     return results

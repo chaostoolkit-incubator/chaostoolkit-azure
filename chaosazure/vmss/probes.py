@@ -8,9 +8,11 @@ from chaosazure.vmss.constants import RES_TYPE_VMSS
 __all__ = ["count_instances"]
 
 
-def count_instances(filter: str = None,
-                    configuration: Configuration = None,
-                    secrets: Secrets = None) -> int:
+def count_instances(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+) -> int:
     """
     Return count of VMSS instances.
 
@@ -24,7 +26,9 @@ def count_instances(filter: str = None,
     """
     logger.debug(
         "Starting count_instances: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     instances = fetch_resources(filter, RES_TYPE_VMSS, secrets, configuration)
     return len(instances)

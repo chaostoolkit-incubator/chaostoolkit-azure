@@ -10,15 +10,21 @@ from chaosazure.common import cleanse
 from chaosazure.application_gateway.constants import RES_TYPE_SRV_AG
 from chaosazure.common.resources.graph import fetch_resources
 
-__all__ = ["delete_application_gateways", "start_application_gateways",
-           "stop_application_gateways", "delete_routes"]
+__all__ = [
+    "delete_application_gateways",
+    "start_application_gateways",
+    "stop_application_gateways",
+    "delete_routes",
+]
 
 from chaosazure.vmss.records import Records
 
 
-def delete_application_gateways(filter: str = None,
-                                configuration: Configuration = None,
-                                secrets: Secrets = None):
+def delete_application_gateways(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete application gateways at random.
 
@@ -47,24 +53,29 @@ def delete_application_gateways(filter: str = None,
     """
     logger.debug(
         "Start delete_application_gateways: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "configuration='{}', filter='{}'".format(configuration, filter)
+    )
 
-    application_gateways = __fetch_application_gateways(filter, configuration, secrets)
+    application_gateways = __fetch_application_gateways(
+        filter, configuration, secrets
+    )
     client = __network_mgmt_client(secrets, configuration)
     application_gateway_records = Records()
     for agw in application_gateways:
-        group = agw['resourceGroup']
-        name = agw['name']
+        group = agw["resourceGroup"]
+        name = agw["name"]
         logger.debug("Deleting application gateway: {}".format(name))
         client.application_gateways.begin_delete(group, name)
         application_gateway_records.add(cleanse.application_gateway(agw))
 
-    return application_gateway_records.output_as_dict('resources')
+    return application_gateway_records.output_as_dict("resources")
 
 
-def start_application_gateways(filter: str = None,
-                               configuration: Configuration = None,
-                               secrets: Secrets = None):
+def start_application_gateways(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Start application gateway at random.
 
@@ -90,24 +101,29 @@ def start_application_gateways(filter: str = None,
     """
     logger.debug(
         "Start start_application_gateways: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "configuration='{}', filter='{}'".format(configuration, filter)
+    )
 
-    application_gateways = __fetch_application_gateways(filter, configuration, secrets)
+    application_gateways = __fetch_application_gateways(
+        filter, configuration, secrets
+    )
     client = __network_mgmt_client(secrets, configuration)
     application_gateway_records = Records()
     for agw in application_gateways:
-        group = agw['resourceGroup']
-        name = agw['name']
+        group = agw["resourceGroup"]
+        name = agw["name"]
         logger.debug("Starting application gateway: {}".format(name))
         client.application_gateways.begin_start(group, name)
         application_gateway_records.add(cleanse.application_gateway(agw))
 
-    return application_gateway_records.output_as_dict('resources')
+    return application_gateway_records.output_as_dict("resources")
 
 
-def stop_application_gateways(filter: str = None,
-                              configuration: Configuration = None,
-                              secrets: Secrets = None):
+def stop_application_gateways(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Stop application gateways at random.
 
@@ -133,25 +149,30 @@ def stop_application_gateways(filter: str = None,
     """
     logger.debug(
         "Start stop_application_gateways: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "configuration='{}', filter='{}'".format(configuration, filter)
+    )
 
-    application_gateways = __fetch_application_gateways(filter, configuration, secrets)
+    application_gateways = __fetch_application_gateways(
+        filter, configuration, secrets
+    )
     client = __network_mgmt_client(secrets, configuration)
     application_gateway_records = Records()
     for agw in application_gateways:
-        group = agw['resourceGroup']
-        name = agw['name']
+        group = agw["resourceGroup"]
+        name = agw["name"]
         logger.debug("Stopping application gateway: {}".format(name))
         client.application_gateways.begin_stop(group, name)
         application_gateway_records.add(cleanse.application_gateway(agw))
 
-    return application_gateway_records.output_as_dict('resources')
+    return application_gateway_records.output_as_dict("resources")
 
 
-def delete_routes(filter: str = None,
-                  name_pattern: str = None,
-                  configuration: Configuration = None,
-                  secrets: Secrets = None):
+def delete_routes(
+    filter: str = None,
+    name_pattern: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete routes at random.
     **Be aware**: Deleting a route is an invasive action. You will not be
@@ -181,19 +202,25 @@ def delete_routes(filter: str = None,
     logger.debug(
         "Start delete_routes: "
         "configuration='{}', filter='{}', name_pattern='{}'".format(
-            configuration, filter, name_pattern))
+            configuration, filter, name_pattern
+        )
+    )
 
     pattern = None
     if name_pattern:
         pattern = re.compile(name_pattern)
 
-    application_gateways = __fetch_application_gateways(filter, configuration, secrets)
+    application_gateways = __fetch_application_gateways(
+        filter, configuration, secrets
+    )
     client = __network_mgmt_client(secrets, configuration)
     route_records = Records()
     for agw in application_gateways:
-        group = agw['resourceGroup']
-        application_gateway_name = agw['name']
-        app_gw = client.application_gateways.get(group, application_gateway_name)
+        group = agw["resourceGroup"]
+        application_gateway_name = agw["name"]
+        app_gw = client.application_gateways.get(
+            group, application_gateway_name
+        )
         route_to_keep = app_gw.request_routing_rules[0]
 
         for r in app_gw.request_routing_rules[:]:
@@ -201,16 +228,25 @@ def delete_routes(filter: str = None,
             if pattern is None or pattern.search(name):
                 app_gw.request_routing_rules.remove(r)
                 route_records.add(r.as_dict())
-                logger.debug("Deleting route: {}/{}".format(application_gateway_name, name))
+                logger.debug(
+                    "Deleting route: {}/{}".format(
+                        application_gateway_name, name
+                    )
+                )
 
         if not app_gw.request_routing_rules:
             app_gw.request_routing_rules.append(route_to_keep)
-            logger.debug("Routes cannot be empty added back: {}/{}".format(application_gateway_name,
-                                                                           route_to_keep.name))
+            logger.debug(
+                "Routes cannot be empty added back: {}/{}".format(
+                    application_gateway_name, route_to_keep.name
+                )
+            )
 
-        client.application_gateways.begin_create_or_update(group, application_gateway_name, app_gw)
+        client.application_gateways.begin_create_or_update(
+            group, application_gateway_name, app_gw
+        )
 
-    return route_records.output_as_dict('resources')
+    return route_records.output_as_dict("resources")
 
 
 ###############################################################################
@@ -219,14 +255,18 @@ def delete_routes(filter: str = None,
 
 
 def __fetch_application_gateways(filter, configuration, secrets) -> []:
-    application_gateways = fetch_resources(filter, RES_TYPE_SRV_AG, secrets, configuration)
+    application_gateways = fetch_resources(
+        filter, RES_TYPE_SRV_AG, secrets, configuration
+    )
     if not application_gateways:
         logger.warning("No application gateways found")
         raise FailedActivity("No application gateways found")
     else:
         logger.debug(
             "Fetched application gateways: {}".format(
-                [s['name'] for s in application_gateways]))
+                [s["name"] for s in application_gateways]
+            )
+        )
     return application_gateways
 
 

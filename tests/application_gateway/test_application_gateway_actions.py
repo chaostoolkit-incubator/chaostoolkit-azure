@@ -1,39 +1,39 @@
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, patch
 
 import pytest
 from chaoslib.exceptions import FailedActivity
 
-import chaosazure
-from chaosazure.application_gateway.actions import delete_application_gateways, start_application_gateways, stop_application_gateways
+from chaosazure.application_gateway.actions import (
+    delete_application_gateways,
+    start_application_gateways,
+    stop_application_gateways,
+)
 
-from data import application_gateway_provider, config_provider, secrets_provider
 
-CONFIG = {
-    "azure": {
-        "subscription_id": "***REMOVED***"
-    }
-}
+CONFIG = {"azure": {"subscription_id": "***REMOVED***"}}
 
 SECRETS = {
     "client_id": "***REMOVED***",
     "client_secret": "***REMOVED***",
-    "tenant_id": "***REMOVED***"
+    "tenant_id": "***REMOVED***",
 }
 
 SECRETS_CHINA = {
     "client_id": "***REMOVED***",
     "client_secret": "***REMOVED***",
     "tenant_id": "***REMOVED***",
-    "azure_cloud": "AZURE_CHINA_CLOUD"
+    "azure_cloud": "AZURE_CHINA_CLOUD",
 }
 
 APPLICATION_GATEWAY_ALPHA = {
-    'name': 'ApplicationGatewayAlpha',
-    'resourceGroup': 'group'}
+    "name": "ApplicationGatewayAlpha",
+    "resourceGroup": "group",
+}
 
 APPLICATION_GATEWAY_BETA = {
-    'name': 'ApplicationGatewayBeta',
-    'resourceGroup': 'group'}
+    "name": "ApplicationGatewayBeta",
+    "resourceGroup": "group",
+}
 
 
 class AnyStringWith(str):
@@ -41,8 +41,14 @@ class AnyStringWith(str):
         return self in other
 
 
-@patch('chaosazure.application_gateway.actions.__fetch_application_gateways', autospec=True)
-@patch('chaosazure.application_gateway.actions.__network_mgmt_client', autospec=True)
+@patch(
+    "chaosazure.application_gateway.actions.__fetch_application_gateways",
+    autospec=True,
+)
+@patch(
+    "chaosazure.application_gateway.actions.__network_mgmt_client",
+    autospec=True,
+)
 def test_delete_one_application_gateway(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -57,8 +63,14 @@ def test_delete_one_application_gateway(init, fetch):
     assert client.application_gateways.begin_delete.call_count == 1
 
 
-@patch('chaosazure.application_gateway.actions.__fetch_application_gateways', autospec=True)
-@patch('chaosazure.application_gateway.actions.__network_mgmt_client', autospec=True)
+@patch(
+    "chaosazure.application_gateway.actions.__fetch_application_gateways",
+    autospec=True,
+)
+@patch(
+    "chaosazure.application_gateway.actions.__network_mgmt_client",
+    autospec=True,
+)
 def test_delete_one_application_gateway_china(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -73,8 +85,14 @@ def test_delete_one_application_gateway_china(init, fetch):
     assert client.application_gateways.begin_delete.call_count == 1
 
 
-@patch('chaosazure.application_gateway.actions.__fetch_application_gateways', autospec=True)
-@patch('chaosazure.application_gateway.actions.__network_mgmt_client', autospec=True)
+@patch(
+    "chaosazure.application_gateway.actions.__fetch_application_gateways",
+    autospec=True,
+)
+@patch(
+    "chaosazure.application_gateway.actions.__network_mgmt_client",
+    autospec=True,
+)
 def test_delete_two_application_gateways(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -89,7 +107,7 @@ def test_delete_two_application_gateways(init, fetch):
     assert client.application_gateways.begin_delete.call_count == 2
 
 
-@patch('chaosazure.application_gateway.actions.fetch_resources', autospec=True)
+@patch("chaosazure.application_gateway.actions.fetch_resources", autospec=True)
 def test_delete_application_gateway_with_no_application_gateways(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []
@@ -99,8 +117,14 @@ def test_delete_application_gateway_with_no_application_gateways(fetch):
     assert "No application gateways found" in str(x.value)
 
 
-@patch('chaosazure.application_gateway.actions.__fetch_application_gateways', autospec=True)
-@patch('chaosazure.application_gateway.actions.__network_mgmt_client', autospec=True)
+@patch(
+    "chaosazure.application_gateway.actions.__fetch_application_gateways",
+    autospec=True,
+)
+@patch(
+    "chaosazure.application_gateway.actions.__network_mgmt_client",
+    autospec=True,
+)
 def test_start_one_application_gateway(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -115,8 +139,14 @@ def test_start_one_application_gateway(init, fetch):
     assert client.application_gateways.begin_start.call_count == 1
 
 
-@patch('chaosazure.application_gateway.actions.__fetch_application_gateways', autospec=True)
-@patch('chaosazure.application_gateway.actions.__network_mgmt_client', autospec=True)
+@patch(
+    "chaosazure.application_gateway.actions.__fetch_application_gateways",
+    autospec=True,
+)
+@patch(
+    "chaosazure.application_gateway.actions.__network_mgmt_client",
+    autospec=True,
+)
 def test_start_two_application_gateways(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -131,7 +161,7 @@ def test_start_two_application_gateways(init, fetch):
     assert client.application_gateways.begin_start.call_count == 2
 
 
-@patch('chaosazure.application_gateway.actions.fetch_resources', autospec=True)
+@patch("chaosazure.application_gateway.actions.fetch_resources", autospec=True)
 def test_start_application_gateway_with_no_application_gateways(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []
@@ -141,8 +171,14 @@ def test_start_application_gateway_with_no_application_gateways(fetch):
     assert "No application gateways found" in str(x.value)
 
 
-@patch('chaosazure.application_gateway.actions.__fetch_application_gateways', autospec=True)
-@patch('chaosazure.application_gateway.actions.__network_mgmt_client', autospec=True)
+@patch(
+    "chaosazure.application_gateway.actions.__fetch_application_gateways",
+    autospec=True,
+)
+@patch(
+    "chaosazure.application_gateway.actions.__network_mgmt_client",
+    autospec=True,
+)
 def test_stop_one_application_gateway(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -157,8 +193,14 @@ def test_stop_one_application_gateway(init, fetch):
     assert client.application_gateways.begin_stop.call_count == 1
 
 
-@patch('chaosazure.application_gateway.actions.__fetch_application_gateways', autospec=True)
-@patch('chaosazure.application_gateway.actions.__network_mgmt_client', autospec=True)
+@patch(
+    "chaosazure.application_gateway.actions.__fetch_application_gateways",
+    autospec=True,
+)
+@patch(
+    "chaosazure.application_gateway.actions.__network_mgmt_client",
+    autospec=True,
+)
 def test_stop_two_application_gateways(init, fetch):
     client = MagicMock()
     init.return_value = client
@@ -173,7 +215,7 @@ def test_stop_two_application_gateways(init, fetch):
     assert client.application_gateways.begin_stop.call_count == 2
 
 
-@patch('chaosazure.application_gateway.actions.fetch_resources', autospec=True)
+@patch("chaosazure.application_gateway.actions.fetch_resources", autospec=True)
 def test_stop_application_gateway_with_no_application_gateways(fetch):
     with pytest.raises(FailedActivity) as x:
         resource_list = []

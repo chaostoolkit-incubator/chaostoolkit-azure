@@ -17,84 +17,86 @@ def test_load_secrets_from_experiment_dict():
     secrets = config.load_secrets(experiment_secrets)
 
     # assert
-    assert secrets.get('client_id') == "AZURE_CLIENT_ID"
-    assert secrets.get('client_secret') == "AZURE_CLIENT_SECRET"
-    assert secrets.get('tenant_id') == "AZURE_TENANT_ID"
-    assert secrets.get('cloud')\
-        .endpoints.resource_manager == "https://management.azure.com/"
+    assert secrets.get("client_id") == "AZURE_CLIENT_ID"
+    assert secrets.get("client_secret") == "AZURE_CLIENT_SECRET"
+    assert secrets.get("tenant_id") == "AZURE_TENANT_ID"
+    assert (
+        secrets.get("cloud").endpoints.resource_manager
+        == "https://management.azure.com/"
+    )
 
 
 def test_load_token_from_experiment_dict():
     # arrange
-    experiment_secrets = {
-        "access_token": "ACCESS_TOKEN"
-    }
+    experiment_secrets = {"access_token": "ACCESS_TOKEN"}
 
     # act
     secrets = config.load_secrets(experiment_secrets)
 
     # assert
-    assert secrets.get('access_token') == "ACCESS_TOKEN"
-    assert secrets.get('cloud')\
-        .endpoints.resource_manager == "https://management.azure.com/"
+    assert secrets.get("access_token") == "ACCESS_TOKEN"
+    assert (
+        secrets.get("cloud").endpoints.resource_manager
+        == "https://management.azure.com/"
+    )
 
 
 def test_load_secrets_from_credential_file(monkeypatch):
     # arrange
     experiment_secrets = None
     monkeypatch.setenv(
-        "AZURE_AUTH_LOCATION",
-        os.path.join(settings_dir, 'credentials.json'))
+        "AZURE_AUTH_LOCATION", os.path.join(settings_dir, "credentials.json")
+    )
 
     # act
     secrets = config.load_secrets(experiment_secrets)
 
     # assert
-    assert secrets.get('client_id') == "AZURE_CLIENT_ID"
-    assert secrets.get('client_secret') == "AZURE_CLIENT_SECRET"
-    assert secrets.get('tenant_id') == "AZURE_TENANT_ID"
-    assert secrets.get('cloud')\
-        .endpoints.resource_manager == "https://management.azure.com/"
+    assert secrets.get("client_id") == "AZURE_CLIENT_ID"
+    assert secrets.get("client_secret") == "AZURE_CLIENT_SECRET"
+    assert secrets.get("tenant_id") == "AZURE_TENANT_ID"
+    assert (
+        secrets.get("cloud").endpoints.resource_manager
+        == "https://management.azure.com/"
+    )
 
 
 def test_load_subscription_from_experiment_dict():
     # arrange
     experiment_configuration = {
         "azure_subscription_id": "AZURE_SUBSCRIPTION_ID",
-        "some_other_settings": "OTHER_SETTING"
+        "some_other_settings": "OTHER_SETTING",
     }
 
     # act
     configuration = config.load_configuration(experiment_configuration)
 
     # assert
-    assert configuration.get('subscription_id') == "AZURE_SUBSCRIPTION_ID"
+    assert configuration.get("subscription_id") == "AZURE_SUBSCRIPTION_ID"
 
 
 def test_load_legacy_subscription_from_experiment_dict():
     # arrange
     experiment_configuration = {
-        "azure": {
-            "subscription_id": "AZURE_SUBSCRIPTION_ID"
-        }
+        "azure": {"subscription_id": "AZURE_SUBSCRIPTION_ID"}
     }
 
     # act
     configuration = config.load_configuration(experiment_configuration)
 
     # assert
-    assert configuration.get('subscription_id') == "AZURE_SUBSCRIPTION_ID"
+    assert configuration.get("subscription_id") == "AZURE_SUBSCRIPTION_ID"
 
 
 def test_load_subscription_from_credential_file(monkeypatch):
     # arrange
     experiment_configuration = None
     monkeypatch.setenv(
-        "AZURE_AUTH_LOCATION",
-        os.path.join(settings_dir, 'credentials.json'))
+        "AZURE_AUTH_LOCATION", os.path.join(settings_dir, "credentials.json")
+    )
 
     # act
     configuration = config.load_configuration(experiment_configuration)
 
     # assert
-    assert configuration.get('subscription_id') == "AZURE_SUBSCRIPTION_ID"
+    assert configuration.get("subscription_id") == "AZURE_SUBSCRIPTION_ID"

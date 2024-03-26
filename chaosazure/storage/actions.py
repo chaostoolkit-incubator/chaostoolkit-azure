@@ -16,9 +16,11 @@ __all__ = ["delete_storage_accounts", "delete_blob_containers"]
 from chaosazure.vmss.records import Records
 
 
-def delete_storage_accounts(filter: str = None,
-                            configuration: Configuration = None,
-                            secrets: Secrets = None):
+def delete_storage_accounts(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete storage accounts at random.
 
@@ -47,7 +49,8 @@ def delete_storage_accounts(filter: str = None,
     """
     logger.debug(
         "Start delete_storage_accounts: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "configuration='{}', filter='{}'".format(configuration, filter)
+    )
 
     storage_accounts = __fetch_storage_accounts(filter, configuration, secrets)
 
@@ -55,19 +58,21 @@ def delete_storage_accounts(filter: str = None,
     storage_accounts_records = Records()
 
     for sa in storage_accounts:
-        group = sa['resourceGroup']
-        name = sa['name']
+        group = sa["resourceGroup"]
+        name = sa["name"]
         client.storage_accounts.delete(group, name)
         storage_accounts_records.add(cleanse.storage_account(sa))
 
-    return storage_accounts_records.output_as_dict('resources')
+    return storage_accounts_records.output_as_dict("resources")
 
 
-def delete_blob_containers(filter: str = None,
-                           name_pattern: str = None,
-                           number: int = None,
-                           configuration: Configuration = None,
-                           secrets: Secrets = None):
+def delete_blob_containers(
+    filter: str = None,
+    name_pattern: str = None,
+    number: int = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete blob containers at random.
 
@@ -107,7 +112,8 @@ def delete_blob_containers(filter: str = None,
     """
     logger.debug(
         "Start delete_blob_containers: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "configuration='{}', filter='{}'".format(configuration, filter)
+    )
 
     if number == 0:
         raise FailedActivity("Cannot target 0 volumes")
@@ -124,13 +130,18 @@ def delete_blob_containers(filter: str = None,
     containers_to_target = []
 
     for sa in storage_accounts:
-        group = sa['resourceGroup']
-        name = sa['name']
+        group = sa["resourceGroup"]
+        name = sa["name"]
         containers = client.blob_containers.list(group, name)
         for container in containers:
             if pattern is None or pattern.search(container.name):
-                containers_to_target.append({"group": group, "storage_name": name,
-                                             "container_name": container.name})
+                containers_to_target.append(
+                    {
+                        "group": group,
+                        "storage_name": name,
+                        "container_name": container.name,
+                    }
+                )
 
     if not containers_to_target:
         raise FailedActivity("No blob containers to target found")
@@ -141,12 +152,18 @@ def delete_blob_containers(filter: str = None,
         containers_to_delete = random.sample(containers_to_target, number)
 
     for container in containers_to_delete:
-        logger.debug("Deleting container: {}/{}".format(container['storage_name'],
-                     container['container_name']))
-        client.blob_containers.delete(container['group'], container['storage_name'],
-                                      container['container_name'])
+        logger.debug(
+            "Deleting container: {}/{}".format(
+                container["storage_name"], container["container_name"]
+            )
+        )
+        client.blob_containers.delete(
+            container["group"],
+            container["storage_name"],
+            container["container_name"],
+        )
         blob_storage_records.add(container)
-    return blob_storage_records.output_as_dict('resources')
+    return blob_storage_records.output_as_dict("resources")
 
 
 ###############################################################################
@@ -156,14 +173,19 @@ def delete_blob_containers(filter: str = None,
 
 def __fetch_storage_accounts(filter, configuration, secrets) -> []:
     logger.debug(RES_TYPE_SRV_SA)
-    storage_accounts = fetch_resources(filter, RES_TYPE_SRV_SA, secrets, configuration)
+    storage_accounts = fetch_resources(
+        filter, RES_TYPE_SRV_SA, secrets, configuration
+    )
     logger.debug(storage_accounts)
     if not storage_accounts:
         logger.warning("No Storage accounts found")
         raise FailedActivity("No Storage accounts found")
     else:
-        logger.debug("Fetched storage accounts: {}".format(
-                     [n['name'] for n in storage_accounts]))
+        logger.debug(
+            "Fetched storage accounts: {}".format(
+                [n["name"] for n in storage_accounts]
+            )
+        )
     return storage_accounts
 
 

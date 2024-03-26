@@ -1,4 +1,3 @@
-
 import io
 import json
 import os
@@ -74,39 +73,44 @@ def load_secrets(experiment_secrets: Secrets):
     # 1: lookup for secrets in experiment  file
     if experiment_secrets:
         return {
-            'client_id': experiment_secrets.get(
-                'client_id', os.getenv("AZURE_CLIENT_ID")),
-            'client_secret': experiment_secrets.get(
-                'client_secret', os.getenv("AZURE_CLIENT_SECRET")),
-            'tenant_id': experiment_secrets.get(
-                'tenant_id', os.getenv("AZURE_TENANT_ID")),
+            "client_id": experiment_secrets.get(
+                "client_id", os.getenv("AZURE_CLIENT_ID")
+            ),
+            "client_secret": experiment_secrets.get(
+                "client_secret", os.getenv("AZURE_CLIENT_SECRET")
+            ),
+            "tenant_id": experiment_secrets.get(
+                "tenant_id", os.getenv("AZURE_TENANT_ID")
+            ),
             # load cloud object
-            'cloud': cloud.get_or_raise(
-                experiment_secrets.get('azure_cloud', os.getenv("AZURE_CLOUD"))),
-            'access_token': experiment_secrets.get(
-                'access_token', os.getenv("AZURE_ACCESS_TOKEN")),
+            "cloud": cloud.get_or_raise(
+                experiment_secrets.get("azure_cloud", os.getenv("AZURE_CLOUD"))
+            ),
+            "access_token": experiment_secrets.get(
+                "access_token", os.getenv("AZURE_ACCESS_TOKEN")
+            ),
         }
 
     # 2: lookup for credentials in azure auth file
     az_auth_file = _load_azure_auth_file()
     if az_auth_file:
-        rm_endpoint = az_auth_file.get('resourceManagerEndpointUrl')
+        rm_endpoint = az_auth_file.get("resourceManagerEndpointUrl")
         return {
-            'client_id': az_auth_file.get('clientId'),
-            'client_secret': az_auth_file.get('clientSecret'),
-            'tenant_id': az_auth_file.get('tenantId'),
+            "client_id": az_auth_file.get("clientId"),
+            "client_secret": az_auth_file.get("clientSecret"),
+            "tenant_id": az_auth_file.get("tenantId"),
             # load cloud object
-            'cloud': azure_cloud.get_cloud_from_metadata_endpoint(rm_endpoint),
+            "cloud": azure_cloud.get_cloud_from_metadata_endpoint(rm_endpoint),
             # access token is not supported for credential files
-            'access_token': None,
+            "access_token": None,
         }
 
     return {
-        'client_id': os.getenv("AZURE_CLIENT_ID"),
-        'client_secret': os.getenv("AZURE_CLIENT_SECRET"),
-        'tenant_id': os.getenv("AZURE_TENANT_ID"),
-        'cloud': cloud.get_or_raise(os.getenv("AZURE_CLOUD")),
-        'access_token': os.getenv("AZURE_ACCESS_TOKEN"),
+        "client_id": os.getenv("AZURE_CLIENT_ID"),
+        "client_secret": os.getenv("AZURE_CLIENT_SECRET"),
+        "tenant_id": os.getenv("AZURE_TENANT_ID"),
+        "cloud": cloud.get_or_raise(os.getenv("AZURE_CLOUD")),
+        "access_token": os.getenv("AZURE_ACCESS_TOKEN"),
     }
 
 
@@ -115,20 +119,21 @@ def load_configuration(experiment_configuration: Configuration):
     # 1: lookup for configuration in experiment config file
     if experiment_configuration:
         subscription_id = experiment_configuration.get(
-            "azure_subscription_id", os.getenv("AZURE_SUBSCRIPTION_ID"))
+            "azure_subscription_id", os.getenv("AZURE_SUBSCRIPTION_ID")
+        )
         # check legacy subscription location
         if not subscription_id:
-            subscription_id = experiment_configuration\
-                .get('azure', {}).get(
-                    'subscription_id', os.getenv("AZURE_SUBSCRIPTION_ID"))
+            subscription_id = experiment_configuration.get("azure", {}).get(
+                "subscription_id", os.getenv("AZURE_SUBSCRIPTION_ID")
+            )
 
     if subscription_id:
-        return {'subscription_id': subscription_id}
+        return {"subscription_id": subscription_id}
 
     # 2: lookup for configuration in azure auth file
     az_auth_file = _load_azure_auth_file()
     if az_auth_file:
-        return {'subscription_id': az_auth_file.get('subscriptionId')}
+        return {"subscription_id": az_auth_file.get("subscriptionId")}
 
     # no configuration
     logger.warn("Unable to load subscription id.")
@@ -136,9 +141,9 @@ def load_configuration(experiment_configuration: Configuration):
 
 
 def _load_azure_auth_file():
-    auth_path = os.environ.get('AZURE_AUTH_LOCATION')
+    auth_path = os.environ.get("AZURE_AUTH_LOCATION")
     credential_file = {}
     if auth_path and os.path.exists(auth_path):
-        with io.open(auth_path, 'r', encoding='utf-8-sig') as auth_fd:
+        with io.open(auth_path, "r", encoding="utf-8-sig") as auth_fd:
             credential_file = json.load(auth_fd)
     return credential_file

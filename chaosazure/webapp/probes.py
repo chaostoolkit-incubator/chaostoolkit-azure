@@ -5,9 +5,11 @@ from chaosazure.common.resources.graph import fetch_resources
 from chaosazure.webapp.constants import RES_TYPE_WEBAPP
 
 
-def describe_webapps(filter: str = None,
-                     configuration: Configuration = None,
-                     secrets: Secrets = None):
+def describe_webapps(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Describe Azure web apps.
 
@@ -21,15 +23,19 @@ def describe_webapps(filter: str = None,
     """
     logger.debug(
         "Start describe_webapps: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     webapps = fetch_resources(filter, RES_TYPE_WEBAPP, secrets, configuration)
     return webapps
 
 
-def count_webapps(filter: str = None,
-                  configuration: Configuration = None,
-                  secrets: Secrets = None) -> int:
+def count_webapps(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+) -> int:
     """
     Return count of Azure web apps.
 
@@ -43,7 +49,9 @@ def count_webapps(filter: str = None,
     """
     logger.debug(
         "Start count_machines: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     webapps = fetch_resources(filter, RES_TYPE_WEBAPP, secrets, configuration)
     return len(webapps)

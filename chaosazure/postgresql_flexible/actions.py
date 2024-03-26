@@ -18,13 +18,22 @@ from azure.mgmt.rdbms.postgresql_flexibleservers.models import Database
 from chaosazure.common.resources.graph import fetch_resources
 from chaosazure.vmss.records import Records
 
-__all__ = ["delete_servers", "stop_servers", "restart_servers",
-           "start_servers", "delete_databases", "create_databases", "delete_tables"]
+__all__ = [
+    "delete_servers",
+    "stop_servers",
+    "restart_servers",
+    "start_servers",
+    "delete_databases",
+    "create_databases",
+    "delete_tables",
+]
 
 
-def delete_servers(filter: str = None,
-                   configuration: Configuration = None,
-                   secrets: Secrets = None):
+def delete_servers(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete servers at random.
 
@@ -52,25 +61,29 @@ def delete_servers(filter: str = None,
     Delete two servers at random from the group 'rg'
     """
     logger.debug(
-        "Start delete_servers: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "Start delete_servers: " "configuration='{}', filter='{}'".format(
+            configuration, filter
+        )
+    )
 
     servers = __fetch_servers(filter, configuration, secrets)
     client = __postgresql_flexible_mgmt_client(secrets, configuration)
     server_records = Records()
     for s in servers:
-        group = s['resourceGroup']
-        name = s['name']
+        group = s["resourceGroup"]
+        name = s["name"]
         logger.debug("Deleting server: {}".format(name))
         client.servers.begin_delete(group, name)
         server_records.add(cleanse.database_server(s))
 
-    return server_records.output_as_dict('resources')
+    return server_records.output_as_dict("resources")
 
 
-def stop_servers(filter: str = None,
-                 configuration: Configuration = None,
-                 secrets: Secrets = None):
+def stop_servers(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Stop servers at random.
 
@@ -95,26 +108,30 @@ def stop_servers(filter: str = None,
     Stop two servers at random from the group 'mygroup'
     """
     logger.debug(
-        "Start stop_servers: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "Start stop_servers: " "configuration='{}', filter='{}'".format(
+            configuration, filter
+        )
+    )
 
     servers = __fetch_servers(filter, configuration, secrets)
     client = __postgresql_flexible_mgmt_client(secrets, configuration)
 
     server_records = Records()
     for s in servers:
-        group = s['resourceGroup']
-        name = s['name']
+        group = s["resourceGroup"]
+        name = s["name"]
         logger.debug("Stopping server: {}".format(name))
         client.servers.begin_stop(group, name)
         server_records.add(cleanse.database_server(s))
 
-    return server_records.output_as_dict('resources')
+    return server_records.output_as_dict("resources")
 
 
-def restart_servers(filter: str = None,
-                    configuration: Configuration = None,
-                    secrets: Secrets = None):
+def restart_servers(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Restart servers at random.
 
@@ -139,25 +156,29 @@ def restart_servers(filter: str = None,
     Restart two servers at random from the group 'rg'
     """
     logger.debug(
-        "Start restart_servers: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "Start restart_servers: " "configuration='{}', filter='{}'".format(
+            configuration, filter
+        )
+    )
 
     servers = __fetch_servers(filter, configuration, secrets)
     client = __postgresql_flexible_mgmt_client(secrets, configuration)
     server_records = Records()
     for s in servers:
-        group = s['resourceGroup']
-        name = s['name']
+        group = s["resourceGroup"]
+        name = s["name"]
         logger.debug("Restarting server: {}".format(name))
         client.servers.begin_restart(group, name)
         server_records.add(cleanse.database_server(s))
 
-    return server_records.output_as_dict('resources')
+    return server_records.output_as_dict("resources")
 
 
-def start_servers(filter: str = None,
-                  configuration: Configuration = None,
-                  secrets: Secrets = None):
+def start_servers(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Start servers at random. Thought as a rollback action.
 
@@ -184,7 +205,9 @@ def start_servers(filter: str = None,
 
     logger.debug(
         "Start start_servers: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     servers = __fetch_servers(filter, configuration, secrets)
     client = __postgresql_flexible_mgmt_client(secrets, configuration)
@@ -192,19 +215,20 @@ def start_servers(filter: str = None,
 
     server_records = Records()
     for server in stopped_servers:
-        logger.debug("Starting server: {}".format(server['name']))
-        client.servers.begin_start(server['resourceGroup'],
-                                   server['name'])
+        logger.debug("Starting server: {}".format(server["name"]))
+        client.servers.begin_start(server["resourceGroup"], server["name"])
 
         server_records.add(cleanse.database_server(server))
 
-    return server_records.output_as_dict('resources')
+    return server_records.output_as_dict("resources")
 
 
-def delete_databases(filter: str = None,
-                     name_pattern: str = None,
-                     configuration: Configuration = None,
-                     secrets: Secrets = None):
+def delete_databases(
+    filter: str = None,
+    name_pattern: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete databases at random.
 
@@ -238,7 +262,9 @@ def delete_databases(filter: str = None,
     logger.debug(
         "Start delete_databases: "
         "configuration='{}', filter='{}', name_pattern='{}'".format(
-            configuration, filter, name_pattern))
+            configuration, filter, name_pattern
+        )
+    )
 
     pattern = None
     if name_pattern:
@@ -248,8 +274,8 @@ def delete_databases(filter: str = None,
     client = __postgresql_flexible_mgmt_client(secrets, configuration)
     database_records = Records()
     for s in servers:
-        group = s['resourceGroup']
-        server_name = s['name']
+        group = s["resourceGroup"]
+        server_name = s["name"]
 
         for d in client.databases.list_by_server(group, server_name):
             name = d.name
@@ -259,15 +285,17 @@ def delete_databases(filter: str = None,
 
         logger.debug("Deleting database: {}/{}".format(server_name, name))
 
-    return database_records.output_as_dict('resources')
+    return database_records.output_as_dict("resources")
 
 
-def create_databases(filter: str = None,
-                     name: str = None,
-                     charset: str = None,
-                     collation: str = None,
-                     configuration: Configuration = None,
-                     secrets: Secrets = None):
+def create_databases(
+    filter: str = None,
+    name: str = None,
+    charset: str = None,
+    collation: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete databases at random.
 
@@ -297,24 +325,31 @@ def create_databases(filter: str = None,
     """
     logger.debug(
         "Start create_databases: "
-        "configuration='{}', filter='{}', name='{}'".format(configuration, filter, name))
+        "configuration='{}', filter='{}', name='{}'".format(
+            configuration, filter, name
+        )
+    )
 
     servers = __fetch_servers(filter, configuration, secrets)
     client = __postgresql_flexible_mgmt_client(secrets, configuration)
     database_parameters = Database(charset=charset, collation=collation)
     for s in servers:
-        group = s['resourceGroup']
-        server_name = s['name']
+        group = s["resourceGroup"]
+        server_name = s["name"]
 
-        client.databases.begin_create(group, server_name, name, database_parameters)
+        client.databases.begin_create(
+            group, server_name, name, database_parameters
+        )
 
 
-def delete_tables(filter: str = None,
-                  table_name: str = None,
-                  database_name: str = None,
-                  configuration: Configuration = None,
-                  secrets: Secrets = None,
-                  key_vault_url: str = None):
+def delete_tables(
+    filter: str = None,
+    table_name: str = None,
+    database_name: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+    key_vault_url: str = None,
+):
     """
     Delete a table randomly from all databases in servers matching the filter.
     Could be used to introduce random failures for resilience testing.
@@ -361,7 +396,7 @@ def delete_tables(filter: str = None,
     cred = ClientSecretCredential(
         tenant_id=az_secrets["tenant_id"],
         client_id=az_secrets["client_id"],
-        client_secret=az_secrets["client_secret"]
+        client_secret=az_secrets["client_secret"],
     )
 
     srvs = __fetch_servers(filter, configuration, secrets)
@@ -371,10 +406,18 @@ def delete_tables(filter: str = None,
 
     srv_records = Records()
     for srv in srvs:
-        __handle_server(srv, database_name, table_name, secrets, configuration,
-                        cred, key_vault_url, srv_records)
+        __handle_server(
+            srv,
+            database_name,
+            table_name,
+            secrets,
+            configuration,
+            cred,
+            key_vault_url,
+            srv_records,
+        )
 
-    return srv_records.output_as_dict('resources')
+    return srv_records.output_as_dict("resources")
 
 
 ###############################################################################
@@ -385,22 +428,22 @@ def delete_tables(filter: str = None,
 def __fetch_all_stopped_servers(client, servers) -> []:
     stopped_servers = []
     for s in servers:
-        i = client.servers.get(s['resourceGroup'], s['name'])
-        if i.state == 'Stopped':
+        i = client.servers.get(s["resourceGroup"], s["name"])
+        if i.state == "Stopped":
             stopped_servers.append(s)
-            logger.debug("Found stopped server: {}".format(s['name']))
+            logger.debug("Found stopped server: {}".format(s["name"]))
     return stopped_servers
 
 
 def __fetch_servers(filter, configuration, secrets) -> List:
-    servers = fetch_resources(filter, RES_TYPE_SRV_PG_FLEX, secrets, configuration)
+    servers = fetch_resources(
+        filter, RES_TYPE_SRV_PG_FLEX, secrets, configuration
+    )
     if not servers:
         logger.warning("No servers found")
         raise FailedActivity("No servers found")
     else:
-        logger.debug(
-            "Fetched servers: {}".format(
-                [s['name'] for s in servers]))
+        logger.debug("Fetched servers: {}".format([s["name"] for s in servers]))
     return servers
 
 
@@ -408,14 +451,16 @@ def __postgresql_flexible_mgmt_client(secrets, configuration):
     return init_postgresql_flexible_management_client(secrets, configuration)
 
 
-def __handle_server(srv,
-                    database_name,
-                    table_name,
-                    secrets,
-                    configuration,
-                    cred,
-                    key_vault_url,
-                    srv_records):
+def __handle_server(
+    srv,
+    database_name,
+    table_name,
+    secrets,
+    configuration,
+    cred,
+    key_vault_url,
+    srv_records,
+):
     # Get the PostgreSQL server properties
     srv_name = srv["name"]
     resource_group = srv["resourceGroup"]
@@ -438,9 +483,11 @@ def __handle_server(srv,
         db_list = [db for db in db_list if db.name == database_name]
         if not db_list:
             logger.error(
-                f"Database '{database_name}' does not exist on server '{srv_name}'")
+                f"Database '{database_name}' does not exist on server '{srv_name}'"
+            )
             raise FailedActivity(
-                f"Database '{database_name}' does not exist on server '{srv_name}'")
+                f"Database '{database_name}' does not exist on server '{srv_name}'"
+            )
 
     # Iterate through each database and delete the table(s)
     for db in db_list:
@@ -448,11 +495,13 @@ def __handle_server(srv,
 
         # Connect to the PostgreSQL server
         try:
-            conn_str = f"host='{pg_srv.fully_qualified_domain_name}' "\
-                       f"dbname='{dbname}' "\
-                       f"user='{pg_srv.administrator_login}' "\
-                       f"password='{secret_value}' "\
-                       f"sslmode='require'"
+            conn_str = (
+                f"host='{pg_srv.fully_qualified_domain_name}' "
+                f"dbname='{dbname}' "
+                f"user='{pg_srv.administrator_login}' "
+                f"password='{secret_value}' "
+                f"sslmode='require'"
+            )
             conn = pg8000.native.Connection(conn_str)
             __handle_db(dbname, srv_name, table_name, conn)
 
@@ -460,7 +509,8 @@ def __handle_server(srv,
             logger.debug(f"Deleted tables on server '{srv_name}'")
         except Exception:
             logger.exception(
-                f"Failed to connect to database '{dbname}' on server '{srv_name}'")
+                f"Failed to connect to database '{dbname}' on server '{srv_name}'"
+            )
             continue
 
 
@@ -472,13 +522,15 @@ def __handle_db(dbname, srv_name, table_name, conn):
             tables = conn.run(
                 "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
                 "WHERE table_schema = 'public' AND table_name = %s)",
-                (table_name,)
+                (table_name,),
             )
             exists = tables[0]
             if exists:
                 conn.run(f"DROP TABLE {table_name} CASCADE")
             else:
-                logger.debug(f"Table '{table_name}' does not exist on database '{dbname}'")
+                logger.debug(
+                    f"Table '{table_name}' does not exist on database '{dbname}'"
+                )
         # Otherwise, generate a random table name and delete it
         else:
             tables = conn.run(
@@ -488,7 +540,9 @@ def __handle_db(dbname, srv_name, table_name, conn):
             if len(tables) > 0:
                 random_table = random.choice(tables)[0]
                 conn.run(f"DROP TABLE IF EXISTS {random_table} CASCADE")
-                logger.debug(f"Deleted table '{random_table}' on server '{srv_name}'")
+                logger.debug(
+                    f"Deleted table '{random_table}' on server '{srv_name}'"
+                )
             else:
                 logger.debug(f"No tables to delete on server '{srv_name}'")
 

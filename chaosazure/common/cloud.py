@@ -9,12 +9,13 @@ AZURE_US_GOV_CLOUD = "AZURE_US_GOV_CLOUD"
 
 
 def get_or_raise(value: str = "AZURE_PUBLIC_CLOUD") -> azure_cloud.Cloud:
-    """ Returns the proper Azure cloud object or raises
-     an InterruptException if not found """
+    """Returns the proper Azure cloud object or raises
+    an InterruptException if not found"""
 
     if not value:
-        logger.warning("Azure cloud not provided. Using"
-                       " AZURE_PUBLIC_CLOUD as default")
+        logger.warning(
+            "Azure cloud not provided. Using" " AZURE_PUBLIC_CLOUD as default"
+        )
         return azure_cloud.AZURE_PUBLIC_CLOUD
 
     cloud = value.strip().upper()
@@ -29,8 +30,10 @@ def get_or_raise(value: str = "AZURE_PUBLIC_CLOUD") -> azure_cloud.Cloud:
         result = azure_cloud.AZURE_GERMAN_CLOUD
 
     else:
-        msg = "Invalid Azure cloud '{}'. Please " \
-              "provide a proper cloud value".format(cloud)
+        msg = (
+            "Invalid Azure cloud '{}'. Please "
+            "provide a proper cloud value".format(cloud)
+        )
         logger.info(msg)
         raise InterruptExecution(msg)
 

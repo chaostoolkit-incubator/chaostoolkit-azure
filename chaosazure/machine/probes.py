@@ -8,9 +8,11 @@ from chaosazure.common.resources.graph import fetch_resources
 __all__ = ["describe_machines", "count_machines"]
 
 
-def describe_machines(filter: str = None,
-                      configuration: Configuration = None,
-                      secrets: Secrets = None):
+def describe_machines(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Describe Azure virtual machines.
 
@@ -24,15 +26,19 @@ def describe_machines(filter: str = None,
     """
     logger.debug(
         "Start describe_machines: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     machines = fetch_resources(filter, RES_TYPE_VM, secrets, configuration)
     return machines
 
 
-def count_machines(filter: str = None,
-                   configuration: Configuration = None,
-                   secrets: Secrets = None) -> int:
+def count_machines(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+) -> int:
     """
     Return count of Azure virtual machines.
 
@@ -46,7 +52,9 @@ def count_machines(filter: str = None,
     """
     logger.debug(
         "Start count_machines: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     machines = fetch_resources(filter, RES_TYPE_VM, secrets, configuration)
     return len(machines)

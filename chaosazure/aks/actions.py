@@ -7,18 +7,29 @@ from logzero import logger
 from chaosazure import init_containerservice_management_client
 from chaosazure.aks.constants import RES_TYPE_AKS
 from chaosazure.common import cleanse
-from chaosazure.machine.actions import delete_machines, stop_machines, \
-    restart_machines
+from chaosazure.machine.actions import (
+    delete_machines,
+    stop_machines,
+    restart_machines,
+)
 from chaosazure.common.resources.graph import fetch_resources
 from chaosazure.vmss.records import Records
 
-__all__ = ["delete_node", "stop_node", "restart_node", "start_managed_clusters",
-           "delete_managed_clusters", "stop_managed_clusters"]
+__all__ = [
+    "delete_node",
+    "stop_node",
+    "restart_node",
+    "start_managed_clusters",
+    "delete_managed_clusters",
+    "stop_managed_clusters",
+]
 
 
-def delete_node(filter: str = None,
-                configuration: Configuration = None,
-                secrets: Secrets = None):
+def delete_node(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete a node at random from a managed Azure Kubernetes Service.
 
@@ -35,15 +46,19 @@ def delete_node(filter: str = None,
     """
     logger.debug(
         "Start delete_node: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     query = node_resource_group_query(filter, configuration, secrets)
     return delete_machines(query, configuration, secrets)
 
 
-def stop_node(filter: str = None,
-              configuration: Configuration = None,
-              secrets: Secrets = None):
+def stop_node(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Stop a node at random from a managed Azure Kubernetes Service.
 
@@ -57,15 +72,19 @@ def stop_node(filter: str = None,
     """
     logger.debug(
         "Start stop_node: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     query = node_resource_group_query(filter, configuration, secrets)
     return stop_machines(query, configuration, secrets)
 
 
-def restart_node(filter: str = None,
-                 configuration: Configuration = None,
-                 secrets: Secrets = None):
+def restart_node(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Restart a node at random from a managed Azure Kubernetes Service.
 
@@ -79,15 +98,19 @@ def restart_node(filter: str = None,
     """
     logger.debug(
         "Start restart_node: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     query = node_resource_group_query(filter, configuration, secrets)
     return restart_machines(query, configuration, secrets)
 
 
-def stop_managed_clusters(filter: str = None,
-                          configuration: Configuration = None,
-                          secrets: Secrets = None):
+def stop_managed_clusters(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Stop managed cluster at random.
 
@@ -112,26 +135,30 @@ def stop_managed_clusters(filter: str = None,
     Stop two managed clusters at random from the group 'rg'
     """
     logger.debug(
-        "Start stop_managed_cluster: "
-        "configuration='{}', filter='{}'".format(configuration, filter))
+        "Start stop_managed_cluster: " "configuration='{}', filter='{}'".format(
+            configuration, filter
+        )
+    )
 
     managed_clusters = __fetch_managed_clusters(filter, configuration, secrets)
     client = __containerservice_mgmt_client(secrets, configuration)
     managed_clusters_records = Records()
     for c in managed_clusters:
-        group = c['resourceGroup']
-        name = c['name']
+        group = c["resourceGroup"]
+        name = c["name"]
         logger.debug("Stopping managed cluster: {}".format(name))
         logger.debug(c)
         client.managed_clusters.begin_stop(group, name)
         managed_clusters_records.add(cleanse.managed_cluster(c))
 
-    return managed_clusters_records.output_as_dict('resources')
+    return managed_clusters_records.output_as_dict("resources")
 
 
-def start_managed_clusters(filter: str = None,
-                           configuration: Configuration = None,
-                           secrets: Secrets = None):
+def start_managed_clusters(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Start managed cluster at random.
 
@@ -157,24 +184,28 @@ def start_managed_clusters(filter: str = None,
     """
     logger.debug(
         "Start start_cluster: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     managed_clusters = __fetch_managed_clusters(filter, configuration, secrets)
     client = __containerservice_mgmt_client(secrets, configuration)
     managed_clusters_records = Records()
     for c in managed_clusters:
-        group = c['resourceGroup']
-        name = c['name']
+        group = c["resourceGroup"]
+        name = c["name"]
         logger.debug("Starting managed cluster: {}".format(name))
         client.managed_clusters.begin_start(group, name)
         managed_clusters_records.add(cleanse.managed_cluster(c))
 
-    return managed_clusters_records.output_as_dict('resources')
+    return managed_clusters_records.output_as_dict("resources")
 
 
-def delete_managed_clusters(filter: str = None,
-                            configuration: Configuration = None,
-                            secrets: Secrets = None):
+def delete_managed_clusters(
+    filter: str = None,
+    configuration: Configuration = None,
+    secrets: Secrets = None,
+):
     """
     Delete a managed cluster at random from a managed Azure Kubernetes Service.
 
@@ -203,19 +234,21 @@ def delete_managed_clusters(filter: str = None,
     """
     logger.debug(
         "Start delete_managed_cluster: configuration='{}', filter='{}'".format(
-            configuration, filter))
+            configuration, filter
+        )
+    )
 
     managed_clusters = __fetch_managed_clusters(filter, configuration, secrets)
     client = __containerservice_mgmt_client(secrets, configuration)
     managed_clusters_records = Records()
     for c in managed_clusters:
-        group = c['resourceGroup']
-        name = c['name']
+        group = c["resourceGroup"]
+        name = c["name"]
         logger.debug("Deleting managed cluster: {}".format(name))
         client.managed_clusters.begin_delete(group, name)
         managed_clusters_records.add(cleanse.managed_cluster(c))
 
-    return managed_clusters_records.output_as_dict('resources')
+    return managed_clusters_records.output_as_dict("resources")
 
 
 ###############################################################################
@@ -229,11 +262,9 @@ def node_resource_group_query(query, configuration, secrets):
         logger.warning("No AKS clusters found")
         raise FailedActivity("No AKS clusters found")
     else:
-        logger.debug(
-            "Found AKS clusters: {}".format(
-                [x['name'] for x in aks]))
+        logger.debug("Found AKS clusters: {}".format([x["name"] for x in aks]))
     choice = random.choice(aks)
-    node_resource_group = choice['properties']['nodeResourceGroup']
+    node_resource_group = choice["properties"]["nodeResourceGroup"]
     return "where resourceGroup =~ '{}'".format(node_resource_group)
 
 
@@ -244,8 +275,8 @@ def __fetch_managed_clusters(filter, configuration, secrets) -> []:
         raise FailedActivity("No Managed Clusters found")
     else:
         logger.debug(
-            "Fetched managed clusters: {}".format(
-                [c['name'] for c in clusters]))
+            "Fetched managed clusters: {}".format([c["name"] for c in clusters])
+        )
     return clusters
 
 
